@@ -4,25 +4,28 @@
 but *whether the run will be allowed to finish* — in three currencies: API spend,
 subscription rate-limit windows, and org budget someone else owns.
 
-## Status: scope under revision
+## Why this is a bonus and not one of the three
 
-This work was developed before the full brief was in hand, against Claude Code
-(the CLI). Two things need resolving before it can be one of the three submitted
-ideas:
+Two reasons, both worth stating plainly.
 
 1. **It is scoped to the wrong product.** The brief's north star is Claude API
-   revenue on `platform.claude.com`. The attribution defect documented here lives
-   in Claude Code's credential precedence.
-2. **As written, it is revenue-negative for that north star.** It tells users
-   "you are paying API rates when your subscription already covers this." The
-   honest framing is trust and churn prevention, not revenue growth — *unless*
-   it is moved to the org/API layer, where budget confidence unblocks deployment
-   and is straightforwardly revenue-positive.
+   revenue on `platform.claude.com`. The defect documented here lives in Claude
+   Code's credential precedence.
+2. **Its direct effect is revenue-negative for that north star.** It tells users
+   "you are paying API rates when your subscription already covers this."
+   The defensible case is trust and churn prevention — surprise bills produce
+   disputes, defensive spend caps and cancellations — but that is second-order,
+   and a growth pitch that opens by helping users pay less deserves the pushback
+   it will get.
 
-The API-layer version — per-team spend attribution, budgets that pause rather
-than terminate, forecasting — survives both objections and is a candidate for the
-big bet. The findings and prototype below stand on their own as evidence that the
-attribution problem is real and expensive.
+There is an API-layer version that survives both objections: per-team spend
+attribution, budgets that pause rather than terminate, forecasting. Budget
+confidence unblocks org deployment, which is straightforwardly revenue-positive.
+If that turns out to be the right big bet, the evidence below is its foundation.
+
+Kept here because it is the only item in this repo that has been verified: a
+defect reproduced on the current build, a corpus of real user reports, and a
+prototype that runs. That is the bar the three ideas should meet.
 
 ## Findings
 
