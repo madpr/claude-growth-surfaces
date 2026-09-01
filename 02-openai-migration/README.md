@@ -3,8 +3,10 @@
 Point Claude Code at a repo that uses the OpenAI SDK. It rewrites every call site
 against a rulebook, then blocks the pull request until your eval cases pass.
 
-**Effort:** about two weeks for Python and Chat Completions, reusing the existing
-migration kit and GitHub App. Multi-language costs more.
+**Engineering cost to build:** about two weeks. That buys Python and Chat
+Completions only, and reuses the existing Claude Code migration kit, the Claude
+GitHub App, and the Workbench eval tooling. Each additional language or API surface
+adds to it.
 
 [Open the prototype](https://claude.ai/code/artifact/13a609b1-6d14-49ac-99fe-644f4e0b29c9)
 
