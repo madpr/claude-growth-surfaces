@@ -127,3 +127,12 @@ env vars so a change invalidates immediately. Render: 68 ms.
   type, cost uncertainty is not the usage constraint and the thesis fails.
 - If declined tool calls do not fall once headroom is visible, the hesitation was
   about blast radius rather than exhaustion — a different, larger problem.
+
+## Published case
+
+The written case, with the reproducible defect, the evidence corpus and the
+prototype output rendered as a page:
+
+<https://claude.ai/code/artifact/0502f696-82e4-45c8-9a93-38b70868752a>
+
+`page/billing-attribution.html` is its source.
