@@ -33,10 +33,12 @@ painpoint, and it is the only item here that survived verification: a defect
 reproduced on the current build, 26 public issues with $1,799.83 in self-reported
 losses, and a working prototype.
 
-It sits outside the slate for two honest reasons. It is scoped to Claude Code
-rather than the API product, and its direct effect is to move revenue *off* the
-API and onto subscriptions — the trust and churn argument for it is real but
-second-order. Both are argued in its README rather than papered over.
+It sits outside the slate because it is scoped to Claude Code rather than the
+API product. Its revenue path is also indirect — it moves spend off metered
+billing and onto a subscription the user has already bought — though what that
+protects is subscription retention, where a $1,200–$2,400/year plan outweighs the
+few hundred dollars of one-off metered spend at stake. Argued in its README
+rather than papered over.
 
 It is here because it shows the standard the three ideas should meet: a defect
 reproduced on the current build, a corpus of real user reports, and something

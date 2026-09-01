@@ -6,17 +6,25 @@ subscription rate-limit windows, and org budget someone else owns.
 
 ## Why this is a bonus and not one of the three
 
-Two reasons, both worth stating plainly.
+**It is scoped to the wrong product.** The brief's north star is Claude API
+revenue on `platform.claude.com`. The defect documented here lives in Claude
+Code's credential precedence. That alone keeps it out of the slate.
 
-1. **It is scoped to the wrong product.** The brief's north star is Claude API
-   revenue on `platform.claude.com`. The defect documented here lives in Claude
-   Code's credential precedence.
-2. **Its direct effect is revenue-negative for that north star.** It tells users
-   "you are paying API rates when your subscription already covers this."
-   The defensible case is trust and churn prevention — surprise bills produce
-   disputes, defensive spend caps and cancellations — but that is second-order,
-   and a growth pitch that opens by helping users pay less deserves the pushback
-   it will get.
+**Its revenue path is indirect** — though less unfavourably than it first looks.
+The direct effect moves spend off metered billing and onto a subscription the
+user has already bought. Read narrowly, that is revenue the API line gives up.
+Read across the portfolio, the exposure it protects is the larger one:
+
+- A Max subscription runs roughly $1,200–$2,400 a year. The losses reported in
+  these issues are one-off: $78, $152, $447, $1,122.83.
+- The damage is not the refund. It is a subscriber concluding that the plan they
+  pay for was silently not being used — an attack on the value proposition of a
+  product they had already bought, landing on customers who had already
+  converted.
+
+Recovering a few hundred dollars of unintended metered spend at the cost of
+subscription trust is a poor trade on any horizon. The honest summary: a
+retention argument with an indirect revenue path, worth doing anyway.
 
 There is an API-layer version that survives both objections: per-team spend
 attribution, budgets that pause rather than terminate, forecasting. Budget
