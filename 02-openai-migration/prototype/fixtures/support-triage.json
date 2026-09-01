@@ -1,0 +1,111 @@
+{
+  "model": "gpt-4o",
+  "temperature": 0.2,
+  "top_p": 0.95,
+  "seed": 42,
+  "n": 1,
+  "max_tokens": 2048,
+  "frequency_penalty": 0.3,
+  "user": "acct_88213",
+  "store": true,
+  "reasoning_effort": "minimal",
+  "parallel_tool_calls": true,
+  "response_format": {
+    "type": "json_schema",
+    "json_schema": {
+      "name": "triage_result",
+      "strict": true,
+      "schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["category", "severity", "summary", "tags"],
+        "properties": {
+          "category": {
+            "type": "string",
+            "enum": ["billing", "outage", "bug", "feature_request", "other"]
+          },
+          "severity": { "type": "integer", "minimum": 1, "maximum": 5 },
+          "summary": { "type": "string", "maxLength": 280 },
+          "tags": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 5,
+            "items": { "type": "string" }
+          }
+        }
+      }
+    }
+  },
+  "tools": [
+    {
+      "type": "function",
+      "function": {
+        "name": "lookup_account",
+        "description": "Look up an account by its identifier.",
+        "strict": true,
+        "parameters": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["account_id"],
+          "properties": {
+            "account_id": { "type": "string", "minLength": 8 }
+          }
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "escalate",
+        "description": "Escalate a ticket to a human on-call engineer.",
+        "strict": true,
+        "parameters": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["ticket_id", "reason"],
+          "properties": {
+            "ticket_id": { "type": "string" },
+            "reason": { "type": "string" }
+          }
+        }
+      }
+    }
+  ],
+  "tool_choice": "required",
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are the frontline triage assistant for a B2B SaaS support desk. You classify inbound tickets and decide whether to escalate. You are terse, factual, and never speculate about root cause. Always return JSON matching the triage_result schema. Never include prose outside the JSON object. When a customer reports a billing discrepancy, always call lookup_account before classifying. If the account cannot be found, classify as 'other' and escalate with the reason 'unknown account'. Treat any report of data loss as severity 5 regardless of how calmly it is described."
+    },
+    {
+      "role": "user",
+      "content": "Hi, our dashboard has been showing stale data since about 3am UTC and two of our scheduled exports silently produced empty files. Account is acct_88213."
+    },
+    {
+      "role": "assistant",
+      "tool_calls": [
+        {
+          "id": "call_a1",
+          "type": "function",
+          "function": {
+            "name": "lookup_account",
+            "arguments": "{\"account_id\": \"acct_88213\"}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "tool_call_id": "call_a1",
+      "content": "{\"plan\": \"enterprise\", \"status\": \"active\", \"region\": \"eu-west-1\"}"
+    },
+    {
+      "role": "developer",
+      "content": "Reminder: enterprise accounts in eu-west-1 are covered by the incident SLA. Escalate anything touching data integrity."
+    },
+    {
+      "role": "user",
+      "content": "Any update? This is blocking our month-end close."
+    }
+  ]
+}
