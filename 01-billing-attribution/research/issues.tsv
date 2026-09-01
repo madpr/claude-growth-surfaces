@@ -1,0 +1,27 @@
+number	created	state	title
+8327	2025-09-29	open	[Bug/Documentation] 'Organization has been disabled' error when ANTHROPIC_API_KEY overrides Max/Pro subscription
+12352	2025-11-25	closed	[Bug] Claude Code ignores subscription tier when $ANTHROPIC_API_KEY is set, requires separate API key variable name for billing
+23315	2026-02-05	closed	🐛 Bug: Claude Code charges users twice - API billing AND prepaid credits consumed simultaneously
+39903	2026-03-27	closed	Max Plan subscribers billed through API key when subagents dispatch - $152 unexpected charges
+53638	2026-04-26	closed	Claude Code Desktop silently uses project API keys for billing instead of subscription
+58083	2026-05-11	closed	[BUG] Claude Code silently uses project ANTHROPIC_API_KEY from .env instead of Max plan OAuth, causing unexpected API charges
+62338	2026-05-26	open	[BUG] Claude Code silently billed $447 to API instead of Max subscription, then gave incorrect auth confirmation
+64613	2026-06-02	open	[Bug] API requests consuming personal token quota when subscription tokens available
+65543	2026-06-05	closed	[Bug] Security-guidance plugin bypasses subscription billing and uses expensive model without warning
+68501	2026-06-15	open	Both Claude Desktop + standalone Claude Code CLI installed -> subscription usage silently billed to Extra Usage; only uninstalling the CLI fixes it (/login to subscription does not)
+70124	2026-06-22	open	Stored /login credentials silently beat a valid CLAUDE_CODE_OAUTH_TOKEN (contradicts documented auth precedence)
+72552	2026-06-30	open	Headless `claude -p` from a non-default-account session uses the machine-default Keychain credential (silent cross-account billing)
+74217	2026-07-04	open	[BUG] /status displays wrong account/email — session actually authenticated and billed against a different (Enterprise) org
+77376	2026-07-14	open	[BUG] Claude Code background job with [1m] extended-context flag bills to configured API key instead of subscription, with no visible warning
+77617	2026-07-15	open	[Bug] ANTHROPIC_API_KEY environment variable silently overrides OAuth authentication in child processes
+77707	2026-07-15	open	Third-party plugin (Codex Companion) silently made unauthorized Anthropic API calls using inherited ANTHROPIC_API_KEY
+78491	2026-07-17	open	Env ANTHROPIC_API_KEY silently routed all sessions (incl. scheduled runs) to API billing despite active Max subscription — request louder consent + persistent indicator
+79602	2026-07-20	open	[BUG] CLAUDE_CODE_OAUTH_TOKEN silently overrides an active Max subscription → sessions run as "Claude API" (metered) with no warning
+79427	2026-07-20	open	Shared claude daemon leaks ANTHROPIC_AUTH_TOKEN from first session into all later sessions on the machine — silent wrong-account auth/billing
+81748	2026-07-27	open	[Bug] Claude Code subprocess silently uses API key auth instead of subscription, draining credits
+84015	2026-08-05	open	Max plan session mislabeled as 'Claude API account' in /status and forced to enable extra usage credits at ~60% plan usage
+85400	2026-08-09	open	[BUG] --max-budget-usd stops Max subscription run despite zero API cost and remaining quota
+86723	2026-08-14	open	Routines bill metered API credits instead of the subscription when ANTHROPIC_API_KEY is set in the cloud environment (subscription headroom remained; $1,122.83 over two months)
+86794	2026-08-14	open	Silent fallback from expired subscription OAuth to legacy API credentials drains Console credits without warning
+89227	2026-08-24	open	[BUG] Claude Code VS Code extension resolves account to API org instead of active Pro subscription
+89562	2026-08-25	open	Interactive session correctly authenticated via Pro subscription, but usage is billed against Console API balance instead — no identifiable local cause after full diagnostic
