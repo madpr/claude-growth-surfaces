@@ -17,21 +17,16 @@ implementation, prioritization, risks and mitigations.
 
 [`02-openai-migration/`](02-openai-migration/) — [open the prototype →](https://claude.ai/code/artifact/13a609b1-6d14-49ac-99fe-644f4e0b29c9)
 
-A Migrations surface for the Console, under Build next to Playground. It scans a repo
-for OpenAI SDK call sites, applies a rulebook that separates the mechanical from the
-genuinely undecidable, and holds the pull request until the team's own eval cases
-pass. The parity gate is the part that matters: a language migration gates on a
-compiler, and there is no compiler for whether a prompt still works.
+Scans a repo for OpenAI SDK call sites, applies a rulebook, and blocks the pull
+request until your eval cases pass. The parity gate is the point: a language
+migration gates on a compiler, and no compiler tells you whether a prompt still works.
 
-Verification reshaped this one twice. Prompt rewriting and tool translation both
-turned out to already ship, and the repo connection is already solved by the Claude
-GitHub App — so the remaining work is narrower and more buildable than it first
-looked.
+Verification cut the scope twice. Prompt rewriting, tool translation, and repo access
+all already ship, so the remaining work is narrower than it looked.
 
-The **S** slot is still open. A response header on the compatibility endpoint naming
-the fields it silently drops is a clean ≤2–3 day item, but it comes from the same
-hypothesis as the M and would strain the brief's "span different themes" constraint.
-Left unassigned rather than used to fill the slot quietly.
+The **S** slot is open. A response header naming the fields the compatibility layer
+drops is a clean two-day item, but it shares a hypothesis with the M and would strain
+the brief's "span different themes" constraint.
 
 Start with [`01-dev-to-production/README.md`](01-dev-to-production/README.md).
 It carries the verified platform facts, the dead ends already ruled out, and the
