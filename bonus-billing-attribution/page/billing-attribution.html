@@ -194,6 +194,9 @@
   th { font-family: "IBM Plex Mono", monospace; font-size: .68rem; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3); font-weight: 500; border-bottom-color: var(--rule); }
   td.num { font-family: "IBM Plex Mono", monospace; font-variant-numeric: tabular-nums; white-space: nowrap; }
   td.amt { font-family: "IBM Plex Mono", monospace; font-variant-numeric: tabular-nums; font-weight: 500; color: var(--warn); white-space: nowrap; }
+  td.was { color: var(--ink-3); text-decoration: line-through; text-decoration-color: var(--ink-3); }
+  td.now { font-weight: 600; color: var(--accent); }
+  td.lvl { color: var(--ink-3); font-family: "IBM Plex Mono", monospace; font-variant-numeric: tabular-nums; width: 3em; }
   tr.total td { border-bottom: none; border-top: 2px solid var(--rule); font-weight: 600; padding-top: 13px; }
 
   /* --------------------------------------------------------- tier cards */
@@ -410,11 +413,75 @@
   </section>
 
   <section class="col stack">
-    <div class="eyebrow">The prototype</div>
-    <h2>Detecting displacement, not just reporting auth</h2>
+    <div class="eyebrow">The fix</div>
+    <h2>Separate the billing credential from the SDK credential</h2>
     <p>
-      Because <code>authMethod</code> reports the same value either way, the indicator
-      cannot simply read it. It probes twice &mdash; once as the environment stands, once with
+      Add a <code>CLAUDE_CODE_API_KEY</code> variable that states billing intent
+      explicitly, and move <code>ANTHROPIC_API_KEY</code> below subscription
+      credentials. Today the subscription ranks <strong>last of seven</strong> &mdash;
+      every environment credential outranks the thing the user pays for.
+    </p>
+
+    <div class="tbl-scroll">
+      <table>
+        <thead><tr><th>Lvl</th><th>Today</th><th>Proposed</th></tr></thead>
+        <tbody>
+          <tr><td class="lvl">3</td><td class="was">ANTHROPIC_API_KEY</td><td class="now">CLAUDE_CODE_API_KEY</td></tr>
+          <tr><td class="lvl">4&ndash;6</td><td colspan="2" style="color:var(--ink-3)">apiKeyHelper &middot; CLAUDE_CODE_OAUTH_TOKEN &middot; profiles &mdash; unchanged</td></tr>
+          <tr><td class="lvl">7</td><td>Subscription (<code>/login</code>)</td><td>Subscription (<code>/login</code>)</td></tr>
+          <tr><td class="lvl">8</td><td style="color:var(--ink-3)">&mdash;</td><td class="now">ANTHROPIC_API_KEY</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>
+      Adding the variable alone fixes nothing. The charges happen through
+      <code>ANTHROPIC_API_KEY</code>, so the demotion is the change that matters &mdash;
+      and the new variable is what makes the demotion safe, because it gives
+      deliberate API users a way to say so.
+    </p>
+
+    <div class="callout">
+      <p style="font-size:.94rem">
+        <strong>Claude Code already does this on another surface.</strong> From the
+        authentication docs: environment API keys set in the web sandbox
+        &ldquo;<em>don&rsquo;t override your subscription credentials.</em>&rdquo; The web
+        surface treats an application credential as unrelated to how the tool is billed.
+        The CLI does not. This makes the two consistent rather than proposing anything new.
+      </p>
+    </div>
+
+    <p>
+      The naming is conventional too. <code>CLAUDE_CODE_USE_BEDROCK</code>,
+      <code>CLAUDE_CODE_API_KEY_HELPER_TTL_MS</code> and &mdash; the exact parallel &mdash;
+      <code>CLAUDE_CODE_OAUTH_TOKEN</code>, which is how you hand Claude&nbsp;Code a
+      <em>subscription</em> credential where browser login isn&rsquo;t available. No
+      namespaced equivalent exists for an API credential.
+    </p>
+
+    <p>
+      <strong>Almost nothing breaks.</strong> CI and container environments generally have
+      no subscription on the machine, so the key falls through to level&nbsp;8 and keeps
+      working. The only population whose behaviour changes without acting is machines
+      carrying both a subscription and an ambient <code>ANTHROPIC_API_KEY</code> &mdash;
+      which is the population filing the issues.
+    </p>
+
+    <p class="caption">
+      Scoped to <code>ANTHROPIC_API_KEY</code> alone. <code>apiKeyHelper</code> is
+      configured in a settings file and <code>ANTHROPIC_AUTH_TOKEN</code> routes through a
+      gateway; both are deliberate acts. <code>ANTHROPIC_API_KEY</code> is the only one
+      developers commonly set for something else entirely.
+    </p>
+  </section>
+
+  <section class="col stack">
+    <div class="eyebrow">The prototype</div>
+    <h2>The migration signal, built</h2>
+    <p>
+      A precedence change of this kind needs a warning window before it lands, in every
+      session type including <code>claude -p</code>. This is that signal, running. Because
+      <code>authMethod</code> reports the same value either way, it cannot simply read it. It probes twice &mdash; once as the environment stands, once with
       the credential variables stripped &mdash; and compares. The difference between them is
       an entitlement that exists and is not being spent.
     </p>

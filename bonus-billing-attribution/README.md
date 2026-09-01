@@ -76,11 +76,44 @@ showing one account while billing another;
 [#84015](https://github.com/anthropics/claude-code/issues/84015) reports a Max
 session mislabeled as "Claude API account."
 
+## Proposed fix
+
+Full design: **[proposal-credential-precedence.md](proposal-credential-precedence.md)**
+
+Add a `CLAUDE_CODE_API_KEY` variable that states billing intent explicitly, and
+move `ANTHROPIC_API_KEY` below subscription credentials in the precedence order.
+
+| Level | Current | Proposed |
+|---|---|---|
+| 3 | `ANTHROPIC_API_KEY` | **`CLAUDE_CODE_API_KEY`** |
+| 7 | Subscription (`/login`) | Subscription (`/login`) |
+| 8 | — | **`ANTHROPIC_API_KEY`** |
+
+Adding the variable alone fixes nothing — the unintended charges happen through
+`ANTHROPIC_API_KEY`, so the demotion is the change that matters. The new variable
+is what makes the demotion safe.
+
+Two facts make this a smaller ask than it looks:
+
+- **Claude Code on the Web already behaves this way.** Per the docs, environment
+  API keys in the web sandbox "don't override your subscription credentials." The
+  proposal makes the CLI consistent with a decision already shipped elsewhere.
+- **The `CLAUDE_CODE_*` namespace is established**, and `CLAUDE_CODE_OAUTH_TOKEN`
+  is the exact parallel: the namespaced way to supply a *subscription* credential
+  where browser login isn't available. No equivalent exists for an API credential.
+
+Nearly nothing breaks. CI and container environments usually have no subscription
+on the machine, so the key falls through to level 8 and keeps working. The only
+population whose behavior changes without action is machines with both a
+subscription and an ambient `ANTHROPIC_API_KEY` — the population reporting the
+charges.
+
 ## Prototype
 
-`prototype/statusline-billing.sh` — a working Claude Code status line that detects
-*displacement*, not just auth. Because `authMethod` reads the same either way, it
-probes twice and compares:
+`prototype/statusline-billing.sh` — the stage 2 migration signal from the
+proposal, built and running. It detects *displacement* rather than reading the reported auth
+method, which is necessary because `authMethod` returns the same value in both
+states. It probes twice and compares:
 
 ```bash
 resolved=$(claude auth status --json)
