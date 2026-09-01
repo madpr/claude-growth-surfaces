@@ -3,10 +3,15 @@
 Point Claude Code at a repo that uses the OpenAI SDK. It rewrites every call site
 against a rulebook, then blocks the pull request until your eval cases pass.
 
-**Engineering cost to build:** about two weeks. That buys Python and Chat
-Completions only, and reuses the existing Claude Code migration kit, the Claude
-GitHub App, and the Workbench eval tooling. Each additional language or API surface
-adds to it.
+**Effort to build:** about two weeks, across four workstreams that run in parallel.
+Scope is Python and Chat Completions; each additional language or API surface adds to it.
+
+| Workstream | Reuses |
+|---|---|
+| Rulebook | `prototype/migration_lint.py` |
+| Scan and rewrite | The Claude Code migration kit's templates and queue runner |
+| Parity gate | The repo's own test suite, run in CI |
+| Console surface | Existing Console components and the Claude GitHub App |
 
 [Open the prototype](https://claude.ai/code/artifact/13a609b1-6d14-49ac-99fe-644f4e0b29c9)
 
