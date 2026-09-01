@@ -11,9 +11,13 @@ implementation, prioritization, risks and mitigations.
 
 | | Idea | Theme | Eng cost | Status |
 |---|---|---|---|---|
-| **S** | _tbd_ | — | ≤ 2–3 days | Pending research pass |
-| **M** | _tbd_ | — | ~2 weeks | Pending research pass |
-| **L** | _tbd_ | — | 1–2 months | Pending research pass |
+| **S** | _tbd_ | — | ≤ 2–3 days | Open |
+| **M** | _tbd_ | — | ~2 weeks | Open |
+| **L** | [Dev → production](01-dev-to-production/) | Expansion | 1–2 months | **Direction chosen, not designed** |
+
+Start with [`01-dev-to-production/README.md`](01-dev-to-production/README.md).
+It carries the verified platform facts, the dead ends already ruled out, and the
+open questions — enough to resume without re-researching.
 
 Ideas go here after they are checked against what `platform.claude.com` already
 ships — pricing tiers and how limits are communicated, what Console workspaces
