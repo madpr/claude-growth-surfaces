@@ -128,19 +128,63 @@ probing the obvious surface and finding it well-built is a finding.
 
 ## What this does to the idea
 
-The central technical blocker is gone, and the idea gets sharper for it. The
-question is no longer "can a per-run spend cap be built" — it is built, and it
-runs in production on Managed Agents. Two questions replace it:
+Checked 2 September 2026. **The cap is not portable to the Messages API, and the
+reason is architectural rather than a matter of priority.** That settles the
+direction of this idea.
 
-1. **Why is the cap only on Managed Agents?** If the answer is "nobody has ported
-   it," the Messages-API equivalent is a known-shape feature rather than research.
-2. **Is the cap a reason to move a workload onto Managed Agents?** That surface
-   bills model tokens *plus* $0.08/hour of runtime, so routing an unattended
-   workload there is expansion onto higher-value billing, with a differentiated
-   reason to go: the blast radius this document is about is already bounded there.
+**`task_budget` is advisory by admission.** Its doc carries a section titled "Task
+budgets are advisory, not enforced": a "soft hint, not a hard cap… The enforced
+limit on total output tokens is still `max_tokens`." `max_tokens` caps one request;
+nothing caps the loop.
 
-The second is the growth-shaped one, and it is the strongest version of this lever
-found so far.
+**It is advisory because the Messages API holds no per-run state.** The countdown is
+re-derived from the conversation you resend on each request. Quoted: "If your
+agentic loop compacts or rewrites context between requests, **the server has no
+memory of how much budget was spent before compaction**. Pass `remaining` on the
+next request so the countdown continues." A cumulative cap cannot be enforced from a
+position that cannot reliably know the cumulative total — and a client-supplied
+counter cannot be trusted for enforcement, which is precisely why it is a hint.
+
+**The session budget is enforceable because a session is a server-side state
+machine.** It "maintains conversation history across multiple interactions", the
+platform "prices everything the session consumes at public list rates", and the cap
+is "enforced between model requests". There is an object to accumulate against and
+a thread to pause.
+
+**The timeline confirms the boundary is deliberate.** Task budgets shipped 16 April
+2026, advisory, on the Messages API. Session budgets shipped 7 August 2026, hard, on
+Managed Agents. Anthropic did not harden the first; it built a second primitive with
+a different unit on a different surface. Release notes carry no indication of spend
+controls coming to the Messages API.
+
+So to cap a run on the Messages API you would first have to invent the run. That is
+not impossible — cache diagnostics already threads `previous_message_id` across
+stateless requests — but it is a new platform primitive, not a port, and it is well
+outside this idea's scope.
+
+## The idea, restated
+
+The lever is no longer "build a spend circuit breaker." It is:
+
+> The hard dollar ceiling that unblocks shipping an autonomous agent is structurally
+> unavailable on the surface most teams build on, and already runs in production on
+> the surface Anthropic would rather they were on. Route the workload.
+
+Managed Agents bills model tokens **plus** session runtime at $0.08/hour and web
+search at $10 per 1,000, so a workload that moves there is worth more per unit of
+work than the same workload on `/v1/messages` — and the reason to move is a
+capability the customer cannot build for themselves, not a discount.
+
+**The strongest objection, and it must be answered:** a team can enforce a dollar
+cap in their own loop by summing `usage` and stopping. Three reasons that is not
+equivalent, and they need testing with real teams rather than assertion:
+
+1. The runaway case is a **defective loop**, and a check inside the loop that is
+   malfunctioning is not a control.
+2. It requires list prices, cache-tier accounting, and tool-cost accounting the
+   caller has to maintain and keep current.
+3. It does not survive a wedged or crashed process, which is the case that produces
+   the largest bills.
 
 ## How I'd investigate from here
 
