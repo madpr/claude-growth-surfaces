@@ -13,7 +13,9 @@ product. The second makes it measurable. Workstreams inside each parallelize.
 
 Scope is Python and Chat Completions. Each additional language or API surface adds to it.
 
-[Open the prototype](https://claude.ai/code/artifact/13a609b1-6d14-49ac-99fe-644f4e0b29c9)
+[Open the prototype](https://madpr.github.io/claude-growth-surfaces/) — one screen:
+33 call sites rewritten for you, 5 decisions only you can make, and whether your
+tests still pass. Settle both decisions and the merge unblocks.
 
 ## Hypothesis
 
@@ -40,7 +42,8 @@ read the unenforced result as the model's ceiling.
 
 ## Rulebook
 
-Thirteen rules. Every construct that differs between the two APIs falls into one class.
+Every construct that differs between the two APIs falls into one class. Only the
+third reaches the user.
 
 | Class | Handling | Example |
 |---|---|---|
@@ -112,9 +115,9 @@ The slash command is proposed, not shipped. Everything it builds on exists.
 
 | Path | What it does |
 |---|---|
-| `app/src/data.js` | The seeded scan and rulebook. Every metric derives from here, so the tabs can't disagree |
-| `app/src/App.jsx` | Hash routing and lifted rulebook state |
-| `app/src/views/` | One file per tab |
+| `app/src/data.js` | The seeded scan. Every number on the page derives from here |
+| `app/src/views/Migration.jsx` | The page. One screen: what we rewrite, what you decide, whether it still works |
+| `app/src/App.jsx` | Console shell and the decision state |
 | `prototype/migration_lint.py` | Static analyser the rulebook came from. Classifies each field by whether it changes the result, then emits the native request |
 | `prototype/test_migration_lint.py` | 28 invariants |
 | `page/build-single-file.py` | Folds the build into one file for preview hosting |
