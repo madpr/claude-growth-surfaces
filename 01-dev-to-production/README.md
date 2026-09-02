@@ -63,13 +63,32 @@ Checked against primary docs on 31 August 2026. **Do not re-research these.**
 
 **The gaps**
 
-- **`monthly` is the only supported period.** Quoted from the Spend Limits API
-  docs. No daily, hourly, rolling, or per-run budget exists.
+- **`monthly` is the only supported period** on the Spend Limits API. Quoted from
+  its docs. No daily, hourly or rolling budget exists there.
+- **But a hard per-run dollar cap already ships — on Managed Agents.** A session
+  budget is `{type: "limit", max_list_cost: {amount, currency}}`, set at session
+  creation in minor units. The platform prices everything the session consumes at
+  public list rates and **gates before every model request**, pausing the session
+  at `stop_reason: budget_reached` rather than terminating it; history and sandbox
+  survive, and raising or removing the cap resumes the work. Model tokens, web
+  search at $10/1,000, and session runtime at $0.08/hour all count. Scheduled
+  deployments can carry one too, copied onto each fired session.
+
+  This is the single most important correction in this document. It is **not**
+  advisory: `task_budget` on the Messages API is the advisory, token-denominated
+  one, and the docs draw the distinction explicitly.
 - **Spend accounting is explicitly not transactional.** `period_to_date_spend`
   "may read as `0` if the spend reading is temporarily unavailable; treat it as
   informational, not transactional." Daily cost is "provisional and can be
-  revised upward." **You cannot build a circuit breaker on this** — that is the
-  central technical problem of this idea.
+  revised upward." You cannot build a circuit breaker on *these* figures.
+
+  **This no longer establishes that a circuit breaker is infeasible.** Managed
+  Agents enforces one today by pricing at list rates and gating pre-request, which
+  sidesteps the settled-spend problem entirely — list cost is computable from
+  tokens the platform has already counted. The reported figure is rounded to the
+  cent while enforcement compares exact amounts, and the request that crosses the
+  cap completes, so it is a bound on new work rather than an exact stop. That is
+  the shape a Messages-API equivalent would take.
 - **Twelve-plus rate-limit response headers, zero spend headers.** You can read
   `anthropic-ratelimit-input-tokens-remaining` to the nearest thousand. There is
   no equivalent for budget. The asymmetry is not limited to spend: the documented
@@ -106,6 +125,22 @@ Checked against primary docs on 31 August 2026. **Do not re-research these.**
 The pattern across these: **billing and spend controls on `platform.claude.com`
 are more mature than they look from outside.** Worth saying in the submission —
 probing the obvious surface and finding it well-built is a finding.
+
+## What this does to the idea
+
+The central technical blocker is gone, and the idea gets sharper for it. The
+question is no longer "can a per-run spend cap be built" — it is built, and it
+runs in production on Managed Agents. Two questions replace it:
+
+1. **Why is the cap only on Managed Agents?** If the answer is "nobody has ported
+   it," the Messages-API equivalent is a known-shape feature rather than research.
+2. **Is the cap a reason to move a workload onto Managed Agents?** That surface
+   bills model tokens *plus* $0.08/hour of runtime, so routing an unattended
+   workload there is expansion onto higher-value billing, with a differentiated
+   reason to go: the blast radius this document is about is already bounded there.
+
+The second is the growth-shaped one, and it is the strongest version of this lever
+found so far.
 
 ## How I'd investigate from here
 
