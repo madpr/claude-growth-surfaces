@@ -45,7 +45,7 @@ const GROUPS = [
   },
 ]
 
-export default function Shell({ children, onHome }) {
+export default function Shell({ children }) {
   return (
     <div className="app">
       <aside className="side">
@@ -71,7 +71,6 @@ export default function Shell({ children, onHome }) {
                 <button
                   key={g.label + it.label}
                   className={`nav-item${it.ours ? ' active' : ''}`}
-                  onClick={it.ours ? onHome : undefined}
                 >
                   {it.label}
                   {it.badge && (

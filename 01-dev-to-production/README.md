@@ -75,7 +75,7 @@ Checked against primary docs on 31 August 2026. **Do not re-research these.**
   no equivalent for budget. The asymmetry is not limited to spend: the documented
   response headers are `request-id`, `anthropic-organization-id`,
   `anthropic-workspace-id` and the rate-limit family, so **no header carries cache
-  state either** — see [`03-managed-caching`](../03-managed-caching/), which
+  state either** — see [`03-cache-breakeven`](../03-cache-breakeven/), which
   turns that gap into its own idea.
 - **No anomaly or velocity detection.** Anthropic's own docs carry a worked
   example titled "Find members with rapidly changing usage" instructing admins to

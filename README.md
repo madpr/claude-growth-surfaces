@@ -11,7 +11,7 @@ implementation, prioritization, risks and mitigations.
 
 | | Idea | Theme | Eng cost | Status |
 |---|---|---|---|---|
-| **S** | [Managed prompt caching](03-managed-caching/) | Monetization | ≤ 2–3 days | **Designed, working prototype** |
+| **S** | [Cache break-even](03-cache-breakeven/) | Monetization | ≤ 2–3 days | **Designed, working prototype** |
 | **M** | [OpenAI → Claude migration](02-openai-migration/) | Acquisition | ~2 weeks | **Designed, working prototype** |
 | **L** | [Dev → production](01-dev-to-production/) | Expansion | 1–2 months | **Direction chosen, not designed** |
 
@@ -24,20 +24,18 @@ migration gates on a compiler, and no compiler tells you whether a prompt still 
 Verification cut the scope twice. Prompt rewriting, tool translation, and repo access
 all already ship, so the remaining work is narrower than it looked.
 
-[`03-managed-caching/`](03-managed-caching/) — [open the prototype →](https://claude.ai/code/artifact/2b514045-cf23-496e-a97f-0fd5ffbd13bc)
+[`03-cache-breakeven/`](03-cache-breakeven/) — [open the prototype →](https://claude.ai/code/artifact/2b514045-cf23-496e-a97f-0fd5ffbd13bc)
 
-Cache writes cost 1.25–2× base input and reads cost 0.1×, so a workload that writes
-and never reads pays **more than if caching had never been enabled**. Nothing says so.
-The data that detects this and the API that diagnoses it both ship already, neither is
-connected to the other, and the diagnosis is opt-in per request — it only answers
-developers who already suspected the problem.
+The Console's Caching page already charts write amortization — tokens read back per
+token written — and captions it "higher means better." There is an exact number where
+better becomes worse: **0.28× on the 5-minute TTL, 1.11× on the 1-hour**. Below it,
+caching bills more than switching it off. The chart's axis starts at 0.50×, so the
+whole 5-minute danger zone sits below the visible range.
 
-Two components. A free card that prices your surcharge, which is the ≤2–3 day item and
-the acquisition wedge. Behind it, **managed caching** as a paid service: automatic
-placement puts one breakpoint out of four available slots and never checks whether it
-worked, so the platform sells you the version that measures its own hit rate and
-adapts. That makes the revenue direct, and it corrects an incentive nobody designed —
-as priced today a failing cache bills more than a working one.
+Draw the line. That is the change — a threshold on a chart that already exists.
+Checking the live Console cut this idea twice: detection and diagnosis are both built,
+and an earlier draft that proposed selling managed caching did not survive seeing the
+page.
 
 A response header naming the fields the compatibility layer drops was the other
 candidate for this slot. It is a clean two-day item, but it shares a hypothesis with

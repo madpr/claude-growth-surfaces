@@ -13,23 +13,24 @@ So a workload that writes the cache and never reads it is not merely failing to
 save 90%. It is paying 1.25x to 2x MORE than if it had never enabled caching at
 all. The premium is charged for a mechanism that is doing nothing.
 
-Nothing tells the developer this is happening. The only signal is
-`cache_read_input_tokens` sitting at zero -- a field you have to already suspect
-in order to go and read.
+The Console's Caching page (Analytics > Caching) already measures this well. It
+charts write amortization -- tokens read back per token written -- alongside cache
+read ratio and input token composition, and it carries a Cache diagnostics panel.
 
-Both halves of the fix already ship, separately:
+What it never does is say where the line is. Write amortization is captioned
+"higher means better cache reuse", with no threshold. There is an exact number
+where better becomes worse:
 
-  DETECTION   The Usage Report API returns cache_creation.ephemeral_5m_input_tokens,
-              cache_creation.ephemeral_1h_input_tokens, cache_read_input_tokens and
-              uncached_input_tokens, grouped by api_key_id / workspace_id / model,
-              in buckets down to 1m. Nothing in the Console reads these fields.
+    5-minute TTL   0.28x     below this, caching costs more than no caching
+    1-hour TTL     1.11x
 
-  DIAGNOSIS   Cache diagnostics (beta `cache-diagnosis-2026-04-07`) compares two
-              consecutive requests server-side and returns a typed
-              cache_miss_reason: model_changed, system_changed, tools_changed,
-              messages_changed. But it is opt-in, the beta header must be on
-              EVERY request -- a retrofit fails with previous_message_not_found --
-              so it only answers a developer who already asked the question.
+The amortization chart's y-axis starts at 0.50x, so the whole 5-minute danger
+zone sits below the visible range. See breakeven_amortization() for the arithmetic.
+
+Two smaller gaps behind that one: the page denominates everything in tokens and
+ratios, never dollars; and Group by offers Model and Workspace only, though the
+Usage Report API supports api_key_id -- so you can see that something is wrong,
+not which key is doing it.
 
 This tool is the join, run locally against data you already have.
 
@@ -113,6 +114,30 @@ def input_price(model):
 def read_multiplier(model):
     m = (model or "").lower()
     return READ_DISCOUNTED if any(t in m for t in DISCOUNTED_READ_MODELS) else READ_STANDARD
+
+
+def breakeven_amortization(model, ttl="5m"):
+    """
+    Write amortization at which caching stops paying for itself.
+
+    The Console's Caching page already charts write amortization -- tokens read
+    back per token written -- and says only that "higher means better." There is
+    an exact number where better becomes worse, and the page does not draw it.
+
+    Write W tokens once and read them back A times. Caching bills
+    W*(write_mult + read_mult*A). Not caching bills W*(1 + A), because those same
+    tokens are processed at full rate each time they appear. Equal when
+
+        write_mult + read_mult*A = 1 + A
+        A = (write_mult - 1) / (1 - read_mult)
+
+    Below that line the cache costs more than no cache at all. On the standard
+    0.1x read rate that is 0.28x for the 5-minute TTL and 1.11x for the 1-hour
+    TTL. The page's amortization chart starts its axis at 0.50x, so the entire
+    5-minute danger zone sits below the visible range.
+    """
+    write = WRITE_5M if ttl == "5m" else WRITE_1H
+    return (write - 1.0) / (1.0 - read_multiplier(model))
 
 
 def min_cacheable(model):

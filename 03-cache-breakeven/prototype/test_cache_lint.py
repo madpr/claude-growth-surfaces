@@ -48,6 +48,34 @@ check("Opus 5 gets the standard read rate",
 check("an unknown model prices at zero rather than guessing",
       cl.input_price("claude-something-unreleased") == 0.0)
 
+# -- break-even amortization ------------------------------------------------
+# The number the Console's amortization chart does not draw.
+check("5-minute break-even is 0.28x",
+      round(cl.breakeven_amortization("claude-sonnet-5", "5m"), 4) == 0.2778)
+check("1-hour break-even is 1.11x",
+      round(cl.breakeven_amortization("claude-sonnet-5", "1h"), 4) == 1.1111)
+check("the discounted read rate lowers the break-even",
+      cl.breakeven_amortization("claude-fable-5-1", "5m")
+      < cl.breakeven_amortization("claude-sonnet-5", "5m"))
+check("the 1-hour TTL needs more reuse than the 5-minute TTL",
+      cl.breakeven_amortization("claude-sonnet-5", "1h")
+      > cl.breakeven_amortization("claude-sonnet-5", "5m"))
+check("the 5-minute break-even sits below the chart's 0.50x axis floor",
+      cl.breakeven_amortization("claude-sonnet-5", "5m") < 0.50)
+
+def bills_more(model, ttl, amort):
+    """Cached cost vs uncached cost for W written tokens read back `amort` times."""
+    w = cl.WRITE_5M if ttl == "5m" else cl.WRITE_1H
+    return (w + cl.read_multiplier(model) * amort) > (1.0 + amort)
+
+be = cl.breakeven_amortization("claude-sonnet-5", "5m")
+check("just below break-even, caching bills more than not caching",
+      bills_more("claude-sonnet-5", "5m", be - 0.05))
+check("just above break-even, caching bills less",
+      not bills_more("claude-sonnet-5", "5m", be + 0.05))
+check("zero amortization always bills more",
+      bills_more("claude-sonnet-5", "5m", 0.0) and bills_more("claude-sonnet-5", "1h", 0.0))
+
 # -- cache_control markers are stripped before diffing ---------------------
 marked = {"system": [{"type": "text", "text": "x",
                       "cache_control": {"type": "ephemeral"}}]}

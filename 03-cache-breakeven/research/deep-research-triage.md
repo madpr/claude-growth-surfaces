@@ -65,4 +65,4 @@ connects them.** Detection is data nobody is looking at. Diagnosis is opt-in, re
 the beta header on every request, and therefore only answers developers who already
 suspected the question.
 
-That gap is `03-managed-caching`.
+That gap is `03-cache-breakeven`.

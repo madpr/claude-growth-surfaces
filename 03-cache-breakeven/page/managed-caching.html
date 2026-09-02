@@ -1,0 +1,239 @@
+<title>Cache Break-Even</title>
+
+<style>
+/* Console-native surface, matching 02-openai-migration/app/src/styles.css.
+   Warm neutrals; coral reserved for the one proposed addition, so what is
+   proposed is visually separable from what already ships. Single-theme by
+   intent: this replicates a Console page. */
+:root {
+  --bg:#FAFAF8; --panel:#FFFFFF; --sunk:#F4F3EF;
+  --ink:#191817; --ink-2:#5E5C55; --ink-3:#8E8B82;
+  --rule:#E6E4DC; --rule-soft:#F0EEE8;
+  --accent:#D97757; --accent-dim:#FBF0EA; --accent-ink:#A84E2C;
+  --ok:#2E7D5B; --ok-dim:#EAF4EF;
+  --warn:#A87613; --warn-dim:#FAF2E1;
+  --read:#3E6DB5; --w5m:#D97757; --w1h:#2E7D5B; --unc:#C9C5B8;
+  --shadow:0 1px 2px rgba(25,24,23,.04);
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
+}
+* { box-sizing:border-box; }
+body { margin:0; background:var(--bg); color:var(--ink); font-family:var(--sans); font-size:14px; line-height:1.5; -webkit-font-smoothing:antialiased; }
+button { font-family:inherit; font-size:inherit; cursor:pointer; }
+:focus-visible { outline:2px solid var(--accent); outline-offset:2px; border-radius:4px; }
+
+.wrap { max-width:1020px; margin:0 auto; padding:26px 28px 60px; }
+.head h1 { margin:0; font-size:23px; font-weight:600; letter-spacing:-.02em; }
+.head p { margin:5px 0 0; font-size:13px; color:var(--ink-2); }
+
+.bar { display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin:18px 0 16px; }
+.f { display:inline-flex; align-items:center; gap:6px; border:1px solid var(--rule); background:var(--panel); border-radius:7px; padding:5px 10px; font-size:12.5px; color:var(--ink-3); }
+.f b { color:var(--ink); font-weight:550; }
+.f.off { opacity:.5; }
+.bar .asof { margin-left:auto; font-size:11.5px; color:var(--ink-3); }
+
+.tiles { display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:10px; }
+.card { background:var(--panel); border:1px solid var(--rule); border-radius:9px; box-shadow:var(--shadow); }
+.tile { padding:14px 16px; }
+.tile .k { font-size:12px; color:var(--ink-2); }
+.tile .v { font-size:26px; font-weight:550; letter-spacing:-.025em; font-variant-numeric:tabular-nums; margin-top:2px; }
+.tile .v.bad { color:var(--warn); }
+.sec { margin-top:14px; padding:16px 18px; }
+.sec h2 { margin:0; font-size:14.5px; font-weight:600; }
+.sec p.s { margin:4px 0 0; font-size:12.5px; color:var(--ink-2); max-width:70ch; }
+.sec .hd { display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; }
+.sec .hd .r { margin-left:auto; font-size:11.5px; color:var(--ink-3); }
+
+table { border-collapse:collapse; width:100%; font-size:13px; margin-top:12px; }
+thead th { text-align:left; font-size:10px; font-weight:600; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-3); padding:8px 10px; border-bottom:1px solid var(--rule); white-space:nowrap; }
+tbody td { padding:10px; border-bottom:1px solid var(--rule-soft); vertical-align:middle; }
+tbody tr:last-child td { border-bottom:none; }
+td.num { font-variant-numeric:tabular-nums; text-align:right; white-space:nowrap; font-family:var(--mono); font-size:12px; }
+.stack { display:flex; height:9px; border-radius:2px; overflow:hidden; min-width:150px; }
+.stack span { display:block; }
+.legend { display:flex; gap:14px; flex-wrap:wrap; font-size:11.5px; color:var(--ink-2); margin-top:10px; }
+.legend i { display:inline-block; width:9px; height:9px; border-radius:2px; margin-right:5px; vertical-align:-1px; }
+
+.empty { border:1px dashed var(--rule); border-radius:8px; padding:26px; text-align:center; margin-top:12px; }
+.empty b { display:block; font-size:13px; font-weight:600; }
+.empty p { margin:5px auto 0; font-size:12.5px; color:var(--ink-2); max-width:46ch; }
+
+.chip { display:inline-flex; align-items:center; gap:4px; font-size:11px; font-weight:550; border-radius:5px; padding:2px 6px; white-space:nowrap; }
+.chip-ok { background:var(--ok-dim); color:var(--ok); }
+.chip-warn { background:var(--warn-dim); color:var(--warn); }
+.chip-mute { background:var(--sunk); color:var(--ink-2); }
+.chip-new { background:var(--accent-dim); color:var(--accent-ink); }
+
+.toggle { display:inline-flex; align-items:center; gap:9px; font-size:12.5px; color:var(--ink-2); border:1px solid var(--rule); background:var(--panel); border-radius:8px; padding:6px 11px; }
+.switch { width:34px; height:20px; border-radius:10px; background:var(--rule); border:none; position:relative; padding:0; flex:none; transition:background .15s; }
+.switch::after { content:""; position:absolute; top:2px; left:2px; width:16px; height:16px; border-radius:50%; background:#fff; box-shadow:0 1px 2px rgba(0,0,0,.2); transition:transform .15s; }
+.switch.on { background:var(--accent); }
+.switch.on::after { transform:translateX(14px); }
+
+.callout { display:flex; gap:11px; align-items:flex-start; background:var(--warn-dim); border:1px solid #EDDCB4; border-radius:8px; padding:12px 14px; font-size:12.5px; line-height:1.55; color:#6E4E0C; margin-top:12px; }
+.callout b { color:#5A400A; }
+
+.foot { margin-top:26px; border-top:1px solid var(--rule); padding-top:14px; font-size:12px; color:var(--ink-3); line-height:1.6; }
+.foot b { color:var(--ink-2); }
+.mono { font-family:var(--mono); font-size:12px; }
+@media (prefers-reduced-motion:reduce) { * { transition:none !important; } }
+@media (max-width:640px) { .wrap { padding:18px 14px 40px; } }
+</style>
+
+<div class="wrap">
+  <div class="head">
+    <h1>Caching</h1>
+    <p>Prompt caching activity from your API, Batch, playground, and Claude Code traffic. All dates are in UTC.</p>
+  </div>
+
+  <div class="bar">
+    <span class="f">Workspace <b>All</b></span>
+    <span class="f">Model <b>All</b></span>
+    <span class="f off">Range <b>Last 7 days</b></span>
+    <span class="f">Group by <b>Model</b></span>
+    <span class="asof">Data as of Sep 1, 1:00 AM UTC &middot; Updates hourly</span>
+  </div>
+
+  <div id="app"></div>
+
+  <p class="foot"><b>A replica of Analytics &rsaquo; Caching on platform.claude.com, with one addition.</b>
+  Everything unmarked is on the page today. The single change is marked
+  <span class="chip chip-new">Proposed</span> and can be switched off above to see the page as it ships.
+  Figures come from <span class="mono">cache_lint.py</span> run against this repository's fixtures;
+  the break-even is computed by <span class="mono">breakeven_amortization()</span> from pricing
+  quoted in the prompt caching docs, fetched 2 September 2026.</p>
+</div>
+
+<script>
+/* Fixture traffic, aggregated by model the way the real page groups it. */
+var ROWS = [
+  { model:"Claude Sonnet 5",  id:"claude-sonnet-5",  write:8530100, read:0,        uncached:15020500 },
+  { model:"Claude Opus 5",    id:"claude-opus-5",    write:900000,  read:21000000, uncached:47500 },
+  { model:"Claude Haiku 4.5", id:"claude-haiku-4-5", write:4000,    read:0,        uncached:255000 }
+];
+
+/* breakeven_amortization() in the prototype: (write_mult - 1) / (1 - read_mult).
+   5-minute TTL 0.28x, 1-hour 1.11x on the standard 0.1x read rate. */
+var WRITE_5M = 1.25, READ = 0.1;
+var BREAKEVEN = (WRITE_5M - 1) / (1 - READ);
+var PRICE = { "claude-sonnet-5":2.00, "claude-opus-5":5.00, "claude-haiku-4-5":1.00 };
+
+var totalRead = 0, totalWrite = 0, totalUnc = 0;
+ROWS.forEach(function(r){ totalRead += r.read; totalWrite += r.write; totalUnc += r.uncached; });
+var readRatio = totalRead / (totalRead + totalWrite + totalUnc);
+
+function amort(r){ return r.write ? r.read / r.write : 0; }
+function ratio(r){ var t = r.read + r.write + r.uncached; return t ? r.read / t : 0; }
+function tok(n){ return n >= 1e6 ? (n/1e6).toFixed(1) + "M" : n >= 1e3 ? (n/1e3).toFixed(1) + "K" : String(n); }
+function usd(n){ return "$" + n.toFixed(2); }
+
+/* The surcharge, in dollars: what the writes billed, less what the same tokens
+   would have cost uncached. Arithmetic on billed tokens, not a projection. */
+function surcharge(r){ return r.write * (WRITE_5M - 1) / 1e6 * (PRICE[r.id] || 0); }
+var bad = ROWS.filter(function(r){ return r.write > 10000 && amort(r) < BREAKEVEN; });
+var badTotal = bad.reduce(function(a,r){ return a + surcharge(r); }, 0);
+
+/* Write amortization over time, log scale. The real chart's axis floor is
+   0.50x; the proposal extends it to 0 so the break-even is on the chart. */
+function amortChart(on){
+  var w = 900, h = 280, pad = { l:48, r:14, t:14, b:28 };
+  var iw = w - pad.l - pad.r, ih = h - pad.t - pad.b;
+  var ticks = on ? [0.1, 0.28, 0.5, 1, 2, 5, 10, 20] : [0.5, 1, 2, 5, 10, 20];
+  var lo = Math.log(ticks[0]), hi = Math.log(20);
+  function y(v){ return pad.t + ih - (Math.log(Math.max(v, ticks[0])) - lo) / (hi - lo) * ih; }
+  var days = ["Aug 26","Aug 27","Aug 28","Aug 29","Aug 30","Aug 31","Sep 1"];
+  var series = [
+    { id:"claude-sonnet-5", label:"Claude Sonnet 5", vals:[0.02,0.01,0,0,0.01,0,0], color:"#A87613" },
+    { id:"claude-opus-5",   label:"Claude Opus 5",   vals:[18,21,23.3,22,24,23,23.3], color:"#3E6DB5" }
+  ];
+  var s = '<svg viewBox="0 0 ' + w + ' ' + h + '" width="100%" style="max-width:' + w + 'px;display:block" role="img" aria-label="Write amortization per day against the break-even line">';
+
+  if (on) {
+    s += '<rect x="' + pad.l + '" y="' + y(BREAKEVEN) + '" width="' + iw + '" height="' + (pad.t + ih - y(BREAKEVEN)) + '" fill="#FAF2E1"/>';
+  }
+  ticks.forEach(function(t){
+    s += '<line x1="' + pad.l + '" y1="' + y(t) + '" x2="' + (w - pad.r) + '" y2="' + y(t) + '" stroke="#E6E4DC" stroke-width="1"/>' +
+         '<text x="' + (pad.l - 7) + '" y="' + (y(t) + 3.5) + '" text-anchor="end" font-size="10" fill="#8E8B82" font-family="ui-monospace, monospace">' + t.toFixed(2) + '&times;</text>';
+  });
+  if (on) {
+    s += '<line x1="' + pad.l + '" y1="' + y(BREAKEVEN) + '" x2="' + (w - pad.r) + '" y2="' + y(BREAKEVEN) + '" stroke="#A87613" stroke-width="1.5" stroke-dasharray="5 3"/>' +
+         '<text x="' + (w - pad.r - 4) + '" y="' + (y(BREAKEVEN) - 7) + '" text-anchor="end" font-size="10.5" fill="#A87613" font-weight="600">break-even 0.28&times; &middot; below this, caching costs more than no caching</text>';
+  }
+  series.forEach(function(ser){
+    var pts = ser.vals.map(function(v, i){
+      return (pad.l + iw / (days.length - 1) * i) + "," + y(v);
+    });
+    s += '<polyline points="' + pts.join(" ") + '" fill="none" stroke="' + ser.color + '" stroke-width="2" stroke-linejoin="round"/>';
+    ser.vals.forEach(function(v, i){
+      s += '<circle cx="' + (pad.l + iw / (days.length - 1) * i) + '" cy="' + y(v) + '" r="2.6" fill="' + ser.color + '"/>';
+    });
+  });
+  days.forEach(function(d, i){
+    s += '<text x="' + (pad.l + iw / (days.length - 1) * i) + '" y="' + (h - 7) + '" text-anchor="middle" font-size="10" fill="#8E8B82">' + d + '</text>';
+  });
+  return s + "</svg>";
+}
+
+function render(){
+  var on = window.__proposal !== false;
+  var s = "";
+
+  s += '<div class="tiles">' +
+    '<div class="card tile"><div class="k">Uncached input tokens</div><div class="v">' + tok(totalUnc) + '</div></div>' +
+    '<div class="card tile"><div class="k">Cache read tokens</div><div class="v">' + tok(totalRead) + '</div></div>' +
+    '<div class="card tile"><div class="k">Cache read ratio</div><div class="v">' + (readRatio * 100).toFixed(1) + '%</div></div>' +
+  '</div>';
+
+  s += '<div class="card sec"><div class="hd"><h2>Cache diagnostics</h2></div>' +
+    '<div class="empty"><b>No diagnostics data yet</b>' +
+    '<p>Enable cache diagnostics to compare each request to its predecessor and see what changed when the cache misses.</p></div></div>';
+
+  s += '<div class="card sec"><div class="hd"><h2>Cache usage breakdown</h2></div>' +
+    '<table><thead><tr><th>Model</th><th class="num">Input tokens</th><th>Input token composition</th>' +
+    '<th class="num">Read ratio</th><th class="num">Write amort.</th>' + (on ? '<th>Status <span class="chip chip-new">Proposed</span></th>' : '') + '</tr></thead><tbody>';
+  ROWS.forEach(function(r){
+    var t = r.read + r.write + r.uncached, a = amort(r);
+    var under = r.write > 10000 && a < BREAKEVEN;
+    s += '<tr><td>' + r.model + '</td><td class="num">' + tok(t) + '</td>' +
+      '<td><span class="stack">' +
+        '<span style="width:' + (r.read/t*100) + '%;background:var(--read)"></span>' +
+        '<span style="width:' + (r.write/t*100) + '%;background:var(--w5m)"></span>' +
+        '<span style="width:' + (r.uncached/t*100) + '%;background:var(--unc)"></span>' +
+      '</span></td>' +
+      '<td class="num">' + (ratio(r) * 100).toFixed(1) + '%</td>' +
+      '<td class="num"' + (on && under ? ' style="color:#A87613;font-weight:600"' : '') + '>' + a.toFixed(2) + '&times;</td>' +
+      (on ? '<td>' + (under
+          ? '<span class="chip chip-warn">Below break-even</span>'
+          : (r.write > 10000 ? '<span class="chip chip-ok">Paying back</span>' : '<span class="chip chip-mute">Too little to judge</span>')) + '</td>' : '') +
+      '</tr>';
+  });
+  s += '</tbody></table>' +
+    '<div class="legend"><span><i style="background:var(--read)"></i>Cache read</span>' +
+    '<span><i style="background:var(--w5m)"></i>Cache write</span>' +
+    '<span><i style="background:var(--unc)"></i>Uncached</span></div></div>';
+
+  s += '<div class="card sec"><div class="hd"><h2>Write amortization</h2>' +
+    '<span class="r">Window 24h</span></div>' +
+    '<p class="s">Tokens read back per token written. Higher means better cache reuse &mdash; each cached prompt is paying back its write cost.</p>' +
+    '<div style="margin-top:12px">' + amortChart(on) + '</div>';
+
+  if (on) {
+    s += '<div class="callout"><div><b>Claude Sonnet 5 has been below break-even for 7 days.</b> ' +
+      'A 5-minute cache write bills 1.25&times; base input and a read bills 0.1&times;, so a prompt has to be read back ' +
+      '0.28 times per token written before caching pays for itself. Below that line you are billed more than with caching switched off. ' +
+      'Over this window that is <b>' + usd(badTotal) + '</b> for a mechanism that returned nothing.</div></div>';
+  }
+  s += '</div>';
+
+  s += '<div style="margin-top:14px;display:flex;justify-content:flex-end">' +
+    '<span class="toggle"><button class="switch' + (on ? " on" : "") + '" id="t" role="switch" aria-checked="' + on + '" aria-label="Show the proposed addition"></button>' +
+    (on ? "Showing the proposed addition" : "Showing the page as it ships today") + '</span></div>';
+
+  document.getElementById("app").innerHTML = s;
+}
+
+document.addEventListener("click", function(e){
+  if (e.target.id === "t") { window.__proposal = window.__proposal === false; render(); }
+});
+render();
+</script>
