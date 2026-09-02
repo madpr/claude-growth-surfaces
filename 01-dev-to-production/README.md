@@ -72,7 +72,11 @@ Checked against primary docs on 31 August 2026. **Do not re-research these.**
   central technical problem of this idea.
 - **Twelve-plus rate-limit response headers, zero spend headers.** You can read
   `anthropic-ratelimit-input-tokens-remaining` to the nearest thousand. There is
-  no equivalent for budget.
+  no equivalent for budget. The asymmetry is not limited to spend: the documented
+  response headers are `request-id`, `anthropic-organization-id`,
+  `anthropic-workspace-id` and the rate-limit family, so **no header carries cache
+  state either** — see [`03-managed-caching`](../03-managed-caching/), which
+  turns that gap into its own idea.
 - **No anomaly or velocity detection.** Anthropic's own docs carry a worked
   example titled "Find members with rapidly changing usage" instructing admins to
   pull two weeks of daily cost and flag week-over-week multiples themselves.

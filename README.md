@@ -11,7 +11,7 @@ implementation, prioritization, risks and mitigations.
 
 | | Idea | Theme | Eng cost | Status |
 |---|---|---|---|---|
-| **S** | _tbd_ | — | ≤ 2–3 days | Open |
+| **S** | [Managed prompt caching](03-managed-caching/) | Monetization | ≤ 2–3 days | **Designed, working prototype** |
 | **M** | [OpenAI → Claude migration](02-openai-migration/) | Acquisition | ~2 weeks | **Designed, working prototype** |
 | **L** | [Dev → production](01-dev-to-production/) | Expansion | 1–2 months | **Direction chosen, not designed** |
 
@@ -24,9 +24,24 @@ migration gates on a compiler, and no compiler tells you whether a prompt still 
 Verification cut the scope twice. Prompt rewriting, tool translation, and repo access
 all already ship, so the remaining work is narrower than it looked.
 
-The **S** slot is open. A response header naming the fields the compatibility layer
-drops is a clean two-day item, but it shares a hypothesis with the M and would strain
-the brief's "span different themes" constraint.
+[`03-managed-caching/`](03-managed-caching/)
+
+Cache writes cost 1.25–2× base input and reads cost 0.1×, so a workload that writes
+and never reads pays **more than if caching had never been enabled**. Nothing says so.
+The data that detects this and the API that diagnoses it both ship already, neither is
+connected to the other, and the diagnosis is opt-in per request — it only answers
+developers who already suspected the problem.
+
+Two components. A free card that prices your surcharge, which is the ≤2–3 day item and
+the acquisition wedge. Behind it, **managed caching** as a paid service: automatic
+placement puts one breakpoint out of four available slots and never checks whether it
+worked, so the platform sells you the version that measures its own hit rate and
+adapts. That makes the revenue direct, and it corrects an incentive nobody designed —
+as priced today a failing cache bills more than a working one.
+
+A response header naming the fields the compatibility layer drops was the other
+candidate for this slot. It is a clean two-day item, but it shares a hypothesis with
+the M and would strain the brief's "span different themes" constraint.
 
 Start with [`01-dev-to-production/README.md`](01-dev-to-production/README.md).
 It carries the verified platform facts, the dead ends already ruled out, and the
