@@ -24,7 +24,7 @@ migration gates on a compiler, and no compiler tells you whether a prompt still 
 Verification cut the scope twice. Prompt rewriting, tool translation, and repo access
 all already ship, so the remaining work is narrower than it looked.
 
-[`03-managed-caching/`](03-managed-caching/)
+[`03-managed-caching/`](03-managed-caching/) — [open the prototype →](https://claude.ai/code/artifact/2b514045-cf23-496e-a97f-0fd5ffbd13bc)
 
 Cache writes cost 1.25–2× base input and reads cost 0.1×, so a workload that writes
 and never reads pays **more than if caching had never been enabled**. Nothing says so.

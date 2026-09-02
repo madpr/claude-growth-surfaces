@@ -16,6 +16,9 @@ and a paid service that places and maintains your cache breakpoints so you stop.
 The card qualifies the accounts the paid service is for. Ship it first, and let the
 population it surfaces tell you whether the service is worth building.
 
+[Open the prototype](https://claude.ai/code/artifact/2b514045-cf23-496e-a97f-0fd5ffbd13bc) — the Console surface, on Analytics › Caching, which is a
+nav entry that already exists.
+
 ## How prompt caching is priced
 
 From the prompt caching documentation:
@@ -226,6 +229,7 @@ python3 test_cache_lint.py
 | `prototype/cache_lint.py` | Both halves. `detect` reads a usage report and prices the surcharge. `explain` reads a payload log and locates the invalidator |
 | `prototype/test_cache_lint.py` | 44 invariants |
 | `prototype/fixtures/` | A usage report with one surcharged key, one healthy key, one below the cacheable floor, and one that never caches. A six-request payload log seeding one failure of each class |
+| `page/managed-caching.html` | The Console mockup. Four tabs, every figure read out of the linter's output |
 | `research/issues.tsv` | The corpus. 16 rows, each one read |
 | `research/deep-research-triage.md` | The nine ideas this came from, and what happened to the other eight |
 
