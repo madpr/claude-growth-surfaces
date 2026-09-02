@@ -21,14 +21,22 @@ lever moves the head.
 
 ## The hypothesis
 
-> Teams don't ship autonomous agents to production because a runaway loop has no
-> ceiling. The blast radius is unbounded and unpredictable, so the agent stays in
-> development where a human can watch it.
+> Teams don't run agents unattended because the blast radius is unbounded in two
+> currencies: what it costs, and whether the work is any good. The second binds
+> first. So a human stays in the loop, and the workload never becomes a production
+> workload.
 
-The gate is not model capability and not unit price. It is that the downside is
-unpriceable, so the workload never leaves the environment where a human is
-watching it. Every workload stuck in dev is the difference between $10/month and
-$1,000/month.
+Revised 2 September 2026. The earlier version named cost as the gate. Practitioner
+evidence says otherwise — developers describe keeping agents supervised because the
+output needs checking, not because the bill might run away. One representative
+report: Claude Code is "absolutely incapable of working on its own without
+meticulous guidance, unless you want your project to be unusable mess." Nobody in
+that sentence is worried about spend.
+
+The shape of the original hypothesis survives: an unbounded downside keeps a human
+watching. The currency changes. Every workload stuck under supervision is the
+difference between $10/month and $1,000/month, and a hard dollar cap alone does not
+release it.
 
 This is the "capped confidence beats uncapped anxiety" thesis, attached for the
 first time to a decision that moves real money rather than to a per-prompt
@@ -166,18 +174,43 @@ outside this idea's scope.
 
 The lever is no longer "build a spend circuit breaker." It is:
 
-> The hard dollar ceiling that unblocks shipping an autonomous agent is structurally
-> unavailable on the surface most teams build on, and already runs in production on
-> the surface Anthropic would rather they were on. Route the workload.
+> Running unattended needs a bound on both currencies. Neither exists on
+> `/v1/messages`. Both already run in production on Managed Agents. Route the
+> workload.
+
+| Bound | Messages API | Managed Agents |
+|---|---|---|
+| Cost | `task_budget` — advisory, token-denominated, "a soft hint, not a hard cap" | Session budget — hard, dollar-denominated, enforced between model requests |
+| Quality | Nothing | `user.define_outcome`: a required rubric graded by a **separate context window**, iterating until satisfied or `max_iterations` |
+
+The grader's independence is the load-bearing part — the docs say it "uses a separate
+context window to avoid being influenced by the main agent's implementation choices."
+That is what makes it a check rather than the model marking its own homework.
+
+**The customer is artifact-producing unattended work** — scheduled reports, models,
+data pipelines, analyses — not autonomous coding. A rubric grades a deliverable
+against stated criteria. "The CSV has a numeric price column" is gradeable;
+"don't make architecturally bad decisions in my repo" is not. The evidence that
+prompted this revision comes from codebase work, which is the case outcomes serve
+worst. Scheduled deployments and the $0.08/hour runtime billing point the same way.
 
 Managed Agents bills model tokens **plus** session runtime at $0.08/hour and web
 search at $10 per 1,000, so a workload that moves there is worth more per unit of
 work than the same workload on `/v1/messages` — and the reason to move is a
 capability the customer cannot build for themselves, not a discount.
 
-**The strongest objection, and it must be answered:** a team can enforce a dollar
-cap in their own loop by summing `usage` and stopping. Three reasons that is not
-equivalent, and they need testing with real teams rather than assertion:
+**Two objections that must be answered.**
+
+*It resembles the M.* "Accept work you don't trust by gating it on a check you
+specify" is the parity gate's hypothesis. The themes differ — acquisition there,
+expansion here — and so do the mechanics, a one-time PR gate against continuous
+unattended operation. The resemblance is still real and should be named in the
+submission rather than discovered by a reader. The M's "judge disagrees with the
+team" risk is inherited in full.
+
+*A team can cap spend themselves* by summing `usage` and stopping the loop. Three
+reasons that is not equivalent, and they need testing with real teams rather than
+assertion:
 
 1. The runaway case is a **defective loop**, and a check inside the loop that is
    malfunctioning is not a control.
