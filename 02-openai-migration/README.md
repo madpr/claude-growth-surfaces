@@ -3,15 +3,15 @@
 Point Claude Code at a repo that uses the OpenAI SDK. It rewrites every call site
 against a rulebook, then blocks the pull request until your eval cases pass.
 
-**Effort to build:** about two weeks, across four workstreams that run in parallel.
-Scope is Python and Chat Completions; each additional language or API surface adds to it.
+**Effort to build:** about two weeks, in two milestones. The first ships a complete
+product. The second makes it measurable. Workstreams inside each parallelize.
 
-| Workstream | Reuses |
-|---|---|
-| Rulebook | `prototype/migration_lint.py` |
-| Scan and rewrite | The Claude Code migration kit's templates and queue runner |
-| Parity gate | The repo's own test suite, run in CI |
-| Console surface | Existing Console components and the Claude GitHub App |
+| Milestone | Ships | Reuses |
+|---|---|---|
+| 1. Skill — 2–3 days | `/migrate-from-openai`: rulebook, scan, rewrite, tests-green gate, HTML report | The migration kit's templates and queue runner, `prototype/migration_lint.py` |
+| 2. Console — the rest | Decisions that persist across runs, org-level view, PR status check, funnel metrics | Existing Console components, the Claude GitHub App, the repo's own CI |
+
+Scope is Python and Chat Completions. Each additional language or API surface adds to it.
 
 [Open the prototype](https://claude.ai/code/artifact/13a609b1-6d14-49ac-99fe-644f4e0b29c9)
 
@@ -129,6 +129,26 @@ The linter withholds `strict: true` and `output_config.format` unless the schema
 expressible natively. Promising enforcement the API can't deliver would reproduce the
 defect this idea is about.
 
+## Why not stop at the skill?
+
+Milestone 1 delivers most of the developer value. It runs locally, needs no account,
+and the rulebook decisions live in a checked-in file that reviews like code. Ship it
+first and validate the hypothesis before building anything else.
+
+The Console buys two things:
+
+- **Measurement.** Every metric above is uncollectible from a local skill that prints
+  HTML. Scan-to-merge conversion is what decides whether to keep investing.
+- **Org visibility.** Which of your services still run on OpenAI. That is a platform
+  lead's need, not a developer's.
+
+A third reason would be stronger than both: show Migrations to the accounts already
+sending OpenAI-compatible traffic. It is unverified. The Usage and Cost APIs group by
+`model`, `workspace_id`, `api_key_id`, `service_tier` and similar — there is no
+endpoint dimension, so nothing public separates `/v1/chat/completions` from
+`/v1/messages`. Confirm with the Console team that endpoint-level logs can drive
+targeting before counting on it.
+
 ## Prior art
 
 The pattern is proven, which de-risks the design and is also the sharpest objection.
@@ -148,6 +168,7 @@ instead, and the shim is what fails silently.
 | Rewrite is small | Most OpenAI workloads take an afternoon to port, so switching cost isn't the barrier |
 | Judge disagrees with the team | The gate is theatre and this is just a codemod |
 | Teams refuse repo access | They already grant it for Code Review, but this asks for write |
+| Targeting isn't possible | Without endpoint-level logs, milestone 2 loses its strongest justification and the skill has to be found rather than offered |
 
 ## Evidence
 
