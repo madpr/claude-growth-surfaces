@@ -1,6 +1,5 @@
 # Claude API — growth surfaces
 
-Interview exercise. Growth EM, Claude Platform (`platform.claude.com`).
 North star: **increase Claude API revenue.**
 
 Three ideas, sized by engineering cost: one tactical (≤2–3 days), one medium
