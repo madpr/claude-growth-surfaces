@@ -4,6 +4,9 @@ import {
 } from '../data.js'
 import { Chip, Detail } from '../components/ui.jsx'
 
+// True when the options differ on effect, which is when the effect is worth showing.
+const discriminates = (d) => new Set(d.options.map((o) => o.effect)).size > 1
+
 const money = (n) => `$${Math.round(n).toLocaleString('en-US')}`
 
 export default function Migration({ choices, setChoices }) {
@@ -75,9 +78,9 @@ export default function Migration({ choices, setChoices }) {
                         }
                       >
                         {o.label}
-                        <span className="opt-n">
-                          {o.recovers ? `+${o.recovers} tests` : 'no test change'}
-                        </span>
+                        {/* Shown only where it separates the options. A value
+                            identical across every choice tells you nothing. */}
+                        {discriminates(d) && <span className="opt-n">{o.effect}</span>}
                       </button>
                     ))}
                   </div>

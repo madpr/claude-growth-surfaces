@@ -41,8 +41,8 @@ export const decisions = [
     offending: ['minimum', 'maxLength', 'maxItems'],
     failingTests: ['tc_006', 'tc_007', 'tc_010'],
     options: [
-      { id: 'validate', label: 'Validate after parsing', recovers: 3 },
-      { id: 'drop', label: 'Drop the bounds', recovers: 0 },
+      { id: 'validate', label: 'Validate after parsing', recovers: 3, effect: 'recovers 3 tests' },
+      { id: 'drop', label: 'Drop the bounds', recovers: 0, effect: 'leaves 3 failing' },
     ],
   },
   {
@@ -53,8 +53,8 @@ export const decisions = [
     offending: ['400 on claude-sonnet-5'],
     failingTests: [],
     options: [
-      { id: 'format', label: 'output_config.format', recovers: 0 },
-      { id: 'instruct', label: 'System instruction', recovers: 0 },
+      { id: 'format', label: 'output_config.format', recovers: 0, effect: 'schema enforced' },
+      { id: 'instruct', label: 'System instruction', recovers: 0, effect: 'no schema guarantee' },
     ],
   },
 ]
