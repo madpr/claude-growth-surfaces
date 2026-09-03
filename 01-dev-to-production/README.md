@@ -4,8 +4,8 @@ Claude Code runs agents that you supervise. Managed Agents runs agents that you 
 The unattended workload is worth far more per customer, and almost nobody crosses from
 one to the other.
 
-This proposal adds the crossing: a path from a working Claude Code project to a hosted
-agent that runs on a schedule, inside limits you set before it runs.
+This proposal connects them: a working Claude Code project becomes a hosted agent that
+runs on a schedule, inside limits you set before it runs.
 
 **Status:** case written, prototype running, design unfinished.
 **Cost:** 1–2 months.
@@ -76,7 +76,9 @@ and the schedule it runs on.
 Most of what the agent needs already exists on disk — the model, the instructions, the
 tools, the skills, the connected services. The developer doesn't re-enter any of it.
 
-Two things don't come along, and both shape the product:
+Measured against a real project, three fields transfer intact, three arrive degraded,
+and two kinds of working configuration have no hosted equivalent at all. The last two
+shape the product:
 
 - **The limits don't transfer.** The rules a developer set locally have no hosted
   equivalent. The flow has to make them set those limits again on the sandbox, and
@@ -85,12 +87,7 @@ Two things don't come along, and both shape the product:
 - **The sandbox can't be inferred.** A laptop has no container image, network policy,
   or credential store to hand over. Creating one is a required step, not a default.
 
-Building the prototype changed this section twice. An early version assumed nearly
-everything carried over; measuring it showed that three fields transfer intact, three
-arrive degraded, and two kinds of working configuration have no destination at all.
-The gap is the product.
-
-## Why the destination is worth reaching
+## Why hosted rather than self-built
 
 Hosted agents are the same model with an orchestrator above it. The limits belong to
 that orchestrator:
@@ -127,7 +124,7 @@ growth in hosted-agent sessions, and the share of those that set a cap or a rubr
 Test discovery before building the promotion path:
 
 1. Disambiguate `claude agents`.
-2. Name the hosted destination in the CLI.
+2. Name Managed Agents in the CLI, where someone searching would look.
 3. Watch hosted-agent creation for 30 days.
 
 This takes days. If creation doesn't move, discovery isn't the gate and this proposal
