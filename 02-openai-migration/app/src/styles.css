@@ -1,5 +1,5 @@
 /* Console-native surface. Warm neutrals, coral reserved for product chrome and
-   trendlines; semantic colour is a separate scale so it never competes. */
+   trendlines; semantic color is a separate scale so it never competes. */
 
 :root {
   --bg:        #FAFAF8;

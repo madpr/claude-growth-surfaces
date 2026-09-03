@@ -164,7 +164,7 @@ if [ -n "$dir" ] && git -C "$dir" rev-parse --git-dir >/dev/null 2>&1; then
   branch=" ${dim}·${rst} ${name}${dirty}"
 fi
 
-# Ten-cell context bar, coloured by remaining headroom.
+# Ten-cell context bar, colored by remaining headroom.
 filled=$(( pct / 10 )); (( filled > 10 )) && filled=10; (( filled < 0 )) && filled=0
 bar=""
 for ((i = 0; i < 10; i++)); do

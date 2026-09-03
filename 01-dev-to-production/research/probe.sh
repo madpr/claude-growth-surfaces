@@ -37,7 +37,7 @@ if [ "${1:-}" = "--identity" ]; then
   if [ "$cc" = "$pl" ]; then
     echo '  SAME organization.'
     echo '  On this account the two surfaces share an identity, so the'
-    echo '  n=1 observation in surface-collision.md does not generalise.'
+    echo '  n=1 observation in surface-collision.md does not generalize.'
     exit 0
   fi
   echo '  DIFFERENT organizations.'

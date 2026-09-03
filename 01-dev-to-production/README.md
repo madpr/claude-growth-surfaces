@@ -245,7 +245,7 @@ prints no identifier, workspace, email, or name:
 ./research/probe.sh --identity
 ```
 
-Cowork behaviour is quoted from `claude.com/docs/cowork/overview` and
+Cowork behavior is quoted from `claude.com/docs/cowork/overview` and
 `claude.com/product/cowork`, retrieved September 3, 2026. What limits a scheduled Cowork
 task can carry — a spend cap, a rubric, an approval gate — is not established here.
 

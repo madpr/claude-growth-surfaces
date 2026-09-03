@@ -79,7 +79,7 @@ FIELDS = {
     "seed": (
         INERT,
         "Ignored. Reproducibility is not offered.",
-        "None. Pin behaviour with a fixed prompt and low effort instead.",
+        "None. Pin behavior with a fixed prompt and low effort instead.",
     ),
     "logprobs": (INERT, "Ignored; response logprobs are always empty.", "None."),
     "top_logprobs": (INERT, "Ignored.", "None."),
@@ -424,7 +424,7 @@ def translate(payload, target="claude-opus-5"):
     # The Messages API models a turn as one message per role. Hoisting system
     # messages out of the middle of a transcript can leave two adjacent user
     # messages (a tool_result followed by the next user turn), so merge
-    # same-role neighbours into a single message with concatenated blocks.
+    # same-role neighbors into a single message with concatenated blocks.
     merged = []
     for m in messages:
         if merged and merged[-1]["role"] == m["role"]:

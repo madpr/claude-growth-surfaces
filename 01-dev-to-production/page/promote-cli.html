@@ -4,7 +4,7 @@
 <style>
 /* A drivable terminal. Type the commands; the flow responds.
    Single surface, deliberately: this is a terminal, and a terminal is dark on
-   any desktop. Every colour is painted explicitly so the page holds on either
+   any desktop. Every color is painted explicitly so the page holds on either
    host ground. */
 :root{
   --term:#111010; --edge:#302B26; --panel:#1A1815;
@@ -239,7 +239,7 @@ function org(){
   w('  <span class="warn">organization &mdash; not the account signed in here.</span>');
   w('');
   ask('Sign in there and create?',['Open browser','Cancel'],function(i){
-    if(i===1){ w(''); w('  <span class="dim">Cancelled. Nothing was created.</span>'); w(''); return done(); }
+    if(i===1){ w(''); w('  <span class="dim">Canceled. Nothing was created.</span>'); w(''); return done(); }
     w('');
     step('opening browser',function(){
     step('signing in to platform organization',function(){

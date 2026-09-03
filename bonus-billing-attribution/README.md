@@ -10,7 +10,7 @@ subscription rate-limit windows, and org budget someone else owns.
 revenue on `platform.claude.com`. The defect documented here lives in Claude
 Code's credential precedence. That alone keeps it out of the slate.
 
-**Its revenue path is indirect** — though less unfavourably than it first looks.
+**Its revenue path is indirect** — though less unfavorably than it first looks.
 The direct effect moves spend off metered billing and onto a subscription the
 user has already bought. Read narrowly, that is revenue the API line gives up.
 Read across the portfolio, the exposure it protects is the larger one:

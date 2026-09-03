@@ -85,7 +85,7 @@ READ_DISCOUNTED = 0.025          # Fable 5.1 / Mythos 5.1
 DISCOUNTED_READ_MODELS = ("fable-5-1", "mythos-5-1")
 
 # The minimum cacheable prefix is model-dependent, 512-4096 tokens. Below it a
-# breakpoint silently does not cache, and that is documented behaviour rather
+# breakpoint silently does not cache, and that is documented behavior rather
 # than a defect -- so it must not be reported as one.
 MIN_CACHEABLE = {
     "haiku-4-5": 4096,
@@ -368,7 +368,7 @@ def _describe_text_divergence(before, after):
     # Look at a window either side of the divergence, not just after it. The
     # first differing byte of a changing timestamp is usually in the middle of
     # it ("14:0[3] vs 14:0[8]"), so a forward-only scan sees a fragment and
-    # recognises nothing.
+    # recognizes nothing.
     kind = None
     tail_before = before[max(0, i - 40):i + 80]
     tail_after = after[max(0, i - 40):i + 80]
