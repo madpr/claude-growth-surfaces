@@ -13,9 +13,10 @@ one laptop and one repo. The bet is that it becomes the gating constraint when t
 same agents run unattended against company infrastructure, at fleet scale. A big bet
 held to the same evidentiary bar as a two-day fix is guaranteed to arrive late.
 
-[Open the prototype](https://claude.ai/code/artifact/e503ed07-defe-4063-a164-7f40537b1055) — one screen: what a working Claude Code configuration
-carries over, what you have to settle before nobody is watching, and the four bounds
-that have no source in Claude Code at all.
+[Open the prototype](https://claude.ai/code/artifact/e503ed07-defe-4063-a164-7f40537b1055) — one screen: a working Claude Code configuration
+becomes the three objects Managed Agents needs, an agent, an environment and a
+deployment, with each field's source in the margin and the sandbox as the only thing a
+laptop cannot supply.
 
 Managed Agents bounds this. A harness you wrote around `/v1/messages` does not, and
 mostly never will. The lever is routing unattended work onto the surface where the
@@ -59,12 +60,20 @@ and workspace limits, bounded auto-reload, a Spend Limits API, an Analytics cost
 Probing them killed four candidate ideas as already-built, including pooled org spend
 and per-team attribution.
 
-What is missing is any bound on a single unattended run. `/v1/messages` is invoked by
+What is missing is any bound on a run you host yourself. `/v1/messages` is invoked by
 a loop you wrote, in your process, on your machine: you own the retries, the tool
 execution, the credentials and the filesystem. The endpoint has no run to bound, and
 `task_budget` — the one thing that looks like a ceiling — is documented as "a soft
 hint, not a hard cap," re-derived from the conversation you resend, so the server
 admits it loses track after compaction.
+
+**Managed Agents has all of it, and the scheduled path is already bounded.** A
+deployment takes a required `environment_id`, the same `budget` object as a session
+(accepted on create *and* update, copied onto each fired session), a
+`user.define_outcome` in `initial_events`, and vaults. Nothing here needs building.
+The gap is narrower: every bound is opt-in and set one object at a time, a session
+budget is **create-only** so a session started without one can never be capped, and
+nothing on an agent says whether any of its runs are bounded at all.
 
 Managed Agents is the same inference with an orchestrator above it. The agent loop
 runs on Anthropic's side; the container is where tools execute; sessions bill model
@@ -105,13 +114,14 @@ secret would have.
 
 One to two months, and the design isn't done. Two candidate shapes, in increasing cost:
 
-- **A promotion path.** Read a working Claude Code configuration, map what has an
-  equivalent, force a decision on what used to be asked at the prompt, and attach the
-  bounds that have no source. Closest to a product, and closest to the M — though the
-  third class inverts it: the M's is what breaks in translation, this is what you gain.
-- **Promotion as a surface.** Budget, rubric, sandbox scope and kill switch presented as
-  the thing you configure before an agent runs unattended. Packaging as much as
-  engineering.
+- **A promotion path.** Read a working Claude Code configuration and emit the agent,
+  environment and deployment together, so the bounds are set at the moment someone
+  decides to stop watching rather than left to a later API call. Closest to a product,
+  and closest to the M — though it inverts the M's third rulebook class: that one is
+  what breaks in translation, this is what you acquire.
+- **Promotion as a surface.** Environment, budget and rubric presented as the thing you
+  settle before an agent runs unattended, and shown on the agent rather than buried one
+  object down. Packaging as much as engineering.
 
 Neither is designed. The next work is evidence, not code.
 
