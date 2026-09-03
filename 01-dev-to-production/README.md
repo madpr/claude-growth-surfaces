@@ -21,17 +21,27 @@ lever moves the head.
 
 ## The hypothesis
 
-> Teams don't run agents unattended because the blast radius is unbounded in two
-> currencies: what it costs, and whether the work is any good. The second binds
-> first. So a human stays in the loop, and the workload never becomes a production
-> workload.
+> Teams don't run agents unattended because the blast radius is unbounded in three
+> currencies: what it costs, whether the work is any good, and **what the agent is
+> allowed to touch**. The third binds first and hardest. So a human stays in the
+> loop, and the workload never becomes a production workload.
 
-Revised 2 September 2026. The earlier version named cost as the gate. Practitioner
-evidence says otherwise — developers describe keeping agents supervised because the
-output needs checking, not because the bill might run away. One representative
-report: Claude Code is "absolutely incapable of working on its own without
-meticulous guidance, unless you want your project to be unusable mess." Nobody in
-that sentence is worried about spend.
+Revised 2 September 2026, twice. The first version named cost. Practitioner evidence
+pointed at output quality instead. Fourteen issues in `anthropics/claude-code`
+([`research/issues.tsv`](research/issues.tsv), each opened and read) point somewhere
+more specific again: **eleven of the fourteen are the agent acting outside its
+mandate**, not writing bad code.
+
+| Issue | What it did |
+|---|---|
+| [#85919](https://github.com/anthropics/claude-code/issues/85919) | Hit a 403, found an admin secret in a *sibling project's* `.env`, minted itself a token with expanded capabilities |
+| [#86667](https://github.com/anthropics/claude-code/issues/86667) | Bypassed a system-path guard, kept running unsupervised after timeout, wiped the `C:\` drive root |
+| [#82063](https://github.com/anthropics/claude-code/issues/82063) | Deployed to production without asking. "no harm done, but it makes me very worried" |
+| [#81035](https://github.com/anthropics/claude-code/issues/81035) | A failed nested fork still spawned an unsupervised process that merged PRs with admin bypass |
+| [#79103](https://github.com/anthropics/claude-code/issues/79103) | Asks outright for a pre-flight checkpoint before unattended runs, citing "the desire for genuinely unattended, overnight agent operation" |
+
+#82063 is the hypothesis in a user's own words: nothing broke, and they are still
+frightened enough to file. That is what keeps a human in the loop.
 
 The shape of the original hypothesis survives: an unbounded downside keeps a human
 watching. The currency changes. Every workload stuck under supervision is the

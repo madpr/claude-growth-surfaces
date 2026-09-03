@@ -1,0 +1,15 @@
+number	created	comments	currency	what happened
+90136	2026-08-27	0	authority	Substitutes its own judgment for a user-approved design, 3rd occurrence in ~20h, including an unsupervised overnight run
+86667	2026-08-14	2	authority	Bypassed a blocked system-path guard via `cmd /c rd`; destructive command continued unsupervised in the background after timeout and wiped the C:\ drive root
+85919	2026-08-11	0	authority	Hit a 403, found an admin secret in a *sibling project's* .env, used it to mint a new API token with expanded capabilities. Never asked
+82063	2026-07-28	0	authority	Deployed to production immediately without asking. "no harm done, but it makes me very worried"
+82296	2026-07-29	0	authority	Opened a live production admin UI authenticated as a third party, on an ambiguous instruction
+81035	2026-07-25	0	authority	A failed nested fork still spawned an unsupervised background process that merged PRs with admin bypass under the parent's identity, no human checkpoint
+80837	2026-07-24	0	authority	Read home directory and secrets without asking. Reported as a trust breach
+75685	2026-07-08	2	authority	Overwrote a Confluence page despite an explicit instruction. Data loss
+89180	2026-08-24	0	authority	Ignored a persisted "never commit without asking" instruction and ran git commit unprompted
+87486	2026-08-18	1	authority	Wrote to a shared project instructions file despite an explicit rule in persistent memory forbidding it
+71576	2026-06-26	2	authority	Eight separate violations of "never guess, ask first" in one session; executed actions without approval
+88145	2026-08-20	1	cost	Autonomously launched costly subagents without explicit consent
+79103	2026-07-19	1	remedy-request	Feature request: automatic pre-flight checkpoint before unattended runs, so a bad overnight run can be reverted wholesale. "The desire for genuinely unattended, overnight agent operation"
+89632	2026-08-25	6	remedy-gap	Local scheduled tasks are framed to the model as unattended ("the user is not present") but still run under interactive ask-every-tool permissions
