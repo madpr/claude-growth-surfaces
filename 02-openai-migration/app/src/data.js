@@ -29,31 +29,32 @@ export const automatic = [
 
 export const autoSites = automatic.reduce((n, a) => n + a.sites, 0)
 
-// What a person has to settle. The target is not a superset of the source, so
-// these cannot be resolved mechanically.
+// What a person has to settle. Every field here is data a scan can emit --
+// a construct, a count, an enum reason, a list of offending values. The only
+// prose in the UI is the field labels, which are fixed and explained once.
 export const decisions = [
   {
     id: 'D1',
-    title: 'Schema bounds native structured outputs cannot express',
+    construct: 'response_format.json_schema',
     sites: 3,
-    detail:
-      'Your triage schema uses minimum, maxLength and maxItems. Native structured outputs reject all three, so the bounds stop being enforced. Three eval cases depend on them.',
-    docs: 'https://platform.claude.com/docs/en/build-with-claude/structured-outputs',
+    reason: 'Not expressible natively',
+    offending: ['minimum', 'maxLength', 'maxItems'],
+    failingTests: ['tc_006', 'tc_007', 'tc_010'],
     options: [
-      { id: 'validate', label: 'Validate after parsing', effect: 'Keeps enforcement, in your code instead of the schema. Clears all three cases.', fixesParity: true },
-      { id: 'drop', label: 'Drop the bounds', effect: 'Less code, but those three cases keep failing.', fixesParity: false },
+      { id: 'validate', label: 'Validate after parsing', recovers: 3 },
+      { id: 'drop', label: 'Drop the bounds', recovers: 0 },
     ],
   },
   {
     id: 'D2',
-    title: 'Assistant prefill',
+    construct: 'assistant prefill',
     sites: 2,
-    detail:
-      'Two call sites end on an assistant turn to force a JSON opening brace. That returns 400 on claude-sonnet-5. The compatibility layer accepts it, so this only surfaces once you leave it.',
-    docs: 'https://platform.claude.com/docs/en/build-with-claude/structured-outputs',
+    reason: 'Rejected by target model',
+    offending: ['400 on claude-sonnet-5'],
+    failingTests: [],
     options: [
-      { id: 'format', label: 'Use output_config.format', effect: 'The model is constrained to the schema directly.', fixesParity: true },
-      { id: 'instruct', label: 'Instruct in the system prompt', effect: 'No schema guarantee, but no schema to write either.', fixesParity: true },
+      { id: 'format', label: 'output_config.format', recovers: 0 },
+      { id: 'instruct', label: 'System instruction', recovers: 0 },
     ],
   },
 ]
@@ -65,12 +66,14 @@ export const totalSites = autoSites + decisionSites
 // merge waits on the repo's own tests.
 export const tests = { total: 12, baseline: 10, regressed: 3, recovered: 2 }
 
+// Each option states how many failing tests it recovers, so the number on the
+// page is summed from the choices rather than narrated.
 export function testsAfter(choices) {
-  const fixed = decisions.every((d) => {
+  const recovered = decisions.reduce((n, d) => {
     const picked = d.options.find((o) => o.id === choices[d.id])
-    return picked ? picked.fixesParity : false
-  })
-  return fixed ? tests.total : tests.total - tests.regressed
+    return n + (picked ? picked.recovers : 0)
+  }, 0)
+  return tests.total - tests.regressed + recovered
 }
 
 // Public list prices per million tokens, 1 September 2026.

@@ -45,26 +45,44 @@ export default function Migration({ choices, setChoices }) {
           return (
             <div className={`card decision${picked ? ' done' : ''}`} key={d.id}>
               <div className="d-head">
-                <h3>{d.title}</h3>
+                <code className="d-construct">{d.construct}</code>
                 <Chip kind={picked ? 'ok' : 'crit'}>
                   {picked ? 'decided' : `${d.sites} sites`}
                 </Chip>
               </div>
-              <p>{d.detail}</p>
-              <div className="d-opts">
-                {d.options.map((o) => (
-                  <button
-                    key={o.id}
-                    className={`opt${picked === o.id ? ' on' : ''}`}
-                    onClick={() =>
-                      setChoices({ ...choices, [d.id]: picked === o.id ? undefined : o.id })
-                    }
-                  >
-                    <span className="opt-l">{o.label}</span>
-                    <span className="opt-e">{o.effect}</span>
-                  </button>
-                ))}
-              </div>
+
+              <dl className="fields">
+                <dt>Held because</dt>
+                <dd>{d.reason}</dd>
+
+                <dt>Values</dt>
+                <dd className="mono">{d.offending.join('  ·  ')}</dd>
+
+                <dt>Failing tests</dt>
+                <dd className="mono">
+                  {d.failingTests.length ? d.failingTests.join('  ·  ') : <span className="dim">none</span>}
+                </dd>
+
+                <dt>Decision</dt>
+                <dd>
+                  <div className="d-opts">
+                    {d.options.map((o) => (
+                      <button
+                        key={o.id}
+                        className={`opt${picked === o.id ? ' on' : ''}`}
+                        onClick={() =>
+                          setChoices({ ...choices, [d.id]: picked === o.id ? undefined : o.id })
+                        }
+                      >
+                        {o.label}
+                        <span className="opt-n">
+                          {o.recovers ? `+${o.recovers} tests` : 'no test change'}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                </dd>
+              </dl>
             </div>
           )
         })}
