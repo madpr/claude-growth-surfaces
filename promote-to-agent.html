@@ -1,0 +1,289 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Confirm hosted agent</title>
+
+<style>
+/* The browser half. Claude Code hands off here because the resources are
+   created in a different organization than the one the CLI is signed in to.
+   Navigation, objects and field names replicate platform.claude.com >
+   Managed Agents, read 2 September 2026. Coral marks the one addition. */
+:root{
+  --bg:#FAFAF8;--panel:#FFFFFF;--sunk:#F4F3EF;--field:#FFFFFF;
+  --ink:#191817;--ink-2:#5E5C55;--ink-3:#8E8B82;
+  --rule:#E6E4DC;--rule-soft:#F0EEE8;
+  --accent:#D97757;--accent-dim:#FBF0EA;--accent-ink:#A84E2C;
+  --ok:#2E7D5B;--ok-dim:#EAF4EF;
+  --warn:#8A6A1F;--warn-dim:#FAF3E2;
+  --link:#2C5FA8;
+  --shadow:0 1px 2px rgba(25,24,23,.04);
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
+button,input,select{font-family:inherit;font-size:inherit;color:inherit}
+button{cursor:pointer}
+a{color:var(--link);text-decoration:none}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+
+.app{display:grid;grid-template-columns:210px minmax(0,1fr);min-height:100vh}
+.side{border-right:1px solid var(--rule);padding:14px 10px;position:sticky;top:0;height:100vh;overflow:hidden;display:flex;flex-direction:column}
+.brand{font-size:15px;font-weight:600;letter-spacing:-.01em;padding:2px 8px 12px}
+.ws{display:flex;align-items:center;gap:8px;border:1px solid var(--accent);background:var(--accent-dim);border-radius:7px;padding:6px 9px;font-size:12.5px;margin-bottom:9px}
+.ws .caret{margin-left:auto;color:var(--ink-3);font-size:10px}
+.omni{display:flex;align-items:center;gap:8px;border:1px solid var(--rule);border-radius:7px;padding:6px 9px;font-size:12.5px;color:var(--ink-3);margin-bottom:12px}
+.omni kbd{margin-left:auto;font-family:var(--mono);font-size:10px}
+.nav{display:flex;flex-direction:column;gap:1px;overflow-y:auto;flex:1}
+.nav::-webkit-scrollbar{width:0}
+.ni{display:flex;align-items:center;gap:8px;padding:6px 9px;border-radius:6px;color:var(--ink-2);font-size:13px;background:none;border:none;text-align:left;width:100%}
+.ni:hover{background:var(--sunk);color:var(--ink)}
+.ni.on{background:var(--sunk);color:var(--ink);font-weight:550}
+.ni.sub{padding-left:22px;font-size:12.5px}
+.nl{font-size:12.5px;color:var(--ink-2);padding:11px 9px 4px;display:flex;align-items:center;gap:8px}
+.nl .c{margin-left:auto;color:var(--ink-3);font-size:10px}
+.sfoot{border-top:1px solid var(--rule);padding-top:8px;font-size:12.5px;color:var(--ink-2)}
+.sfoot .row{display:flex;align-items:center;gap:8px;padding:6px 9px}
+.sfoot .v{margin-left:auto;font-family:var(--mono);font-size:11.5px;color:var(--ink-3)}
+
+.main{min-width:0;padding:22px 28px 60px}
+.crumb{font-size:13px;color:var(--ink-3);display:flex;gap:8px;align-items:center}
+.crumb b{color:var(--ink-2);font-weight:400}
+
+.arrive{
+  margin-top:14px;border:1px solid var(--accent);background:var(--accent-dim);
+  border-radius:9px;padding:12px 15px;max-width:880px;
+  display:flex;gap:12px;align-items:flex-start;
+}
+.arrive .t{font-size:13px;color:var(--ink-2);line-height:1.55}
+.arrive b{color:var(--accent-ink)}
+
+.h{display:flex;align-items:center;gap:10px;margin-top:18px;flex-wrap:wrap;max-width:880px}
+.h h1{margin:0;font-size:23px;font-weight:600;letter-spacing:-.02em}
+.pill{font-size:11px;font-weight:550;border-radius:5px;padding:2px 7px;background:var(--accent-dim);color:var(--accent-ink)}
+.h .r{margin-left:auto;display:flex;gap:8px;align-items:center}
+.btn{border:1px solid var(--rule);background:var(--panel);border-radius:7px;padding:6px 12px;font-size:13px;font-weight:500}
+.btn:hover{background:var(--sunk)}
+.btn-w{background:var(--ink);color:#fff;border-color:var(--ink);font-weight:550}
+.btn-w:disabled{opacity:.35;cursor:not-allowed}
+
+.sec{display:grid;grid-template-columns:200px minmax(0,1fr);gap:26px;padding:20px 0;border-bottom:1px solid var(--rule-soft);max-width:880px}
+.sl h2{margin:0;font-size:14.5px;font-weight:600}
+.sl p{margin:6px 0 0;font-size:12.5px;color:var(--ink-2)}
+.fl{display:flex;flex-direction:column;gap:13px;min-width:0}
+.fl label{display:block;font-size:12.5px;margin-bottom:5px}
+.i{width:100%;background:var(--field);border:1px solid var(--rule);border-radius:7px;padding:8px 11px;font-size:13px}
+.i.need{border-color:var(--accent);background:var(--accent-dim)}
+.mono{font-family:var(--mono);font-size:12.5px}
+.src{margin-top:5px;font-size:11.5px;color:var(--ink-3);font-family:var(--mono)}
+
+.rules{border:1px solid var(--rule);border-radius:9px;overflow:hidden}
+.rr{display:flex;gap:11px;align-items:flex-start;padding:9px 12px;border-bottom:1px solid var(--rule-soft);font-size:12.5px}
+.rr:last-child{border-bottom:none}
+.rr .st{flex:none;width:15px;text-align:center;font-weight:700}
+.rr .st.on{color:var(--ok)} .rr .st.off{color:var(--warn)}
+.rr code{font-family:var(--mono);font-size:11.5px;color:var(--ink)}
+.rr .d{color:var(--ink-2)}
+.rr .tg{margin-left:auto;flex:none}
+.sw{width:32px;height:19px;border-radius:10px;background:var(--rule);border:none;position:relative;padding:0;flex:none}
+.sw::after{content:"";position:absolute;top:2px;left:2px;width:15px;height:15px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.2);transition:transform .15s}
+.sw.on{background:var(--ok)}
+.sw.on::after{transform:translateX(13px)}
+.rr.dead{background:var(--warn-dim)}
+.rr.dead .d{color:var(--warn)}
+
+.reach{border:1px solid var(--rule);border-radius:9px;overflow:hidden}
+.reach .row{display:flex;gap:10px;padding:7px 12px;border-bottom:1px solid var(--rule-soft);font-size:12.5px}
+.reach .row:last-child{border-bottom:none}
+.reach .row span{color:var(--ink-2);width:120px;flex:none}
+.reach .row b{font-weight:450}
+.reach .row b.good{color:var(--ok)}
+
+.sum{max-width:880px;margin-top:22px;border:1px solid var(--rule);border-radius:9px;background:var(--panel);box-shadow:var(--shadow);padding:15px 17px}
+.sum h3{margin:0 0 10px;font-size:13.5px;font-weight:600}
+.sum .l{display:flex;gap:12px;font-size:12.5px;padding:4px 0}
+.sum .l span{color:var(--ink-2);width:110px;flex:none}
+.sum .warnline{color:var(--warn);font-size:12.5px;margin-top:9px}
+
+.foot{margin-top:24px;padding-top:14px;border-top:1px solid var(--rule);font-size:11.5px;color:var(--ink-3);line-height:1.6;max-width:880px}
+.foot b{color:var(--ink-2)}
+.foot code{font-family:var(--mono);font-size:11px}
+@media(max-width:900px){.app{grid-template-columns:1fr}.side{display:none}.sec{grid-template-columns:1fr;gap:10px}.main{padding:18px 16px 40px}}
+</style>
+
+<div class="app">
+  <aside class="side">
+    <div class="brand">Claude Console</div>
+    <div class="ws"><span>Claude Code</span><span class="caret">&#9662;</span></div>
+    <div class="omni"><span>Search Console&hellip;</span><kbd>&#8984;K</kbd></div>
+    <nav class="nav">
+      <button class="ni">Dashboard</button><button class="ni">API keys</button>
+      <div class="nl">Build<span class="c">&#9662;</span></div>
+      <button class="ni sub">Playground</button><button class="ni sub">Files</button>
+      <button class="ni sub">Skills</button><button class="ni sub">Batches</button>
+      <div class="nl">Managed Agents<span class="c">&#9662;</span></div>
+      <button class="ni sub">Quickstart</button>
+      <button class="ni sub on">Agents</button>
+      <button class="ni sub">Sessions</button>
+      <button class="ni sub">Deployments</button>
+      <button class="ni sub">Environments</button>
+      <button class="ni sub">Credential vaults</button>
+      <button class="ni sub">Memory stores</button>
+      <div class="nl">Analytics<span class="c">&#8250;</span></div>
+      <div class="nl">Claude Code<span class="c">&#8250;</span></div>
+      <div class="nl">Manage<span class="c">&#8250;</span></div>
+    </nav>
+    <div class="sfoot"><div class="row">Documentation</div>
+      <div class="row">Credits <span class="v">$11.28</span></div></div>
+  </aside>
+
+  <main class="main">
+    <div class="crumb"><b>Agents</b><span>/</span><span>Confirm</span></div>
+
+    <div class="arrive">
+      <div class="t">
+        Continuing from <a href="promote-cli.html">Claude Code</a> on
+        <b>~/ledger-reconcile</b>. You signed in to <b>your platform organization</b> to
+        get here &mdash; the CLI was signed in to a different one. Nothing is created
+        until you confirm.
+      </div>
+    </div>
+
+    <div class="h">
+      <h1>ledger-reconcile</h1>
+      <span class="pill">Proposal</span>
+      <span class="r">
+        <button class="btn">Cancel</button>
+        <button class="btn btn-w" id="go">Create 3 resources</button>
+      </span>
+    </div>
+
+    <section class="sec">
+      <div class="sl"><h2>Agent</h2><p>Read from the project. Nothing to re-enter.</p></div>
+      <div class="fl">
+        <div><label>Model</label>
+          <div class="i mono">claude-sonnet-5</div>
+          <div class="src">settings.json &middot; alias resolved</div></div>
+        <div><label>Instructions</label>
+          <div class="i" style="color:var(--ink-2)">Nightly revenue reconciliation &mdash; 607 characters</div>
+          <div class="src">CLAUDE.md</div></div>
+        <div><label>Description <span style="color:var(--accent-ink)">&middot; needs you</span></label>
+          <input class="i need" id="desc" placeholder="What is this agent for? One line.">
+          <div class="src">no local source</div></div>
+      </div>
+    </section>
+
+    <section class="sec">
+      <div class="sl"><h2>Sandbox</h2><p>Where the rules you lost get set again.</p></div>
+      <div class="fl">
+        <div><label>Environment</label>
+          <select class="i" id="env">
+            <option value="cloud">Anthropic cloud sandbox</option>
+            <option value="vpc">Self-hosted &middot; your VPC</option>
+          </select></div>
+
+        <div><label>Rules carried from Claude Code</label>
+          <div class="rules" id="rules"></div>
+        </div>
+
+        <div><label>Reach</label>
+          <div class="reach" id="reach"></div></div>
+      </div>
+    </section>
+
+    <section class="sec">
+      <div class="sl"><h2>Schedule</h2><p>And the ceiling every run inherits.</p></div>
+      <div class="fl">
+        <div><label>Runs</label>
+          <div class="i mono">0 2 * * * &middot; daily 02:00</div>
+          <div class="src">set in Claude Code</div></div>
+        <div><label>Spend cap per run</label>
+          <div class="i mono">$25.00</div>
+          <div class="src">create-only &middot; cannot be added later</div></div>
+      </div>
+    </section>
+
+    <div class="sum">
+      <h3>On confirm</h3>
+      <div class="l"><span>Agent</span><b id="s-agent">ledger-reconcile</b></div>
+      <div class="l"><span>Sandbox</span><b id="s-env">Anthropic cloud &middot; 2 rules enforced</b></div>
+      <div class="l"><span>Schedule</span><b>daily 02:00, capped at $25.00</b></div>
+      <div class="sum warnline" id="s-warn"></div>
+    </div>
+
+    <p class="foot">
+      <b>Proposal, not a shipped feature.</b> Navigation, objects and field names are the
+      live Console, read 2&nbsp;September&nbsp;2026; the addition is this confirm screen
+      and the rules it carries. The project is
+      <code>prototype/fixtures/sample-project</code>, and which rules can and cannot be
+      enforced is decided by <code>prototype/promote.py</code>, so this screen and the
+      code cannot disagree.
+    </p>
+  </main>
+</div>
+
+<script>
+var RULES=[
+  {r:'Write(ledger/**)', as:'ledger/ mounted read-only', on:true, dead:false},
+  {r:'Bash(rm *)', as:'sandbox discarded after every run', on:true, dead:false},
+  {r:'Bash(python3 reconcile.py *)', as:'no equivalent &mdash; the sandbox runs any command', on:false, dead:true},
+  {r:'local-fs-index', as:'runs from your machine &mdash; publish it as an endpoint', on:false, dead:true}
+];
+var REACH={
+  cloud:[['Filesystem','the repo, mounted at /mnt/session',0],
+         ['Host machine','unreachable',1],
+         ['Network','allowlist',0]],
+  vpc:[['Filesystem','a volume you mount',0],
+       ['Host machine','unreachable',1],
+       ['Network','your VPC egress rules',0]]
+};
+
+function paintRules(){
+  var h='';
+  RULES.forEach(function(x,i){
+    h+='<div class="rr'+(x.dead?' dead':'')+'">'+
+       '<span class="st '+(x.on?'on':'off')+'">'+(x.on?'&#10003;':'&#9675;')+'</span>'+
+       '<span><code>'+x.r.replace(/</g,'&lt;')+'</code><br><span class="d">'+x.as+'</span></span>'+
+       (x.dead?'':'<span class="tg"><button class="sw'+(x.on?' on':'')+'" data-i="'+i+
+         '" aria-pressed="'+x.on+'" aria-label="enforce '+x.r+'"></button></span>')+
+       '</div>';
+  });
+  document.getElementById('rules').innerHTML=h;
+  Array.prototype.forEach.call(document.querySelectorAll('.sw'),function(b){
+    b.addEventListener('click',function(){
+      RULES[+b.dataset.i].on=!RULES[+b.dataset.i].on; paintRules(); paintSummary();
+    });
+  });
+}
+function paintReach(){
+  var v=document.getElementById('env').value;
+  var rows=REACH[v].slice();
+  RULES.forEach(function(x){
+    if(x.on && x.r.indexOf('ledger')>=0) rows.push(['ledger/','read-only mount',1]);
+  });
+  document.getElementById('reach').innerHTML=rows.map(function(r){
+    return '<div class="row"><span>'+r[0]+'</span><b'+(r[2]?' class="good"':'')+'>'+r[1]+'</b></div>';
+  }).join('');
+}
+function paintSummary(){
+  var on=RULES.filter(function(x){return x.on}).length,
+      dead=RULES.filter(function(x){return x.dead}).length,
+      off=RULES.filter(function(x){return !x.on&&!x.dead}).length,
+      env=document.getElementById('env').value==='cloud'?'Anthropic cloud':'Self-hosted VPC';
+  document.getElementById('s-env').textContent=
+    env+' \u00B7 '+(on?on+' rule'+(on>1?'s':'')+' enforced':'nothing enforced');
+  var bits=[];
+  if(dead) bits.push(dead+' rule'+(dead>1?'s':'')+' cannot be enforced anywhere');
+  if(off) bits.push(off+' turned off');
+  document.getElementById('s-warn').textContent=bits.length?bits.join(' \u00B7 '):'';
+  document.getElementById('go').disabled=!document.getElementById('desc').value.trim();
+}
+document.getElementById('env').addEventListener('change',function(){paintReach();paintSummary()});
+document.getElementById('desc').addEventListener('input',paintSummary);
+document.getElementById('go').addEventListener('click',function(){
+  this.textContent='Created';this.disabled=true;
+  document.getElementById('s-warn').textContent+=
+    (document.getElementById('s-warn').textContent?' \u00B7 ':'')+'created';
+});
+paintRules();paintReach();paintSummary();
+</script>
