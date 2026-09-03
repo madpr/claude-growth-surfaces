@@ -133,28 +133,32 @@ Test discovery before building the promotion path:
 This takes days. If creation doesn't move, discovery isn't the gate and this proposal
 is wrong.
 
-## Risks and open questions
+## Risks
 
-- **The identity finding rests on one account, on a consumer subscription.** If a
-  Console organization resolves to a single organization, that section describes a
-  segment rather than the platform. Check a second account first.
-- **"Identity reconciliation is hard" is inferred, not verified.** Two findings would
-  invalidate the estimate: existing organization-linking already solves it, or the split
-  is deliberate because subscriptions and metered billing are different business models.
-  If it's deliberate, unifying them is a policy argument, not a growth feature.
 - **Timing.** If unattended fleets are three years out rather than one, this is a
-  correct proposal built two years early.
-- **Rubrics fit artifact work**, such as reports and pipelines. They fit open-ended
-  codebase maintenance badly, which is where the evidence came from.
-- **This resembles the migration proposal.** Gating untrusted work on a check you
-  specify is that proposal's hypothesis too.
-- **The grader is Claude judging Claude.**
-- **Some teams won't accept a hosted sandbox** for work that touches their own
-  infrastructure, which is the work with the largest blast radius.
-- **A team that already built its own metering and containment** gains only credential
-  isolation, and pays a migration to get it.
+  correct proposal built two years early. The same risk runs per-customer: a team that
+  has already built its own metering and containment gains only credential isolation,
+  and pays a migration to get it.
+- **Teams keep the risky work in-house.** The workloads with the largest blast radius
+  are the ones touching their own infrastructure, and those are the ones least likely
+  to move to a hosted sandbox.
+- **The quality gate is Claude judging Claude.** Rubrics grade artifact work well —
+  reports, models, pipelines. They grade open-ended codebase maintenance badly, which
+  is where the evidence came from.
 
-Four numbers decide this, and all of them are internal:
+## Open questions
+
+Two shape the cost estimate. The first can be settled from outside:
+
+- **Does the account split generalize?** The finding rests on one consumer
+  subscription. If Console organizations resolve to a single organization, that section
+  describes a segment, not the platform. Signing in on a second account settles it, and
+  `probe.sh --identity` reports the answer without printing anyone's identifiers.
+- **Is the split incidental or deliberate?** If subscriptions and metered billing are
+  separate by design, unifying them is a policy argument rather than a growth feature,
+  and the 1–2 month estimate is wrong. Nothing public answers this.
+
+Four more decide whether to build at all, and all of them are internal:
 
 - What fraction of API organizations run anything unattended.
 - How many have a single-day spend spike over five times their trailing average.

@@ -104,21 +104,24 @@ Milestone 1 runs locally, needs no account, and is a complete product on its own
 Milestone 2 buys measurement: every metric above is uncollectible from a local tool that
 prints a report.
 
-## Risks and open questions
+## Risks
 
-- **The premise may be wrong.** If most OpenAI workloads are small enough to port in an
-  afternoon, switching cost isn't the barrier and none of this matters.
+- **If most OpenAI workloads port in an afternoon, the premise fails.** Switching cost
+  wouldn't be the barrier, and none of this matters.
 - **The gate has to be trusted.** If it isn't, this reduces to a codemod.
 - **Targeting isn't possible today.** The Usage and Cost APIs group by model, workspace,
-  and key — there's no endpoint dimension, so nothing public separates Chat Completions
+  and key. There's no endpoint dimension, so nothing public separates Chat Completions
   traffic from Messages traffic. Without it, milestone 2 loses its strongest
   justification and the skill has to be found rather than offered.
-- **No user report backs the central claim.** That developers reach the wrong conclusion
-  from a compatibility-layer evaluation follows from documented behavior, not from
-  anyone saying it happened to them. Close that gap first.
 
 AWS Transform and Moderne prove the pattern works at enterprise scale. Neither exists
 for provider migration; every provider ships a compatibility shim instead.
+
+## Open questions
+
+**No user report backs the central claim.** That developers reach the wrong conclusion
+from a compatibility-layer evaluation follows from documented behavior, not from anyone
+saying it happened to them. Close that gap before milestone 2.
 
 ## Evidence
 
