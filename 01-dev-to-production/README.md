@@ -18,11 +18,22 @@ unattended is a $1,000-per-month production workload. Managed Agents is where th
 unattended version gets its limits: session budgets, outcome rubrics, and vault
 credentials that the agent never sees.
 
-Three things stop developers from getting there.
+Three things stop developers from getting there:
 
-**You can't find it.** Anthropic ships two command-line tools that split one account.
-`claude` is where you work. `ant` owns the hosted-agent control plane, and the platform
-docs recommend it over the SDK. The two collide on every word you would search:
+- **You can't find it.** Anthropic ships two command-line tools that split one account.
+  `claude` is where you work. `ant` owns the hosted-agent control plane, and the
+  platform docs recommend it over the SDK. The two collide on every word you would
+  search.
+- **Neither tool points at the other.** `claude import` reads configuration from
+  *competing* agents, and has no outbound equivalent. `ant` has no reference to Claude
+  Code anywhere in its agent, environment, or deployment commands.
+- **They're different accounts.** `claude` signs in through claude.ai against a
+  subscription. `ant` signs in against a developer organization. On the account tested,
+  those were two different organizations for one email address, and the developer
+  organization already held a workspace named `Claude Code` that the Claude Code CLI
+  wasn't signed in to.
+
+### The vocabulary collision
 
 | Word | In `claude` | In `ant` |
 | --- | --- | --- |
@@ -35,18 +46,15 @@ docs recommend it over the SDK. The two collide on every word you would search:
 Four of the five terms return a plausible local answer. Nothing tells you a larger
 surface exists, so you stop searching.
 
-**Neither tool points at the other.** `claude import` reads configuration from
-*competing* agents. It has no outbound equivalent. `ant` has no reference to Claude Code
-anywhere in its agent, environment, or deployment commands.
+### Why the account split matters
 
-**They're different accounts.** `claude` signs in through claude.ai against a
-subscription. `ant` signs in against a developer organization. On the account tested,
-those were two different organizations for one email address, and the developer
-organization already contained a workspace named `Claude Code` that the Claude Code CLI
-wasn't signed in to. Promotion crosses an identity boundary, not just a tooling gap.
-
-That boundary is also the revenue event. Subscription work is flat-fee. Managed Agents
-bills tokens plus container runtime. Moving a workload across converts it.
+- Promotion crosses an identity boundary, not just a tooling gap. Whatever the mapping
+  carries, it lands in an organization you aren't signed in to.
+- That boundary is also the revenue event. Subscription work is flat-fee. Managed Agents
+  bills tokens plus container runtime. Moving a workload across converts it.
+- It explains the timeline. Renaming a command takes days. Reconciling a subscription
+  identity with a platform organization doesn't, and that's the honest reason this costs
+  1–2 months.
 
 ## Solution
 
