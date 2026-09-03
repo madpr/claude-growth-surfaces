@@ -1,0 +1,290 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Promote from Claude Code</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap">
+
+<style>
+/* The CLI half of the promotion path. Claude Code is where the developer
+   already is, so it is where the flow starts; the browser finishes it because
+   the account boundary forces a handoff.
+
+   Palette and the coral-marks-the-addition convention are carried from the
+   sibling pages in this repo. */
+:root{
+  --bg:#FAFAF8; --panel:#FFFFFF; --sunk:#F4F3EF;
+  --ink:#191817; --ink-2:#5E5C55; --ink-3:#8E8B82;
+  --rule:#E6E4DC; --rule-soft:#F0EEE8;
+  --accent:#D97757; --accent-dim:#FBF0EA; --accent-ink:#A84E2C;
+
+  /* The terminal keeps one surface in both themes. A developer sees a dark
+     terminal on a light desktop; inverting it would be less true, not more. */
+  --term-bg:#1C1B19; --term-edge:#302E2A;
+  --t-txt:#E8E4DC; --t-dim:#7C776D; --t-ok:#6FA88A;
+  --t-warn:#D9A441; --t-accent:#E08A66;
+
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#141312; --panel:#1B1A18; --sunk:#201F1C;
+    --ink:#EDEAE3; --ink-2:#B0ABA1; --ink-3:#837E74;
+    --rule:#2C2A26; --rule-soft:#232120;
+    --accent:#E08A66; --accent-dim:#2A211C; --accent-ink:#EFA98A;
+    --term-bg:#0B0A09; --term-edge:#38332E;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#141312; --panel:#1B1A18; --sunk:#201F1C;
+  --ink:#EDEAE3; --ink-2:#B0ABA1; --ink-3:#837E74;
+  --rule:#2C2A26; --rule-soft:#232120;
+  --accent:#E08A66; --accent-dim:#2A211C; --accent-ink:#EFA98A;
+  --term-bg:#0B0A09; --term-edge:#38332E;
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font-family:var(--sans); font-size:15px; line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:880px; margin:0 auto; padding:52px 24px 80px}
+
+header{border-bottom:1px solid var(--rule); padding-bottom:26px}
+.eyebrow{
+  font-size:11.5px; font-weight:700; letter-spacing:.09em; text-transform:uppercase;
+  color:var(--accent-ink); margin-bottom:12px;
+}
+h1{
+  margin:0; font-size:31px; line-height:1.2; font-weight:600;
+  letter-spacing:-.02em; text-wrap:balance;
+}
+.lede{margin:14px 0 0; font-size:16px; color:var(--ink-2); max-width:62ch}
+
+.steps{display:flex; flex-direction:column; gap:44px; margin-top:44px}
+.step{display:grid; grid-template-columns:34px minmax(0,1fr); gap:20px}
+.num{
+  font-family:var(--mono); font-size:12.5px; font-weight:700;
+  color:var(--accent-ink); background:var(--accent-dim);
+  border-radius:6px; height:28px; display:grid; place-items:center;
+  font-variant-numeric:tabular-nums;
+}
+.step h2{margin:2px 0 0; font-size:19px; font-weight:600; letter-spacing:-.01em}
+.step > div > p{margin:9px 0 0; color:var(--ink-2); max-width:60ch}
+.step > div > p.tight{margin-top:6px}
+
+/* The terminal. One surface, both themes. */
+.term{
+  margin-top:16px; background:var(--term-bg); border:1px solid var(--term-edge);
+  border-radius:9px; padding:16px 18px; overflow-x:auto;
+  font-family:var(--mono); font-size:12.5px; line-height:1.75;
+  color:var(--t-txt); white-space:pre; tab-size:2;
+}
+.term b{font-weight:700; color:#fff}
+.dim{color:var(--t-dim)}
+.ok{color:var(--t-ok)}
+.warn{color:var(--t-warn)}
+.new{color:var(--t-accent)}
+.cmd{color:var(--t-dim)}
+.label{
+  font-family:var(--mono); font-size:10.5px; font-weight:700; letter-spacing:.08em;
+  text-transform:uppercase; color:var(--ink-3); margin-top:18px;
+}
+.caption{
+  margin:10px 0 0; font-size:13px; color:var(--ink-3); max-width:62ch;
+}
+.caption code{font-family:var(--mono); font-size:11.5px; color:var(--ink-2)}
+
+.note{
+  margin-top:16px; border-left:2px solid var(--accent); background:var(--accent-dim);
+  padding:12px 16px; border-radius:0 7px 7px 0;
+}
+.note p{margin:0; font-size:13.5px; color:var(--ink-2)}
+.note b{color:var(--ink)}
+
+footer{margin-top:56px; border-top:1px solid var(--rule); padding-top:22px}
+footer h3{margin:0 0 10px; font-size:13px; font-weight:600}
+footer p{margin:0 0 10px; font-size:12.5px; color:var(--ink-3); max-width:70ch}
+footer code{font-family:var(--mono); font-size:11.5px; color:var(--ink-2)}
+.legend{display:flex; flex-wrap:wrap; gap:8px 18px; margin:0 0 14px; padding:0; list-style:none}
+.legend li{font-size:12.5px; color:var(--ink-3); display:flex; align-items:center; gap:7px}
+.chip{
+  width:9px; height:9px; border-radius:2px; flex:none;
+  background:var(--t-accent); display:inline-block;
+}
+.chip.real{background:var(--ink-3)}
+
+@media(max-width:640px){
+  .wrap{padding:34px 16px 56px}
+  .step{grid-template-columns:1fr; gap:10px}
+  .num{width:28px}
+  h1{font-size:25px}
+}
+</style>
+
+<div class="wrap">
+
+<header>
+  <div class="eyebrow">Design mock &middot; dev to production</div>
+  <h1>Promote from Claude Code</h1>
+  <p class="lede">
+    The developer never leaves the tool they are already in. Claude Code reads the
+    project, says plainly what will not survive the move, and proposes a sandbox that
+    replaces it. The browser finishes the job, because the account boundary forces a
+    handoff.
+  </p>
+</header>
+
+<div class="steps">
+
+  <section class="step">
+    <div class="num">1</div>
+    <div>
+      <h2>Answer the question a developer actually asks</h2>
+      <p>
+        Today <code style="font-family:var(--mono);font-size:12.5px">claude agents</code>
+        means background sessions on your laptop, and that is the whole discovery
+        failure: the word is spent on a local answer, so nobody learns the hosted
+        surface exists. The cheapest version of this proposal is this screen alone.
+      </p>
+      <div class="term"><span class="cmd">$ </span>claude agents
+
+  <span class="dim">ON THIS MACHINE</span>
+  <span class="ok">&#9679;</span> 2 running                        <span class="dim">claude attach &lt;id&gt;</span>
+    <span class="dim">reconcile-nightly    12m   waiting on tests</span>
+    <span class="dim">docs-sweep           4h    idle</span>
+
+  <span class="new">HOSTED</span>                              <span class="dim">runs when you are not here</span>
+  <span class="dim">&#9675;</span> <span class="dim">none yet</span>                          <span class="new">claude promote</span>
+</div>
+      <p class="caption">
+        Both halves of the word, in one place. The hosted row is the addition.
+      </p>
+    </div>
+  </section>
+
+  <section class="step">
+    <div class="num">2</div>
+    <div>
+      <h2>Read the project, and be honest about the total</h2>
+      <p>
+        Most of a hosted agent already exists on disk. The interesting number is not
+        what carried over &mdash; it is the two lines under it.
+      </p>
+      <div class="term"><span class="cmd">$ </span>claude promote
+
+  <b>ledger-reconcile</b> <span class="dim">&middot; nightly revenue reconciliation</span>
+
+  <span class="ok">&#10003;</span> carries over    <span class="dim">model, instructions, tools, 1 skill, 1 service</span>
+  <span class="warn">&#9679;</span> needs you       <span class="dim">what this agent is for, in one line</span>
+  <span class="warn">&#9679;</span> does not carry  <span class="dim">3 rules, 1 local service</span>
+</div>
+      <p class="caption">
+        Counts come from the prototype's own output against its sample project.
+      </p>
+    </div>
+  </section>
+
+  <section class="step">
+    <div class="num">3</div>
+    <div>
+      <h2>Translate the rules, and admit the residue</h2>
+      <p>
+        This is the moment the whole proposal turns on. The rules a developer wrote to
+        keep an agent in its lane are exactly the part that cannot travel, and a hosted
+        sandbox starts with none of them. Showing this as an error would be wrong: it is
+        not a failure of the import, it is the job of the screen.
+      </p>
+      <div class="term">  <span class="warn">Three rules keep this agent in its lane on your machine.</span>
+  <span class="warn">A hosted sandbox enforces none of them.</span>
+
+    <span class="dim">deny</span>  Write(ledger/**)          <span class="new">&#8594;</span>  mount <b>ledger/</b> read-only
+    <span class="dim">deny</span>  Bash(rm *)                <span class="new">&#8594;</span>  nothing to protect: the sandbox
+                                    is discarded after every run
+    <span class="dim">allow</span> Bash(python3 reconcile.py *)
+                              <span class="warn">&#8594;</span>  <span class="warn">no equivalent.</span> The sandbox runs
+                                    any command. Narrow it in the
+                                    image, or accept it.
+
+    <span class="dim">mcp</span>   local-fs-index            <span class="warn">&#8594;</span>  <span class="warn">runs from your machine.</span> Publish
+                                    it as an endpoint, or drop it.
+
+  <span class="new">&#9679;</span> Two are proposed above. Edit, accept, or set your own.
+</div>
+      <div class="note">
+        <p>
+          <b>Two of four translate. One has no equivalent and one has to be
+          rebuilt.</b> A screen that pretended every rule mapped cleanly would be
+          lying, and the developer would find out on the first unattended run.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section class="step">
+    <div class="num">4</div>
+    <div>
+      <h2>Set the cap now, because there is no later</h2>
+      <p>
+        A spend cap can only be set when a run is created. A run started without one can
+        be killed, but never capped. That makes this screen the only chance, so it says
+        so rather than offering an optional field.
+      </p>
+      <div class="term">  <span class="new">Spend cap</span>    $ <b>25.00</b> per run
+                <span class="dim">A run started without a cap can be killed, but never</span>
+                <span class="dim">capped. This is the only time it can be set.</span>
+
+  <span class="new">Schedule</span>     <b>__________</b>
+                <span class="dim">CLAUDE.md says &ldquo;every night&rdquo;. That is not a time.</span>
+
+  <span class="warn">This creates an agent, a sandbox and a schedule in your platform</span>
+  <span class="warn">organization &mdash; not the account signed in here.</span>
+
+  <span class="dim">&#8594;</span> <span class="new">open browser to confirm</span>  <span class="dim">&#8629;</span>
+</div>
+      <p class="caption">
+        The handoff is not a convenience. On the account this was built from, Claude
+        Code and the platform resolved to two different organizations, so confirming in
+        the browser is where the developer signs in to the one that will own the agent.
+      </p>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <h3>What is real and what is proposed</h3>
+  <ul class="legend">
+    <li><span class="chip real"></span> Verified against the installed binaries</li>
+    <li><span class="chip"></span> Proposed &mdash; does not exist today</li>
+  </ul>
+  <p>
+    <b>Real.</b> <code>claude agents</code> exists and means background sessions.
+    <code>claude attach</code> takes the short id it prints. Spend caps are create-only
+    on a hosted run. Hosted agents connect to services over a URL, so a server started
+    locally has no hosted form. Claude Code and the platform CLI sign in to separate
+    organizations. Captured from Claude Code 2.1.259 and the platform CLI 1.29.0 on
+    3&nbsp;September&nbsp;2026.
+  </p>
+  <p>
+    <b>Proposed.</b> <code>claude promote</code>, the hosted row in
+    <code>claude agents</code>, the rule translations, and the browser handoff. None of
+    it ships.
+  </p>
+  <p>
+    <b>Where the numbers come from.</b> The three totals in step 2 and all four rules in
+    step 3 are produced by <code>prototype/promote.py</code> against
+    <code>prototype/fixtures/sample-project</code>, so the mock and the code cannot
+    disagree. The project shown is that fixture, not a real account.
+  </p>
+  <p>
+    The spend cap and the running background sessions are example values, filled in the
+    way a person would fill them. The schedule is deliberately empty: the fixture says
+    the job runs &ldquo;every night&rdquo;, which is not a time, and the prototype emits
+    no schedule at all. A flow that guessed one here would be inventing the developer's
+    intent at the last moment before the agent runs unwatched.
+  </p>
+</footer>
+
+</div>
