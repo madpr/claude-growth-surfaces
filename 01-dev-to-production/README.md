@@ -89,26 +89,17 @@ resolved 3   lossy 3   human 1   blocked 2   underivable 1
 
 ### What doesn't transfer
 
-An earlier draft of this document claimed that six of the seven agent fields carry over.
-That's true of fields and false of fidelity. The prototype disproved it, and two
-categories of working configuration have no destination field at all.
+Counting fields overstates what survives. Two kinds of working configuration have no
+destination field at all:
 
-**Command-pattern permissions.** Rules like `Bash(rm *)` and `Write(ledger/**)` don't
-survive. The hosted toolset enables or disables a whole tool. Finer control is a
-property of the environment, through the sandbox and vault egress, so it can't travel
-on the agent.
+| What | Why it can't cross |
+| --- | --- |
+| Command-pattern permissions, such as `Bash(rm *)` and `Write(ledger/**)` | The hosted toolset enables or disables a whole tool. Finer control belongs to the environment, through the sandbox and vault egress. |
+| Stdio MCP servers | Managed Agents connects to servers of `type: "url"` over Streamable HTTP. Publish the server as an endpoint first. |
+| The environment | A container image, a network policy, and credential vaults. A laptop has none of them to hand over. |
 
-**Stdio MCP servers.** Managed Agents connects to MCP servers of `type: "url"` over
-Streamable HTTP. A server that Claude Code starts as a local subprocess has no hosted
-representation. You must publish it as an endpoint first.
-
-**The environment itself.** An environment is a container image, a network policy, and
-credential vaults. A laptop has none of them to hand over.
-
-The configuration transfers. The restrictions on it don't. That's the same conclusion
-the issue corpus reaches from the opposite direction, and it's why the environment is
-underivable rather than merely unset: the limits you lose from the agent are exactly the
-limits the sandbox gives back.
+You set these limits again on the environment. That's why the promotion path has to
+create one rather than copy it, and it's the step a developer can't skip.
 
 ## Why the destination is worth reaching
 
@@ -147,8 +138,7 @@ Issue #82063 states the problem in a user's own words: "no harm done, but it mak
 very worried." Nothing broke, and they filed anyway.
 
 These are Claude Code issues, so they point in the right direction rather than proving
-the case for the API. They no longer carry the argument alone. `probe.sh` and
-`promote.py` reproduce on any machine.
+the case for the API.
 
 ## Competitive pressure
 
@@ -157,10 +147,9 @@ is an unaffiliated Claude Code plugin with 303 stars. It routes token-heavy work
 Claude Code to Gemini through Google's `agy` CLI. A `SessionStart` hook injects a
 cost-aware routing policy, so after you install it, offloading is the default.
 
-The asymmetry matters. Routing to Gemini needs no identity work, because it's a
-different vendor and nobody expects one account. Routing to Managed Agents needs it
-precisely because it's the same company. The competitor's exit is cheaper to build than
-Anthropic's own entrance, which is why it shipped first.
+Routing to Gemini needs no identity work: different vendor, separate credentials, nobody
+expects one account. Routing to Managed Agents needs it precisely because it's the same
+company. The exit is cheaper to build than the entrance.
 
 This proposal doesn't cite the plugin's benchmark. Its cost figures rest on one task, a
 three-case quality evaluation, character-count estimates for the Gemini side, and rates
@@ -206,7 +195,9 @@ document is wrong.
   subscriptions and metered billing are different business models. If it's deliberate,
   unifying them is a policy argument, not a growth feature, and the cost estimate here
   is wrong.
-- **Timing.** For a bet on direction, early and wrong cost the same.
+- **Timing.** If unattended fleets are three years out rather than one, this is a
+  correct proposal built two years early, and the engineering ages badly before anyone
+  needs it.
 - **Rubrics fit artifact work**, such as reports and pipelines. They fit open-ended
   codebase maintenance badly, which is where the corpus came from.
 - **This resembles the migration proposal.** Gating untrusted work on a check you
@@ -244,10 +235,9 @@ Binary behavior comes from Claude Code 2.1.259 and `ant` 1.29.0, captured Septem
 2026. Every count in [What transfers](#what-transfers) is printed by `promote.py`, so
 this document and the code can't disagree.
 
-Two claims were tested and failed:
-
-- The documented credential conflict between `claude` and `ant` didn't reproduce.
-- "Six of seven fields carry over" was disproved by the prototype.
+One documented behavior doesn't reproduce. The platform docs warn that signing in to
+`ant` triggers a credential conflict with Claude Code. On the account tested, it didn't:
+the two tools never contend, because they resolve to different organizations.
 
 Four numbers decide this proposal, and all of them are internal:
 
