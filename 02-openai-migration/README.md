@@ -1,182 +1,77 @@
 # OpenAI → Claude migration
 
-Point Claude Code at a repo that uses the OpenAI SDK. It rewrites every call site
-against a rulebook, then blocks the pull request until your eval cases pass.
+Point Claude Code at a repo that uses the OpenAI SDK. It rewrites every call site,
+then blocks the pull request until your tests still pass.
 
-**Effort to build:** about two weeks, in two milestones. The first ships a complete
-product. The second makes it measurable. Workstreams inside each parallelize.
+The rewrite is what blocks migration, not model quality. Remove it and workloads move,
+which adds metered revenue. A narrower claim is cheaper to test: the parity gate alone
+unblocks the decision. If teams migrate once they can prove no regression, build the
+gate and skip the rewriter.
 
-| Milestone | Ships | Reuses |
-|---|---|---|
-| 1. Skill — 2–3 days | `/migrate-from-openai`: rulebook, scan, rewrite, tests-green gate, HTML report | The migration kit's templates and queue runner, `prototype/migration_lint.py` |
-| 2. Console — the rest | Decisions that persist across runs, org-level view, PR status check, funnel metrics | Existing Console components, the Claude GitHub App, the repo's own CI |
-
-Scope is Python and Chat Completions. Each additional language or API surface adds to it.
-
-[Open the prototype](https://madpr.github.io/claude-growth-surfaces/) — one screen:
-33 call sites rewritten for you, 5 decisions only you can make, and whether your
-tests still pass. Settle both decisions and the merge unblocks.
-
-## Hypothesis
-
-The rewrite blocks migration, not model quality. Remove the rewrite and workloads
-move, which adds metered revenue.
-
-A narrower claim is cheaper to test: the parity gate alone unblocks the decision. If
-teams migrate once they can prove no regression on their own cases, build the gate
-and skip the rewriter.
+[Open the prototype](https://madpr.github.io/claude-growth-surfaces/) — one screen: 33
+call sites rewritten for you, 5 decisions only you can make, and whether your tests
+still pass. Settle both decisions and the merge unblocks.
 
 ## Why this isn't solved already
 
-| Mechanism | Status |
-|---|---|
-| Prompt rewriting | Ships. The Workbench prompt improver is marketed for "prompts originally written for other AI models" |
-| Tool schema translation | Ships. The OpenAI SDK compatibility layer translates `tools` and `tool_calls` server-side |
-| Repo access | Ships. The Claude GitHub App is already installed for Code Review |
-| Reporting what broke | Missing |
+Most of it already ships. The Workbench prompt improver rewrites prompts and is
+marketed for "prompts originally written for other AI models." The OpenAI SDK
+compatibility layer translates `tools` and `tool_calls` server-side. The Claude GitHub
+App already has repo access, granted for Code Review.
 
-The compatibility layer "silently ignores" most unsupported fields. Two of them carry
-your output contract: `response_format` and `tools[].strict`. You evaluate Claude
-through the layer Anthropic recommends for evaluation, lose schema enforcement, and
-read the unenforced result as the model's ceiling.
+What's missing is telling you what broke. The compatibility layer "silently ignores"
+most unsupported fields, and two of them carry your output contract: `response_format`
+and `tools[].strict`. Evaluate Claude through the layer Anthropic recommends for
+evaluation and you lose schema enforcement, then read the unenforced result as the
+model's ceiling. Prompt caching is unsupported there too, so the cost saving that
+justifies migrating — 46% on the seeded workload, most of it from caching — is
+invisible from the place you'd measure it.
 
-## Rulebook
-
-Every construct that differs between the two APIs falls into one class. Only the
-third reaches the user.
-
-| Class | Handling | Example |
-|---|---|---|
-| Mechanical | Applied automatically | `tools[].function.parameters` → `input_schema` |
-| Choice | Pick a default, change it later | `temperature` → an `output_config.effort` level |
-| Blocking | Held for review | schema bounds native structured outputs can't express |
-
-## Parity gate
+## The parity gate
 
 A language migration gates on a compiler. No compiler tells you whether a prompt still
-works, so the merge gates on your eval cases instead: baseline run against migrated
-run, same cases, same judge.
+works, so the merge gates on the repo's own test suite instead: it already passes on
+OpenAI, so that's the baseline, and it has to still pass on Claude.
 
-This is why Anthropic's published migration kit doesn't apply unchanged. That kit
-assumes a new target language, a compiler, and a non-incremental rewrite. None hold here.
+This is why Anthropic's published migration kit doesn't apply unchanged — it assumes a
+new target language, a compiler, and a non-incremental rewrite. None hold here.
 
-In the seeded scan, three cases regress from one root cause and two recover. The pull
-request reads **Blocked by parity** until you resolve them.
+## Cost to build
+
+| Milestone | Ships | Reuses |
+|---|---|---|
+| 1. Skill — 2–3 days | `/migrate-from-openai`: rulebook, scan, rewrite, tests-green gate, HTML report | The migration kit's templates and queue runner |
+| 2. Console — the rest | Decisions that persist, org view, PR status check, funnel metrics | Console components, the Claude GitHub App, the repo's own CI |
+
+About two weeks total, Python and Chat Completions only. Ship milestone 1 first: it
+runs locally, needs no account, and is a complete product. Milestone 2 buys
+measurement — every metric below is uncollectible from a local skill that prints HTML.
 
 ## Success metrics
 
-Track conversion first. Revenue follows, but lags by a quarter.
+- **Merged migrations per quarter.** Whether workloads actually move.
+- **Metered spend 90 days after merge**, against the account's pre-migration baseline.
+- **Scan → merged PR.** Where the funnel leaks. Below 40% means the report isn't enough.
 
-| Metric | What it tells you | Target |
-|---|---|---|
-| Merged migrations per quarter | Whether workloads actually move | Primary |
-| Metered spend 90 days after merge | Revenue impact, against the account's pre-migration baseline | Primary |
-| Scan → merged PR | Where the funnel leaks | > 40% |
-| Days from scan to merge | Whether this is an afternoon or a quarter | < 5 |
-| Call sites migrated without review | Rulebook coverage. Low means you aren't saving work | > 85% |
-| Parity pass on first run | Migration quality | > 70% |
-
-Two guardrails decide whether to keep shipping:
-
-| Guardrail | Why it matters | Limit |
-|---|---|---|
-| Reverts within 30 days | A gate that passes bad migrations is worse than no gate | < 5% |
-| Production regressions after a passing gate | Measures whether the judge is trustworthy | ~0 |
-
-To test the narrower claim, measure how many teams run the parity gate without
-applying the rewrite. If that number is high, the proof matters more than the
-rewriting, and the product is smaller than this one.
-
-## Run a migration
-
-The scan runs in Claude Code, not in the Console. Your source never leaves your
-machine or your CI runner. The Console holds the rulebook, the decisions, and the
-parity history.
-
-```
-$ claude /migrate-from-openai --to claude-sonnet-5
-
-  scanning 11 files… 39 call sites
-  rulebook: 34 automatic, 5 held
-  → pushed to Console · Build › Migrations
-```
-
-In CI, use the action you already run:
-
-```yaml
-- uses: anthropics/claude-code-action@v1
-  with:
-    prompt: /migrate-from-openai --to claude-sonnet-5
-```
-
-The slash command is proposed, not shipped. Everything it builds on exists.
-
-## Contents
-
-| Path | What it does |
-|---|---|
-| `app/src/data.js` | The seeded scan. Every number on the page derives from here |
-| `app/src/views/Migration.jsx` | The page. One screen: what we rewrite, what you decide, whether it still works |
-| `app/src/App.jsx` | Console shell and the decision state |
-| `prototype/migration_lint.py` | Static analyser the rulebook came from. Classifies each field by whether it changes the result, then emits the native request |
-| `prototype/test_migration_lint.py` | 28 invariants |
-| `page/build-single-file.py` | Folds the build into one file for preview hosting |
-
-To run the app:
-
-```
-cd app && npm ci && npm run dev
-```
-
-The linter withholds `strict: true` and `output_config.format` unless the schema is
-expressible natively. Promising enforcement the API can't deliver would reproduce the
-defect this idea is about.
-
-## Why not stop at the skill?
-
-Milestone 1 delivers most of the developer value. It runs locally, needs no account,
-and the rulebook decisions live in a checked-in file that reviews like code. Ship it
-first and validate the hypothesis before building anything else.
-
-The Console buys two things:
-
-- **Measurement.** Every metric above is uncollectible from a local skill that prints
-  HTML. Scan-to-merge conversion is what decides whether to keep investing.
-- **Org visibility.** Which of your services still run on OpenAI. That is a platform
-  lead's need, not a developer's.
-
-A third reason would be stronger than both: show Migrations to the accounts already
-sending OpenAI-compatible traffic. It is unverified. The Usage and Cost APIs group by
-`model`, `workspace_id`, `api_key_id`, `service_tier` and similar — there is no
-endpoint dimension, so nothing public separates `/v1/chat/completions` from
-`/v1/messages`. Confirm with the Console team that endpoint-level logs can drive
-targeting before counting on it.
-
-## Prior art
-
-The pattern is proven, which de-risks the design and is also the sharpest objection.
-
-| Product | What it does |
-|---|---|
-| AWS Transform / Amazon Q Developer | First-party agentic migration onto AWS |
-| Moderne | Dashboard tracking campaigns that open PRs across many repos |
-
-Neither exists for LLM provider migration. Every provider ships a compatibility shim
-instead, and the shim is what fails silently.
+One guardrail can kill the product: **production regressions after a passing gate**
+should be ~0. A gate that passes bad migrations is worse than no gate.
 
 ## Risks
 
-| Risk | Kills the idea if |
-|---|---|
-| Rewrite is small | Most OpenAI workloads take an afternoon to port, so switching cost isn't the barrier |
-| Judge disagrees with the team | The gate is theatre and this is just a codemod |
-| Teams refuse repo access | They already grant it for Code Review, but this asks for write |
-| Targeting isn't possible | Without endpoint-level logs, milestone 2 loses its strongest justification and the skill has to be found rather than offered |
+- Most OpenAI workloads are small enough to port in an afternoon, so switching cost
+  isn't the barrier and the premise is wrong.
+- The gate can't be trusted, and this reduces to a codemod.
+- Targeting isn't possible. The Usage and Cost APIs group by `model`, `workspace_id`,
+  `api_key_id` and similar — no endpoint dimension — so nothing public separates
+  `/v1/chat/completions` from `/v1/messages`. Without it, milestone 2 loses its
+  strongest justification and the skill has to be found rather than offered.
+
+AWS Transform and Moderne prove the pattern works at enterprise scale. Neither exists
+for LLM provider migration; every provider ships a compatibility shim instead.
 
 ## Evidence
 
-Quotations come from Anthropic documentation fetched on 1 September 2026 and are
-linked from each rule.
+Quotations come from Anthropic documentation fetched on 1 September 2026.
 
 The prototype runs on seeded data. It reads no repository and runs no inference.
 
