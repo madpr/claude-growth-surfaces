@@ -1,270 +1,250 @@
-# Dev → production
+# Move unattended work to Managed Agents
 
-Status: **direction chosen, shape chosen, prototype running.** The written case is
-here; the design is not finished.
+Claude Code runs agents that you supervise. Managed Agents runs agents that you don't.
+The unattended workload is worth far more per customer, and almost nobody crosses from
+one to the other.
 
-Teams run agents with a human watching. A supervised workload is a $10/month
-prototype; the same workload unattended is a $1,000/month production workload.
-Managed Agents is where the unattended version is bounded — session budgets, outcome
-rubrics, and vault credentials substituted at egress. The lever is routing work
-there.
+This proposal adds the missing path: a command in `claude` that turns a working project
+into a hosted agent, and tells you what it can't carry across.
 
-The question this item used to get wrong was *why* teams don't go. The first answer
-was cost, the second was quality, the third was authority. All three were guesses
-about motive. The verified answer is simpler and sits one step earlier: **most Claude
-Code users never learn the destination exists, and when they do, it turns out to be a
-different account.**
+**Status:** case written, prototype running, product design unfinished.
+**Cost:** 1–2 months.
+**Theme:** expansion.
 
-## Three layers
+## Problem
 
-| | | Evidence |
-|---|---|---|
-| **Symptom** | You cannot find it. Two CLIs divide one account and collide on every word you would search | [`research/surface-collision.md`](research/surface-collision.md), reproducible via [`research/probe.sh`](research/probe.sh) |
-| **Mechanism** | It is a different organization. Promotion crosses an identity boundary, not just a tooling gap | `claude auth status` vs `ant auth status`, n=1 |
-| **Prize** | Flat-fee work moves onto metered infrastructure | Claude Code Pro is a subscription; Managed Agents bills tokens plus container runtime |
+A supervised workload is a $10-per-month prototype. The same workload running
+unattended is a $1,000-per-month production workload. Managed Agents is where the
+unattended version gets its limits: session budgets, outcome rubrics, and vault
+credentials that the agent never sees.
 
-Authority — the old headline — is now the mechanism underneath, and it is better
-evidenced there than it ever was as a thesis. See [Containment is what does not
-cross](#containment-is-what-does-not-cross).
+Three things stop developers from getting there.
 
-## The symptom: two CLIs, one vocabulary
+**You can't find it.** Anthropic ships two command-line tools that split one account.
+`claude` is where you work. `ant` owns the hosted-agent control plane, and the platform
+docs recommend it over the SDK. The two collide on every word you would search:
 
-`ant` (1.29.0, "CLI for the Claude Developer Platform") ships the entire Managed
-Agents control plane and the platform docs recommend it over the SDK for that work.
-So hosted agents are not missing from *a* CLI. They are missing from **the** CLI, and
-the two surfaces collide on exactly the words a developer would try:
+| Word | In `claude` | In `ant` |
+| --- | --- | --- |
+| `agents` | Background sessions on your laptop | A stored, versioned hosted agent |
+| `environment` | A `ccpool_` pool for cloud sessions | An `env_` container spec |
+| `session` | A local conversation you can resume | A hosted run that bills container runtime |
+| `budget` | `--max-budget-usd`, `--print` mode only | An enforced, create-only session budget |
+| `auth` | `login`, `logout`, `status` | `login`, `logout`, `status` |
 
-| Word | `claude` | `ant` |
-|---|---|---|
-| **agents** | "Manage **background agents**" — sessions on your laptop | a persisted, versioned hosted agent |
-| **environment** | `--environment ccpool_...` self-hosted pool | `env_...` container spec |
-| **session** | a local conversation, `--resume`-able | a hosted run billing container runtime |
-| **budget** | `--max-budget-usd`, `--print` mode only | session budget, enforced, create-only |
-| **auth** | `login \| logout \| status` | `login \| logout \| status` |
+Four of the five terms return a plausible local answer. Nothing tells you a larger
+surface exists, so you stop searching.
 
-Four of five terms return a plausible *local* answer, so nothing signals a larger
-surface exists — the search term is spent, not retried. `probe.sh` prints every row
-from the two installed binaries: no login, no network, no account read.
+**Neither tool points at the other.** `claude import` reads configuration from
+*competing* agents. It has no outbound equivalent. `ant` has no reference to Claude Code
+anywhere in its agent, environment, or deployment commands.
 
-Neither binary has a verb pointing at the other. `claude import` acquires config from
-*competing* agents; outbound verbs number zero, and `ant` has no reference to Claude
-Code anywhere in its agent, environment or deployment surface.
+**They're different accounts.** `claude` signs in through claude.ai against a
+subscription. `ant` signs in against a developer organization. On the account tested,
+those were two different organizations for one email address, and the developer
+organization already contained a workspace named `Claude Code` that the Claude Code CLI
+wasn't signed in to. Promotion crosses an identity boundary, not just a tooling gap.
 
-## The mechanism: it is a different account
+That boundary is also the revenue event. Subscription work is flat-fee. Managed Agents
+bills tokens plus container runtime. Moving a workload across converts it.
 
-Running `ant auth login` on a machine already signed into Claude Code was expected to
-trigger the documented credential conflict. **It did not.** What the comparison found
-instead was better:
+## Solution
 
-| | organization | method |
-|---|---|---|
-| `claude` | org **A** | claude.ai, subscription `pro` |
-| `ant` | org **B** | platform OAuth |
+Add a promotion path to `claude`. It reads the project you already have and creates the
+three objects Managed Agents needs: an agent, an environment, and a deployment.
 
-One email address, two organization IDs. They do not contend because they never meet.
-And the platform org already contains a workspace named exactly **"Claude Code"** —
-the platform models the tool as a billing destination that the tool itself is not
-signed into. On that account, `ant beta:agents list` and `beta:deployments list` both
-return empty: a daily Claude Code user, zero hosted agents.
-
-**This is n=1, on a Pro subscription.** A Console/API organization may well resolve to
-a single org, in which case this is a consumer-subscription-segment problem rather
-than a platform-architecture one. Checking a second account is the first open task,
-and it is cheap. Nothing downstream should be read as settled until it is done.
-
-It also explains the timeline. A naming fix is two days. Reconciling a subscription
-identity with a platform organization is not, and it is the honest reason this item
-costs one to two months rather than a week.
-
-## Containment is what does not cross
-
-[`prototype/promote.py`](prototype/promote.py) is the missing verb, run locally: it
-reads a Claude Code project and emits the `agent.yaml` that `ant beta:agents create`
-accepts, then names every field that does not survive.
+Run the prototype:
 
 ```
-$ ./promote.py map fixtures/sample-project
+cd 01-dev-to-production/prototype
+./promote.py map fixtures/sample-project
+```
+
+It reads a project directory, writes the `agent.yaml` that `ant beta:agents create`
+accepts, and reports every field that doesn't survive:
+
+```
 resolved 3   lossy 3   human 1   blocked 2   underivable 1
 ```
 
-An earlier draft of this case claimed "six of the seven agent fields have a local
-source." That is true of fields and false of fidelity, and **the prototype falsified
-it.** Only name, model and system transfer intact. Tools lose command-pattern
-granularity; skills carry names but must be re-uploaded to the Skills API; MCP servers
-translate only when URL-based.
+### What transfers
 
-Counting fields also missed two categories of working local configuration that have
-**no destination field at all**:
+| Field | Source | Notes |
+| --- | --- | --- |
+| `name` | Directory name | |
+| `model` | `.claude/settings.json` | Resolves the alias. `sonnet` becomes `claude-sonnet-5`. |
+| `system` | `CLAUDE.md` | |
+| `tools` | `settings.json` permissions | Whole-tool enable and disable only. |
+| `skills` | `.claude/skills` | Names carry. You must upload each skill to the Skills API. |
+| `mcp_servers` | `.mcp.json` | URL-based servers only. |
+| `description` | None | The one field a person writes. |
 
-- **Command-pattern permissions** — `Bash(rm *)`, `Write(ledger/**)`. The hosted
-  toolset enables or disables a whole tool. Containment at finer grain is an
-  *environment* property on the target — sandbox and vault egress — not an agent
-  property, so it cannot ride along on the agent.
-- **stdio MCP servers** — Managed Agents MCP servers are `type: "url"` over Streamable
-  HTTP. A server Claude Code launches as a subprocess has no representation on a
-  hosted agent and must be published as an endpoint first.
+### What doesn't transfer
 
-**The skeleton transfers; the containment does not.** That is the old authority thesis,
-re-derived by a mechanical route that knew nothing about it. It is also why the
-environment is *underivable* rather than merely unset: a sandbox is the one thing a
-developer machine cannot hand over, and it is the reason the destination is worth
-reaching.
+An earlier draft of this document claimed that six of the seven agent fields carry over.
+That's true of fields and false of fidelity. The prototype disproved it, and two
+categories of working configuration have no destination field at all.
 
-The prototype reads a directory, makes no API calls and touches no account. Its test
-suite is mostly negative — that a stdio server never reaches the emitted body, that no
-command pattern leaks in, that a missing `CLAUDE.md` yields "needs a human" rather than
-an empty prompt. A promoter that emits a plausible-looking agent is worse than none,
-because the fields it dropped are the ones keeping the work on the laptop.
+**Command-pattern permissions.** Rules like `Bash(rm *)` and `Write(ledger/**)` don't
+survive. The hosted toolset enables or disables a whole tool. Finer control is a
+property of the environment, through the sandbox and vault egress, so it can't travel
+on the agent.
+
+**Stdio MCP servers.** Managed Agents connects to MCP servers of `type: "url"` over
+Streamable HTTP. A server that Claude Code starts as a local subprocess has no hosted
+representation. You must publish it as an endpoint first.
+
+**The environment itself.** An environment is a container image, a network policy, and
+credential vaults. A laptop has none of them to hand over.
+
+The configuration transfers. The restrictions on it don't. That's the same conclusion
+the issue corpus reaches from the opposite direction, and it's why the environment is
+underivable rather than merely unset: the limits you lose from the agent are exactly the
+limits the sandbox gives back.
 
 ## Why the destination is worth reaching
 
-Managed Agents is the same inference with an orchestrator above it. The bounds are
-properties of that orchestrator, not of the endpoint:
+Managed Agents is the same inference with an orchestrator above it. The limits belong to
+that orchestrator, not to the endpoint:
 
-| Bound | Your own harness | Managed Agents |
-|---|---|---|
-| Cost | Accumulate `usage`, stop the loop | Session budget: dollar-denominated, enforced between model requests |
-| Quality | Call a second model against a rubric | `user.define_outcome`: a required rubric graded in a **separate context window** |
-| Authority | Container with scoped credentials | Per-session sandbox; **vault credentials substituted at egress, never visible inside it** |
+| Limit | Your own harness | Managed Agents |
+| --- | --- | --- |
+| Cost | Track `usage` and stop the loop | A dollar-denominated session budget, enforced between model requests |
+| Quality | Call a second model against a rubric | `user.define_outcome`, graded in a separate context window |
+| Authority | A container with scoped credentials | A per-session sandbox, with vault credentials substituted at egress |
 
-**A competent team can build the first two.** Anthropic hosts them rather than
-inventing them. One row is different in kind: egress substitution means the secret
-never enters the sandbox, so the agent never holds the credential material at all. A
-self-hosted container can scope credentials down; the process still has them.
+A competent team can build the first two. The third is different in kind. Egress
+substitution means the secret never enters the sandbox, so the agent never holds the
+credential material.
 
-That is the bound that answers the sharpest issue in the corpus below — an agent that
-hit a 403, went looking, found an admin secret in a *sibling project's* `.env` and
-minted itself a token. Scoping would not have stopped it. Not holding the secret would.
+That answers the sharpest issue in the corpus: an agent hit a 403, searched for a way
+through, found an admin secret in a sibling project's `.env`, and minted itself a token.
+Scoping the credential wouldn't have stopped it. Not holding it would have.
 
-## The corpus, now supporting evidence rather than the argument
+## Evidence from user reports
 
-Fourteen issues in `anthropics/claude-code` ([`research/issues.tsv`](research/issues.tsv),
-each opened and read). Eleven are the agent acting outside its mandate rather than
-producing bad work.
+Fourteen issues in `anthropics/claude-code`, each opened and read. See
+[`research/issues.tsv`](research/issues.tsv). Eleven show the agent acting outside its
+mandate rather than producing bad work.
 
-| Issue | What it did |
-|---|---|
-| [#85919](https://github.com/anthropics/claude-code/issues/85919) | Hit a 403, found an admin secret in a *sibling project's* `.env`, minted itself a token with expanded capabilities |
-| [#86667](https://github.com/anthropics/claude-code/issues/86667) | Bypassed a system-path guard, kept running unsupervised after timeout, wiped the `C:\` drive root |
+| Issue | What the agent did |
+| --- | --- |
+| [#85919](https://github.com/anthropics/claude-code/issues/85919) | Found an admin secret in a sibling project's `.env` and minted a token with expanded capabilities |
+| [#86667](https://github.com/anthropics/claude-code/issues/86667) | Bypassed a system-path guard, kept running after timeout, and wiped the `C:\` drive root |
 | [#82063](https://github.com/anthropics/claude-code/issues/82063) | Deployed to production without asking |
-| [#81035](https://github.com/anthropics/claude-code/issues/81035) | A *failed* nested fork still spawned a live process that merged PRs with admin bypass |
-| [#79103](https://github.com/anthropics/claude-code/issues/79103) | Asks outright for a pre-flight checkpoint before unattended runs |
+| [#81035](https://github.com/anthropics/claude-code/issues/81035) | Spawned a live process from a failed fork that merged pull requests with admin bypass |
+| [#79103](https://github.com/anthropics/claude-code/issues/79103) | Asked for a preflight checkpoint before unattended runs |
 
-\#82063 is the point in a user's own words: *"no harm done, but it makes me very
-worried."* Nothing broke and they filed anyway.
+Issue #82063 states the problem in a user's own words: "no harm done, but it makes me
+very worried." Nothing broke, and they filed anyway.
 
-These are Claude Code issues, so they are directionally relevant rather than proof for
-the API. Their job in this case has changed: they no longer carry the argument on
-their own — `probe.sh` and `promote.py` do that, and reproduce anywhere — but they
-show what the missing containment costs at the scale where it currently happens.
+These are Claude Code issues, so they point in the right direction rather than proving
+the case for the API. They no longer carry the argument alone. `probe.sh` and
+`promote.py` reproduce on any machine.
 
-## Competitive pressure: the off-ramp shipped first
+## Competitive pressure
 
 [`antigravity-for-claude-code`](https://github.com/yuting0624/antigravity-for-claude-code)
-is a Claude Code plugin, 303 stars, MIT, unaffiliated. It routes token-heavy work out
-of Claude Code to Gemini via Google's `agy` CLI. A **SessionStart hook auto-injects a
-cost-aware routing policy**, so once installed the offloading is the default rather
-than a deliberate act.
+is an unaffiliated Claude Code plugin with 303 stars. It routes token-heavy work out of
+Claude Code to Gemini through Google's `agy` CLI. A `SessionStart` hook injects a
+cost-aware routing policy, so after you install it, offloading is the default.
 
-Its existence establishes the asymmetry this item is about. Routing Claude Code →
-Gemini needs no identity reconciliation: different vendor, separate auth, nobody
-expects one account. Routing Claude Code → Managed Agents needs it *precisely because
-it is the same company*. Anthropic is penalised for owning both ends — the
-competitor's off-ramp is architecturally cheaper to build than Anthropic's own
-on-ramp, which is why it shipped first, from a stranger.
+The asymmetry matters. Routing to Gemini needs no identity work, because it's a
+different vendor and nobody expects one account. Routing to Managed Agents needs it
+precisely because it's the same company. The competitor's exit is cheaper to build than
+Anthropic's own entrance, which is why it shipped first.
 
-**Its benchmark is not cited here.** The −27% / −64% figures rest on n=1, a three-case
-quality eval, Gemini-side cost estimated from character-count approximations, and
-rates in a user-editable `prices.json` the author explicitly says to replace before
-quoting. The citable fact is that the plugin exists and what it claims — not the
-magnitude. 303 stars is a demand signal, not a measurement.
+This proposal doesn't cite the plugin's benchmark. Its cost figures rest on one task, a
+three-case quality evaluation, character-count estimates for the Gemini side, and rates
+in a user-editable `prices.json` that the author tells you to replace before quoting any
+figure. The citable fact is that the plugin exists and what it claims.
 
-It also names a failure mode the rest of the slate does not cover: **within-session
-spend routing.** The customer never churns. Seat, org and subscription persist; only
-per-session token volume falls. Account-level retention dashboards read that as healthy.
-
-## Why this isn't solved already
-
-Spend controls are more mature than they look from outside — tier caps, self-set org
-and workspace limits, bounded auto-reload, a Spend Limits API, an Analytics cost API.
-Probing them killed four candidate ideas as already-built. Probing the `ant` CLI
-killed a fifth: "hosted agents are not available from the command line" is false.
-
-**Managed Agents has the bounds, and the scheduled path is already bounded.** A
-deployment takes a required `environment_id`, the same `budget` object as a session,
-a `user.define_outcome`, and vaults. Nothing there needs building. The gaps are
-narrower: every bound is opt-in and set one object at a time, a session budget is
-**create-only** so a session started without one can never be capped, and nothing on
-an agent says whether any of its runs are bounded at all.
-
-Anthropic's own hosting guidance points the same way for a different reason — the
-Agent SDK hosting page tells self-hosters who don't need infrastructure control to
-"consider Managed Agents instead." That is a hosting-convenience argument, and it is
-corroboration that the destination is right. It is not a motion: nothing targets a
-workload, measures a move, or routes anyone there.
-
-## Cost to build
-
-One to two months. Two shapes were open; the field mapping chose the first.
-
-- **The promotion path** — read a working Claude Code configuration and emit the
-  agent, environment and deployment together, so the bounds are set at the moment
-  someone decides to stop watching. `prototype/promote.py` is the agent third of this,
-  and it exists.
-- The remaining work is not the mapping. It is the identity boundary, the environment
-  (which the mapping cannot derive), and the surfacing — a developer has to learn the
-  destination exists from inside `claude`.
+It also names a failure mode the rest of the slate misses: **within-session spend
+routing**. The customer never churns. The seat, the organization, and the subscription
+all persist. Only per-session token volume falls, so account-level retention dashboards
+read it as healthy.
 
 ## Success metrics
 
-- **Workloads that move to unattended operation**, against their own prior supervised
-  baseline. The thesis in one number.
-- **Spend 90 days after the move.** The revenue claim, and it lags.
-- **Sessions run with a budget and a rubric set.** If people route workloads but leave
-  both unset, the bounds were not why they came.
+| Metric | What it tests |
+| --- | --- |
+| Workloads that move to unattended operation, against their own supervised baseline | The core claim |
+| Spend 90 days after the move | The revenue claim. It lags. |
+| Share of sessions that set a budget and a rubric | Whether limits were the reason people came |
 
-Guardrail: **incidents on unattended runs**. If routing moves the failure rather than
-containing it, the argument is wrong.
+**Guardrail:** incidents on unattended runs. If promotion moves the failure instead of
+containing it, this proposal is wrong.
 
-The falsifier is clean, and it is cheaper than the build: **ship the pointer first.**
-Disambiguate `claude agents`, name the hosted destination, and watch hosted-agent
-creation. If it does not move, discovery was never the gate.
+**Leading indicators**, all watchable today: growth in traffic that runs on a schedule,
+growth in Managed Agents sessions, and the share of those sessions that set a budget or
+a rubric.
+
+## Test the cheapest claim first
+
+Don't build the promotion path to find out whether discovery is the problem. Ship the
+pointer: disambiguate `claude agents`, name the hosted destination, and watch
+hosted-agent creation. That takes days.
+
+If creation doesn't move, discovery was never the gate, and the argument in this
+document is wrong.
 
 ## Risks
 
-- **The identity finding is n=1, on a Pro subscription.** If Console orgs resolve to
-  one org, the mechanism section is about a segment, not the platform. This is the
-  first thing to check and it invalidates a load-bearing claim if it goes the other way.
-- **"Identity reconciliation is hard" is inferred, not verified.** It may already be
-  solvable with existing org-linking, or it may be deliberate — subscription and
-  metered are different business models with different terms. If deliberate, unifying
-  them is a policy argument, not a growth feature.
-- **Timing.** For a bet on direction, early and wrong cost the same. If fleets of
-  unattended agents are three years out, this is correct and built two years too soon.
-- The rubric fits artifact work — reports, models, pipelines — and fits open-ended
+- **The identity finding rests on one account, on a Pro subscription.** If a Console
+  organization resolves to a single organization, the identity section describes a
+  segment rather than the platform. Check a second account first.
+- **"Identity reconciliation is hard" is inferred, not verified.** Existing
+  organization-linking might solve it. The split might also be deliberate, because
+  subscriptions and metered billing are different business models. If it's deliberate,
+  unifying them is a policy argument, not a growth feature, and the cost estimate here
+  is wrong.
+- **Timing.** For a bet on direction, early and wrong cost the same.
+- **Rubrics fit artifact work**, such as reports and pipelines. They fit open-ended
   codebase maintenance badly, which is where the corpus came from.
-- It resembles the M. Gating untrusted work on a check you specify is the parity gate's
-  hypothesis. Different theme and different mechanics, but a reader will see it.
-- The grader is Claude judging Claude. The M's "judge disagrees with the team" risk is
-  inherited in full.
-- Teams may not accept a hosted sandbox for work that touches their infrastructure —
-  exactly the work with the largest blast radius.
-- A team that has already built its own metering and containment gets only the egress
-  row, and buys a migration to get it.
+- **This resembles the migration proposal.** Gating untrusted work on a check you
+  specify is that proposal's hypothesis too.
+- **The grader is Claude judging Claude.**
+- **Teams might not accept a hosted sandbox** for work that touches their own
+  infrastructure, which is the work with the largest blast radius.
+- **A team that already built its own metering and containment** gains only the egress
+  row, and pays a migration to get it.
 
-## Evidence
+## Reproduce these results
 
-Platform quotations come from Anthropic documentation fetched 2 September 2026.
-Binary behaviour was captured 2–3 September 2026 from Claude Code 2.1.259 and `ant`
-1.29.0 and reproduces via `research/probe.sh`. Issue numbers are real and each was
-opened and read. Every figure in [Containment is what does not
-cross](#containment-is-what-does-not-cross) is printed by `prototype/promote.py`, so
-this page and the code cannot disagree.
+Run both from this directory. Neither reads an account or calls an API:
 
-Four numbers decide this and all are internal:
+```
+./research/probe.sh
+./prototype/promote.py map prototype/fixtures/sample-project
+```
 
-- what fraction of API organizations run anything unattended;
-- how many have a single-day spend spike over 5× their trailing average;
-- what share of Claude Code users have ever created a Managed Agent, and what share of
-  Managed Agents were created by someone who already had Claude Code installed;
-- what share of Claude Code sessions delegate work to a non-Anthropic model.
+`probe.sh` prints the collision table from the two installed binaries. `promote.py`
+exits `1` when it finds fields that can't cross, which is the expected result for the
+sample project.
+
+One command needs credentials. It reports only whether the two organizations agree, and
+prints no identifier, workspace, email, or name:
+
+```
+./research/probe.sh --identity
+```
+
+## Sources and limits
+
+Platform quotations come from Anthropic documentation retrieved September 2, 2026.
+Binary behavior comes from Claude Code 2.1.259 and `ant` 1.29.0, captured September 2–3,
+2026. Every count in [What transfers](#what-transfers) is printed by `promote.py`, so
+this document and the code can't disagree.
+
+Two claims were tested and failed:
+
+- The documented credential conflict between `claude` and `ant` didn't reproduce.
+- "Six of seven fields carry over" was disproved by the prototype.
+
+Four numbers decide this proposal, and all of them are internal:
+
+- What fraction of API organizations run anything unattended.
+- How many have a single-day spend spike over five times their trailing average.
+- What share of Claude Code users have ever created a Managed Agent, and what share of
+  Managed Agents were created by someone who already had Claude Code installed.
+- What share of Claude Code sessions delegate work to a non-Anthropic model.
