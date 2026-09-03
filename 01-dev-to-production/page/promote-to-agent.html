@@ -93,6 +93,14 @@ textarea.i{resize:vertical;line-height:1.55;min-height:70px}
 .cnt{background:var(--field);border-radius:5px;padding:0 6px;font-size:11.5px;color:var(--ink-2)}
 .al{margin-left:auto;display:inline-flex;align-items:center;gap:5px;background:var(--ok-dim);color:var(--ok);border-radius:6px;padding:3px 9px;font-size:12px}
 .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.src{margin-top:5px;font-size:11.5px;color:var(--ink-3);font-family:var(--mono)}
+.src.need{color:var(--accent-ink)}
+.lnk{background:none;border:none;color:var(--link);font-size:12.5px;padding:0}
+.rr{display:flex;gap:10px;padding:7px 11px;border-bottom:1px solid var(--rule-soft);font-size:12.5px}
+.rr:last-child{border-bottom:none}
+.rr span{color:var(--ink-2);width:112px;flex:none}
+.rr b{font-weight:450}
+.btn-w:disabled{opacity:.35;cursor:not-allowed}
 .foot{margin-top:26px;padding-top:14px;border-top:1px solid var(--rule);font-size:11.5px;color:var(--ink-3);line-height:1.6;max-width:880px}
 .foot b{color:var(--ink-2)}
 .tg{display:inline-flex;align-items:center;gap:8px;font-size:12.5px;color:var(--ink-2);border:1px solid var(--rule);background:var(--panel);border-radius:8px;padding:5px 10px;margin-left:8px}
@@ -109,8 +117,7 @@ textarea.i{resize:vertical;line-height:1.55;min-height:70px}
     <div class="ws"><span>Default</span><span class="caret">&#9662;</span></div>
     <div class="omni"><span>Search Console&hellip;</span><kbd>&#8984;K</kbd></div>
     <nav class="nav">
-      <button class="ni">Dashboard</button>
-      <button class="ni">API keys</button>
+      <button class="ni">Dashboard</button><button class="ni">API keys</button>
       <div class="nl">Build<span class="c">&#9662;</span></div>
       <button class="ni sub">Playground<span class="badge">NEW</span></button>
       <button class="ni sub">Files</button><button class="ni sub">Skills</button>
@@ -127,127 +134,123 @@ textarea.i{resize:vertical;line-height:1.55;min-height:70px}
       <div class="nl">Claude Code<span class="c">&#8250;</span></div>
       <div class="nl">Manage<span class="c">&#8250;</span></div>
     </nav>
-    <div class="sfoot">
-      <div class="row">Notifications</div>
+    <div class="sfoot"><div class="row">Notifications</div>
       <div class="row">Documentation</div>
-      <div class="row">Credits <span class="v">$11.28</span></div>
-    </div>
+      <div class="row">Credits <span class="v">$11.28</span></div></div>
   </aside>
 
   <main class="main">
-    <div class="crumb"><b>Agents</b><span>/</span><span>Deep researcher</span></div>
+    <div class="crumb"><b>Agents</b><span>/</span><span>Import from Claude Code</span></div>
 
     <div class="h">
-      <h1>Deep researcher</h1>
-      <span class="pill">Active</span>
-      <span class="pill pill-p" id="prov" hidden>Promoted from Claude Code</span>
-      <span class="r">
-        <button class="btn btn-w">&#9654; Start session</button>
-        <button class="btn" style="padding:6px 10px">&#8942;</button>
-      </span>
+      <h1>Import from Claude Code</h1>
+      <span class="pill pill-p">Proposal</span>
+      <span class="r"><button class="btn">Cancel</button>
+        <button class="btn btn-w" id="go">Create 3 resources</button></span>
     </div>
-    <p class="sub">Conducts multi-step web research with source synthesis and citations.</p>
-    <p class="meta">agent_01PhrvnAz7o3Brm6EFvLPiKK <span class="n">&middot; Last updated 2 days ago</span></p>
-
-    <div class="tabs">
-      <button class="tab on">Configuration</button>
-      <button class="tab">Sessions</button>
-      <button class="tab">Deployments</button>
-      <button class="tab">Observability</button>
-    </div>
-
-    <div class="tbar">
-      <span class="vsel">Version: <b style="color:var(--ink)">v1</b> &#9662;</span>
-      <span class="seg"><button class="on">Rendered</button><button>Raw</button></span>
-    </div>
+    <p class="sub">Runs a configuration that already works on your machine, in a sandbox, on a schedule.</p>
+    <p class="meta">~/.claude &middot; claude-growth-surfaces <span class="n">&middot; scanned just now</span></p>
 
     <section class="sec">
-      <div class="sl"><h2>General</h2><p>What this agent is and how it&rsquo;s prompted.</p></div>
+      <div class="sl"><h2>Agent</h2><p>Model, prompt, skills and tools. Everything here has an
+        equivalent on your machine. <a href="#">Learn more &#8599;</a></p></div>
       <div class="fl">
         <div><label>Name</label><input class="i" value="Deep researcher"></div>
         <div><label>Model</label>
           <div class="i mono" style="display:flex;align-items:center;gap:8px">claude-opus-5
             <span style="color:var(--ink-3);font-family:var(--sans);font-size:12px">Low</span>
-            <span style="margin-left:auto;color:var(--ink-3)">&#9662;</span></div></div>
-        <div><label>Description <span class="opt">(optional)</span></label>
-          <textarea class="i" rows="2">Conducts multi-step web research with source synthesis and citations.</textarea></div>
-        <div><label>System prompt <span class="opt">(optional)</span></label>
-          <textarea class="i" rows="14">You are a research agent. Given a question or topic:
+            <span style="margin-left:auto;color:var(--ink-3)">&#9662;</span></div>
+          <div class="src">settings.json</div></div>
+        <div><label>System prompt</label>
+          <textarea class="i" rows="7">You are a research agent. Given a question or topic:
 
 1. Decompose it into 3-5 concrete sub-questions that, answered together, cover the topic.
 2. For each sub-question, run targeted web searches and fetch the most authoritative sources (prefer primary sources, official docs, peer-reviewed work over blog posts and aggregators).
 3. Read the sources in full &mdash; don't skim. Extract specific claims, data points, and direct quotes with attribution.
 4. Synthesize a report that answers the original question. Structure it by sub-question, cite every non-obvious claim inline, and close with a "confidence &amp; gaps" section noting where sources disagreed or where you couldn't find good coverage.
 
-Be skeptical. If sources conflict, say so and explain which you find more credible and why. Don't paper over uncertainty with confident-sounding prose.</textarea></div>
+Be skeptical. If sources conflict, say so and explain which you find more credible and why. Don't paper over uncertainty with confident-sounding prose.</textarea>
+          <div class="src">CLAUDE.md</div></div>
+        <div><label>Skills</label>
+          <div class="i">huggingface-spaces, verify-before-claiming</div>
+          <div class="src">~/.claude/skills</div></div>
+        <div><label>Tools</label>
+          <div class="card"><div class="ct"><span class="ic">&#9776;</span>
+            <span class="nm">Built-in tools<span>agent_toolset_20260401</span></span></div>
+            <div class="cb"><span>&#8250;</span> Tool permissions <span class="cnt">8</span>
+              <span class="al">&#10003; Always allow &#9662;</span></div></div>
+          <div class="src">settings.json &middot; carried over unchanged</div></div>
       </div>
     </section>
 
     <section class="sec">
-      <div class="sl"><h2>Multiagent</h2><p>Subagents this agent can spawn and delegate work to. <a href="#">Learn more &#8599;</a></p></div>
-      <div class="fl"><div class="add"><button>+ Add subagent</button><button>+ Add advisor</button></div></div>
-    </section>
-
-    <section class="sec">
-      <div class="sl"><h2>Skills</h2><p>Packaged instructions and scripts this agent loads when it needs them. <a href="#">Learn more &#8599;</a></p></div>
-      <div class="fl"><div class="add"><button>+ Add skill</button></div></div>
-    </section>
-
-    <section class="sec">
-      <div class="sl"><h2>Tools</h2><p>Everything this agent can call: built-in tools, MCP servers, and your own tool definitions. <a href="#">Learn more &#8599;</a></p></div>
+      <div class="sl"><h2>Environment</h2><p>Where tools execute. Required, and the one thing your
+        machine cannot supply. <a href="#">Learn more &#8599;</a></p></div>
       <div class="fl">
-        <div class="card">
-          <div class="ct"><span class="ic">&#9776;</span>
-            <span class="nm">Built-in tools<span>agent_toolset_20260401</span></span>
-            <button class="x">&times;</button></div>
-          <div class="cb"><span>&#8250;</span> Tool permissions <span class="cnt">8</span>
-            <span class="al">&#10003; Always allow &#9662;</span></div>
-        </div>
-        <div class="add"><button>+ Add MCP server</button><button>+ Add custom tool</button></div>
+        <div><label>Sandbox</label>
+          <select class="i" id="env">
+            <option value="">Select an environment</option>
+            <option value="cloud">Anthropic cloud sandbox</option>
+            <option value="vpc">Self-hosted &middot; your VPC</option>
+          </select>
+          <div class="src need">no equivalent &mdash; required</div></div>
+        <div id="reach" hidden></div>
+        <div><label>Credential vault</label>
+          <div class="i" style="display:flex;align-items:center;gap:8px" id="vaultbox">
+            <span id="vaulttxt" style="color:var(--ink-3)">2 secrets found in .env</span>
+            <button class="lnk" id="vault" style="margin-left:auto">Move to a vault</button></div>
+          <div class="src">.env &middot; substituted at egress, never inside the sandbox</div></div>
       </div>
     </section>
 
-    <section class="sec prop" id="unatt">
-      <div class="sl"><h2>Unattended <span class="pill pill-p">Proposed</span></h2>
-        <p>Defaults every session and deployment inherits when nobody is watching.
+    <section class="sec">
+      <div class="sl"><h2>Deployment</h2><p>The schedule, and the ceilings each run inherits.
         <a href="#">Learn more &#8599;</a></p></div>
       <div class="fl">
-        <div><label>Environment</label>
-          <div class="i need" style="display:flex;align-items:center;color:var(--accent-ink)">
-            Not set <span style="margin-left:auto">&#9662;</span></div></div>
+        <div><label>Schedule</label><input class="i" value="0 2 * * *  &middot;  daily 02:00">
+          <div class="src">~/.claude/tasks</div></div>
         <div class="row2">
-          <div><label>Session budget</label>
-            <input class="i need" placeholder="0.00 USD"></div>
-          <div><label>Outcome rubric</label>
-            <div class="i need" style="display:flex;align-items:center;color:var(--accent-ink)">
-              Not set <span style="margin-left:auto">&#9662;</span></div></div>
+          <div><label>Session budget <span class="opt">(optional)</span></label>
+            <input class="i" placeholder="0.00 USD" id="bud">
+            <div class="src need">no equivalent</div></div>
+          <div><label>Outcome rubric <span class="opt">(optional)</span></label>
+            <select class="i" id="rub"><option value="">None</option>
+              <option value="1">research-quality.md</option></select>
+            <div class="src need">no equivalent</div></div>
         </div>
-        <div><label>Credential vault</label>
-          <div class="i need" style="display:flex;align-items:center;color:var(--accent-ink)">
-            Not set <span style="margin-left:auto">&#9662;</span></div></div>
       </div>
     </section>
 
-    <p class="foot"><b>Replica of Managed Agents &rsaquo; Agents &rsaquo; Deep researcher on
-    platform.claude.com, read 2 September 2026.</b> Every field above the marked section is the
-    live page and its real values. The <em>Unattended</em> section is the proposal: environment,
-    budget, rubric and vault are set per session today, so nothing on an agent says whether it can
-    be left alone.
-    <span class="tg"><button class="sw on" id="sw" role="switch" aria-checked="true"
-      aria-label="Show the proposed section"></button><span id="lbl">Showing the proposal</span></span></p>
+    <p class="foot"><b>Proposal, not a shipped feature.</b> Field names and objects are the live
+    Console: an agent, an environment and a deployment, created together. The agent values are the
+    real <em>Deep researcher</em> agent. Budget and rubric are optional on a deployment and empty
+    here because nothing on your machine sets them &mdash; the import is the moment you would.
+    Read 2 September 2026.</p>
   </main>
 </div>
 
 <script>
-var on = true;
-document.getElementById("sw").addEventListener("click", function(){
-  on = !on;
-  this.classList.toggle("on", on);
-  this.setAttribute("aria-checked", String(on));
-  document.getElementById("unatt").hidden = !on;
-  document.getElementById("prov").hidden = !on;
-  document.getElementById("lbl").textContent = on
-    ? "Showing the proposal" : "Showing the page as it ships";
+var ENVS={
+  cloud:[["Filesystem","the repo, mounted at /mnt/session"],
+         ["Host machine","unreachable"],
+         ["Network","allowlist"]],
+  vpc:[["Filesystem","a volume you mount"],
+       ["Host machine","unreachable"],
+       ["Network","your VPC egress rules"]]
+};
+function render(){
+  var v=document.getElementById("env").value, box=document.getElementById("reach");
+  box.hidden=!v;
+  if(v){box.innerHTML='<label>Reach</label><div class="i" style="padding:0">'+
+    ENVS[v].map(function(r){return '<div class="rr"><span>'+r[0]+'</span><b>'+r[1]+'</b></div>'}).join("")+
+    '</div>';}
+  document.getElementById("go").disabled=!v;
+}
+document.getElementById("env").addEventListener("change",render);
+document.getElementById("vault").addEventListener("click",function(){
+  document.getElementById("vaulttxt").textContent="vault_01Research";
+  document.getElementById("vaulttxt").style.color="var(--ink)";
+  this.remove();
 });
-document.getElementById("prov").hidden = false;
+render();
 </script>
