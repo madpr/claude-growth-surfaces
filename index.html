@@ -5,16 +5,16 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap">
 
 <style>
-/* Index for the working demos. Palette carried from the pages it links to:
-   the same warm ground, the same coral, and the terminal's own near-black for
-   the demo that is a terminal. */
+/* Index for the slate. Ordered and described the way the repository README is:
+   three ideas sized by engineering cost, then the bonus. Palette carried from
+   the pages it links to. */
 :root{
   --bg:#FAFAF8; --panel:#FFFFFF; --sunk:#F4F3EF;
   --ink:#191817; --ink-2:#5E5C55; --ink-3:#8E8B82;
   --rule:#E6E4DC; --rule-soft:#F0EEE8;
   --accent:#D97757; --accent-dim:#FBF0EA; --accent-ink:#A84E2C;
   --term:#111010; --term-txt:#E9E5DD; --term-dim:#7E786D; --term-new:#E08A66;
-  --ok:#2E7D5B;
+  --ok:#2E7D5B; --warn:#8A6A1F;
   --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
   --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
 }
@@ -24,7 +24,7 @@
     --ink:#EDEAE3; --ink-2:#B0ABA1; --ink-3:#837E74;
     --rule:#2C2A26; --rule-soft:#232120;
     --accent:#E08A66; --accent-dim:#2A211C; --accent-ink:#EFA98A;
-    --term:#0B0A09; --ok:#74AE8D;
+    --term:#0B0A09; --ok:#74AE8D; --warn:#DCA646;
   }
 }
 :root[data-theme="dark"]{
@@ -32,7 +32,7 @@
   --ink:#EDEAE3; --ink-2:#B0ABA1; --ink-3:#837E74;
   --rule:#2C2A26; --rule-soft:#232120;
   --accent:#E08A66; --accent-dim:#2A211C; --accent-ink:#EFA98A;
-  --term:#0B0A09; --ok:#74AE8D;
+  --term:#0B0A09; --ok:#74AE8D; --warn:#DCA646;
 }
 
 *{box-sizing:border-box}
@@ -41,87 +41,93 @@ body{
   font-family:var(--sans); font-size:16px; line-height:1.6;
   -webkit-font-smoothing:antialiased;
 }
-.wrap{max-width:1000px; margin:0 auto; padding:64px 32px 90px}
+.wrap{max-width:1040px; margin:0 auto; padding:64px 32px 90px}
 a{color:inherit}
 
-header{border-bottom:1px solid var(--rule); padding-bottom:30px}
+header{border-bottom:1px solid var(--rule); padding-bottom:28px}
 .eyebrow{
   font-family:var(--mono); font-size:11.5px; font-weight:700;
   letter-spacing:.1em; text-transform:uppercase; color:var(--accent-ink);
 }
-h1{margin:14px 0 0; font-size:36px; line-height:1.15; font-weight:600; letter-spacing:-.025em; text-wrap:balance}
-.lede{margin:16px 0 0; font-size:17px; color:var(--ink-2); max-width:60ch}
+h1{margin:14px 0 0; font-size:34px; line-height:1.15; font-weight:600; letter-spacing:-.025em}
+.lede{margin:15px 0 0; font-size:16.5px; color:var(--ink-2); max-width:64ch}
+.lede b{color:var(--ink); font-weight:600}
 
-h2.sh{
-  margin:48px 0 0; font-size:12px; font-weight:700; letter-spacing:.09em;
-  text-transform:uppercase; color:var(--ink-3); font-family:var(--mono);
+.idea{
+  display:grid; grid-template-columns:64px minmax(0,1fr); gap:26px;
+  padding:34px 0; border-bottom:1px solid var(--rule-soft);
 }
+.size{
+  font-family:var(--mono); font-size:19px; font-weight:700; color:var(--accent-ink);
+  background:var(--accent-dim); border-radius:9px; height:44px;
+  display:grid; place-items:center;
+}
+.size.bonus{font-size:11px; letter-spacing:.06em; color:var(--ink-3); background:var(--sunk)}
+.idea h2{margin:6px 0 0; font-size:21px; font-weight:600; letter-spacing:-.015em}
+.meta{
+  margin-top:7px; font-family:var(--mono); font-size:11.5px; color:var(--ink-3);
+  display:flex; flex-wrap:wrap; gap:7px 14px;
+}
+.idea p{margin:11px 0 0; font-size:15px; color:var(--ink-2); max-width:66ch}
+.idea p b{color:var(--ink); font-weight:600}
 
-.cards{display:grid; grid-template-columns:1fr 1fr; gap:18px; margin-top:18px}
-.card{
+.links{display:flex; flex-wrap:wrap; gap:10px; margin-top:16px}
+.lk{
+  display:inline-flex; align-items:center; gap:7px; text-decoration:none;
+  border:1px solid var(--rule); border-radius:8px; padding:7px 13px;
+  font-size:13.5px; background:var(--panel); transition:border-color .14s;
+}
+.lk:hover{border-color:var(--accent)}
+.lk:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+.lk .arw{color:var(--accent-ink); font-family:var(--mono); font-size:12px}
+.lk.live{border-color:var(--accent); background:var(--accent-dim)}
+.lk.live b{font-weight:600}
+
+/* L's two demos, previewed from the pages themselves. */
+.demos{display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:18px}
+.demo{
   display:flex; flex-direction:column; text-decoration:none;
-  border:1px solid var(--rule); border-radius:12px; background:var(--panel);
+  border:1px solid var(--rule); border-radius:11px; background:var(--panel);
   overflow:hidden; transition:border-color .14s, transform .14s;
 }
-.card:hover{border-color:var(--accent); transform:translateY(-2px)}
-.card:focus-visible{outline:2px solid var(--accent); outline-offset:3px}
-.card .body{padding:18px 20px 20px}
-.card h3{margin:0; font-size:17px; font-weight:600; letter-spacing:-.01em}
-.card p{margin:7px 0 0; font-size:13.5px; color:var(--ink-2); line-height:1.55}
-.card .go{
-  margin-top:13px; font-family:var(--mono); font-size:12px; color:var(--accent-ink);
-  font-weight:500;
+.demo:hover{border-color:var(--accent); transform:translateY(-2px)}
+.demo:focus-visible{outline:2px solid var(--accent); outline-offset:3px}
+.pv{height:150px; border-bottom:1px solid var(--rule); overflow:hidden}
+.pv.termpv{
+  background:var(--term); padding:13px 15px; font-family:var(--mono);
+  font-size:10.5px; line-height:1.6; color:var(--term-txt); white-space:pre;
 }
-
-/* Each preview is drawn from the page it links to. */
-.pv{height:158px; border-bottom:1px solid var(--rule); overflow:hidden; position:relative}
-.pv.termpv{background:var(--term); padding:14px 16px; font-family:var(--mono); font-size:10.5px; line-height:1.6; color:var(--term-txt); white-space:pre}
 .pv .d{color:var(--term-dim)} .pv .n{color:var(--term-new)}
 .pv.uipv{background:var(--sunk); padding:13px 15px}
-.pv .bar{height:7px; border-radius:3px; background:var(--rule); margin-bottom:8px}
-.pv .bar.s{width:38%} .pv .bar.m{width:62%} .pv .bar.l{width:80%}
+.pv .bar{height:7px; border-radius:3px; background:var(--rule); margin-bottom:9px; width:78%}
 .pv .chip{
   display:inline-block; font-family:var(--mono); font-size:9.5px; font-weight:700;
   letter-spacing:.05em; text-transform:uppercase; padding:1px 5px; border-radius:3px;
   background:var(--accent-dim); color:var(--accent-ink); margin-bottom:9px;
 }
-.pv .rulerow{
-  display:flex; gap:7px; align-items:center; font-family:var(--mono);
-  font-size:10px; color:var(--ink-2); padding:3px 0;
-}
-.pv .tick{color:var(--ok); font-weight:700}
-.pv .cross{color:#8A6A1F; font-weight:700}
+.pv .rr{display:flex; gap:7px; align-items:center; font-family:var(--mono); font-size:10px; color:var(--ink-2); padding:2.5px 0}
+.pv .tick{color:var(--ok); font-weight:700} .pv .cross{color:var(--warn); font-weight:700}
+.demo .body{padding:15px 17px 17px}
+.demo h3{margin:0; font-size:15.5px; font-weight:600}
+.demo p{margin:6px 0 0; font-size:13px; color:var(--ink-2); line-height:1.5; max-width:none}
+.demo .go{margin-top:11px; font-family:var(--mono); font-size:11.5px; color:var(--accent-ink)}
 
 .flow{
-  display:flex; align-items:center; gap:10px; margin-top:14px;
-  font-family:var(--mono); font-size:12px; color:var(--ink-3);
+  display:flex; flex-wrap:wrap; align-items:center; gap:9px; margin-top:13px;
+  font-family:var(--mono); font-size:11.5px; color:var(--ink-3);
 }
 .flow b{color:var(--ink-2); font-weight:500}
 
-.rows{margin-top:16px; border:1px solid var(--rule); border-radius:11px; overflow:hidden}
-.row{
-  display:flex; gap:16px; align-items:baseline; padding:14px 18px;
-  border-bottom:1px solid var(--rule-soft); text-decoration:none; color:inherit;
-}
-.row:last-child{border-bottom:none}
-.row:hover{background:var(--sunk)}
-.row .k{
-  font-family:var(--mono); font-size:11px; font-weight:700; letter-spacing:.06em;
-  color:var(--ink-3); width:26px; flex:none; padding-top:2px;
-}
-.row .t{flex:1; min-width:0}
-.row .t b{font-size:15px; font-weight:600; display:block}
-.row .t span{font-size:13.5px; color:var(--ink-2)}
-.row .arw{color:var(--accent-ink); font-family:var(--mono); font-size:13px; flex:none}
-
-footer{margin-top:52px; padding-top:20px; border-top:1px solid var(--rule); font-size:13px; color:var(--ink-3); line-height:1.65}
+footer{margin-top:42px; font-size:13px; color:var(--ink-3); line-height:1.65}
 footer code{font-family:var(--mono); font-size:12px; color:var(--ink-2)}
 footer a{color:var(--accent-ink)}
 
 @media(max-width:760px){
   .wrap{padding:38px 18px 60px}
-  h1{font-size:27px}
-  .cards{grid-template-columns:1fr}
+  h1{font-size:26px}
+  .idea{grid-template-columns:44px minmax(0,1fr); gap:16px; padding:26px 0}
+  .size{height:36px; font-size:16px}
+  .demos{grid-template-columns:1fr}
 }
 </style>
 
@@ -129,94 +135,142 @@ footer a{color:var(--accent-ink)}
 
 <header>
   <div class="eyebrow">Claude API &middot; growth surfaces</div>
-  <h1>Move unattended work onto the platform</h1>
+  <h1>Three ideas, sized by engineering cost</h1>
   <p class="lede">
-    Claude Code runs agents you supervise. Managed Agents runs agents you don't. Almost
-    nobody crosses from one to the other, because the two halves are separate tools on
-    separate accounts that collide on every word you would search.
+    North star: <b>increase Claude API revenue.</b> Each idea was checked against what
+    the platform already ships before it was written up, and the checking is the
+    load-bearing part &mdash; five surfaces were probed and found already built, killing
+    five candidates. What survives is what survived that.
   </p>
 </header>
 
-<h2 class="sh">Working demos</h2>
+<section class="idea">
+  <div class="size">S</div>
+  <div>
+    <h2>Cache break-even</h2>
+    <div class="meta"><span>Monetization</span><span>&#8804; 2&ndash;3 days</span><span>Designed, working prototype</span></div>
+    <p>
+      The Console's Caching page charts write amortization and captions it &ldquo;higher
+      means better.&rdquo; There is an exact number where better becomes worse &mdash;
+      <b>0.28&times; on the 5-minute TTL, 1.11&times; on the 1-hour</b> &mdash; and below
+      it, caching bills more than switching it off. The chart's axis starts at
+      0.50&times;, so the whole 5-minute danger zone sits below the visible range. Draw
+      the line. That is the change.
+    </p>
+    <div class="links">
+      <a class="lk" href="https://github.com/madpr/claude-growth-surfaces/tree/master/03-cache-breakeven">
+        Read the case <span class="arw">&#8599;</span></a>
+    </div>
+  </div>
+</section>
 
-<div class="cards">
+<section class="idea">
+  <div class="size">M</div>
+  <div>
+    <h2>OpenAI &#8594; Claude migration</h2>
+    <div class="meta"><span>Acquisition</span><span>~2 weeks</span><span>Designed, working prototype</span></div>
+    <p>
+      A team can translate their code in an afternoon. What they can't do is show their
+      reviewer the translation didn't change behaviour. A language migration gates on a
+      compiler, and no compiler tells you whether a prompt still works &mdash; so the
+      merge gates on the repository's own tests instead. <b>The gate is the product.</b>
+    </p>
+    <div class="links">
+      <a class="lk live" href="migrations/"><b>Open the prototype</b> <span class="arw">&#8594;</span></a>
+      <a class="lk" href="https://github.com/madpr/claude-growth-surfaces/tree/master/02-openai-migration">
+        Read the case <span class="arw">&#8599;</span></a>
+    </div>
+  </div>
+</section>
 
-  <a class="card" href="promote-cli.html">
-    <div class="pv termpv"><span class="d">&gt;</span> claude promote
+<section class="idea">
+  <div class="size">L</div>
+  <div>
+    <h2>Dev &#8594; production</h2>
+    <div class="meta"><span>Expansion</span><span>1&ndash;2 months</span><span>Case written, two working demos</span></div>
+    <p>
+      A supervised workload is a $10-per-month prototype; unattended it is a
+      $1,000-per-month production workload. Managed Agents is where the unattended
+      version gets its limits. The gap is that Claude Code and the platform are two
+      tools that divide one account, collide on every word you would search &mdash;
+      <b>&ldquo;agents&rdquo; means background sessions on your laptop</b> &mdash; and,
+      on the account tested, resolve to two different organizations.
+    </p>
+
+    <div class="demos">
+      <a class="demo" href="promote-cli.html">
+        <div class="pv termpv"><span class="d">&gt;</span> claude promote
 
   <span class="d">&#10003; carries over    model, tools, 1 skill</span>
   <span class="n">&#9679;</span> <span class="d">does not carry  3 rules, 1 service</span>
 
   <span class="n">deny</span>  <span class="d">Write(ledger/**)</span>
      <span class="n">&#8594;</span> <span class="d">mount ledger/ read-only</span></div>
-    <div class="body">
-      <h3>Promote from Claude Code</h3>
-      <p>
-        A terminal you can type into. Read the project, translate the rules that cannot
-        travel, set a cap that can never be added later.
-      </p>
-      <div class="go">Type into it &#8594;</div>
+        <div class="body">
+          <h3>Promote from Claude Code</h3>
+          <p>A terminal you can type into. Translate the rules that cannot travel, set a
+             cap that can never be added later.</p>
+          <div class="go">Type into it &#8594;</div>
+        </div>
+      </a>
+
+      <a class="demo" href="promote-to-agent.html">
+        <div class="pv uipv">
+          <span class="chip">Proposal</span>
+          <div class="bar"></div>
+          <div class="rr"><span class="tick">&#10003;</span> Write(ledger/**)</div>
+          <div class="rr"><span class="tick">&#10003;</span> Bash(rm *)</div>
+          <div class="rr"><span class="cross">&#9675;</span> Bash(python3 &hellip;)</div>
+          <div class="rr"><span class="cross">&#9675;</span> local-fs-index</div>
+        </div>
+        <div class="body">
+          <h3>Confirm hosted agent</h3>
+          <p>The browser screen the terminal hands off to, in the organization the CLI
+             was not signed in to.</p>
+          <div class="go">Open the screen &#8594;</div>
+        </div>
+      </a>
     </div>
-  </a>
 
-  <a class="card" href="promote-to-agent.html">
-    <div class="pv uipv">
-      <span class="chip">Proposal</span>
-      <div class="bar l"></div>
-      <div class="rulerow"><span class="tick">&#10003;</span> Write(ledger/**)</div>
-      <div class="rulerow"><span class="tick">&#10003;</span> Bash(rm *)</div>
-      <div class="rulerow"><span class="cross">&#9675;</span> Bash(python3 &hellip;)</div>
-      <div class="rulerow"><span class="cross">&#9675;</span> local-fs-index</div>
+    <div class="flow">
+      <b>claude promote</b> <span>&#8594;</span> <span>account boundary</span>
+      <span>&#8594;</span> <b>confirm in browser</b>
+      <span>&mdash; the demos link to each other</span>
     </div>
-    <div class="body">
-      <h3>Confirm hosted agent</h3>
-      <p>
-        The browser screen the terminal hands off to, in the organization the CLI was
-        not signed in to. Toggle what gets enforced and watch the sandbox change.
-      </p>
-      <div class="go">Open the screen &#8594;</div>
+
+    <div class="links">
+      <a class="lk" href="https://github.com/madpr/claude-growth-surfaces/tree/master/01-dev-to-production">
+        Read the case <span class="arw">&#8599;</span></a>
     </div>
-  </a>
+  </div>
+</section>
 
-</div>
-
-<div class="flow">
-  <b>claude promote</b> <span>&#8594;</span> <span>account boundary</span>
-  <span>&#8594;</span> <b>confirm in browser</b>
-  <span>&#8212; the demos link to each other, in both directions</span>
-</div>
-
-<h2 class="sh">The rest of the work</h2>
-
-<div class="rows">
-  <a class="row" href="migrations/">
-    <span class="k">M</span>
-    <span class="t"><b>OpenAI &#8594; Claude migration</b>
-      <span>Rewrites every call site, then blocks the pull request until the repository's
-      own tests still pass. The gate is the product.</span></span>
-    <span class="arw">&#8594;</span>
-  </a>
-  <a class="row" href="https://github.com/madpr/claude-growth-surfaces/tree/master/01-dev-to-production">
-    <span class="k">L</span>
-    <span class="t"><b>The case behind these demos</b>
-      <span>Problem, goals, non-goals, metrics and open questions &mdash; plus the
-      prototype that decides what can and cannot cross.</span></span>
-    <span class="arw">&#8599;</span>
-  </a>
-  <a class="row" href="https://github.com/madpr/claude-growth-surfaces">
-    <span class="k">&#9679;</span>
-    <span class="t"><b>Repository</b>
-      <span>Every figure on these pages is printed by the prototype behind it.</span></span>
-    <span class="arw">&#8599;</span>
-  </a>
-</div>
+<section class="idea">
+  <div class="size bonus">BONUS</div>
+  <div>
+    <h2>Billing attribution &amp; spend confidence</h2>
+    <div class="meta"><span>Outside the slate</span><span>Claude Code, not the API</span></div>
+    <p>
+      It set the evidentiary bar the rest of the repository is held to: a defect
+      reproduced on the current build, 26 public issues with $1,799.83 in self-reported
+      losses, and a working prototype. Its revenue path runs the other way &mdash; it
+      moves spend off metered billing and onto a subscription already bought &mdash;
+      which is argued in its case rather than papered over.
+    </p>
+    <div class="links">
+      <a class="lk" href="https://github.com/madpr/claude-growth-surfaces/tree/master/bonus-billing-attribution">
+        Read the case <span class="arw">&#8599;</span></a>
+    </div>
+  </div>
+</section>
 
 <footer>
-  Both demos are proposals. Nothing here ships. Navigation, objects and field names
-  replicate the live product; what each demo adds is marked. The project shown is
-  <code>prototype/fixtures/ledger-reconcile</code>, and which rules can and cannot be
-  enforced is decided by <code>prototype/promote.py</code>, so the pages and the code
-  cannot disagree.
+  Demos are proposals; nothing here ships. Navigation, objects and field names replicate
+  the live product, and what each demo adds is marked. Every figure is printed by the
+  prototype behind it &mdash; the promotion demos read
+  <code>prototype/fixtures/ledger-reconcile</code> through
+  <code>prototype/promote.py</code>, so the pages and the code cannot disagree.
+  <a href="https://github.com/madpr/claude-growth-surfaces">Repository &#8599;</a>
 </footer>
 
 </div>
