@@ -14,10 +14,10 @@ still pass. Settle both decisions and the merge unblocks.
 
 ## Why this isn't solved already
 
-Most of it already ships. The Workbench prompt improver rewrites prompts and is
-marketed for "prompts originally written for other AI models." The OpenAI SDK
-compatibility layer translates `tools` and `tool_calls` server-side. The Claude GitHub
-App already has repo access, granted for Code Review.
+Most of it already ships. The OpenAI SDK compatibility layer translates `tools` and
+`tool_calls` server-side. The Claude GitHub App already has repo access, granted for
+Code Review. The Console's prompt improver handles the prose half, and is marketed for
+"prompts originally written for other AI models."[^1]
 
 What's missing is telling you what broke. The compatibility layer "silently ignores"
 most unsupported fields, and two of them carry your output contract: `response_format`
@@ -78,3 +78,9 @@ The prototype runs on seeded data. It reads no repository and runs no inference.
 No user report backs the claim that developers reach the wrong conclusion from a
 compatibility-layer evaluation. It follows from documented behaviour. Close that gap
 first.
+
+[^1]: Verify before submitting. The dedicated docs page for the Console prompting
+tools now redirects to the general prompting guide, and the Console's Build section
+lists Playground, Files, Skills and Batches — no Workbench, which is where the
+improver used to live. If it has been retired, the gap this idea addresses is larger,
+not smaller.
