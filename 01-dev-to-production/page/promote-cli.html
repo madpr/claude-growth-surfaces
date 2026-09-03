@@ -2,286 +2,371 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap">
 
 <style>
-/* The CLI half of the promotion path. Claude Code is where the developer
-   already is, so it is where the flow starts; the browser finishes it because
-   the account boundary forces a handoff.
-
-   Palette and the coral-marks-the-addition convention are carried from the
-   sibling pages in this repo. */
+/* A drivable terminal. Type the commands; the flow responds.
+   Single surface, deliberately: this is a terminal, and a terminal is dark on
+   any desktop. Every colour is painted explicitly so the page holds on either
+   host ground. */
 :root{
-  --bg:#FAFAF8; --panel:#FFFFFF; --sunk:#F4F3EF;
-  --ink:#191817; --ink-2:#5E5C55; --ink-3:#8E8B82;
-  --rule:#E6E4DC; --rule-soft:#F0EEE8;
-  --accent:#D97757; --accent-dim:#FBF0EA; --accent-ink:#A84E2C;
-
-  /* The terminal keeps one surface in both themes. A developer sees a dark
-     terminal on a light desktop; inverting it would be less true, not more. */
-  --term-bg:#1C1B19; --term-edge:#302E2A;
-  --t-txt:#E8E4DC; --t-dim:#7C776D; --t-ok:#6FA88A;
-  --t-warn:#D9A441; --t-accent:#E08A66;
-
-  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --term:#111010; --edge:#302B26; --panel:#1A1815;
+  --txt:#E9E5DD; --dim:#7E786D; --faint:#4E4941;
+  --ok:#74AE8D; --warn:#DCA646; --stop:#D97757; --new:#E08A66;
   --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
 }
-@media (prefers-color-scheme: dark){
-  :root:not([data-theme="light"]){
-    --bg:#141312; --panel:#1B1A18; --sunk:#201F1C;
-    --ink:#EDEAE3; --ink-2:#B0ABA1; --ink-3:#837E74;
-    --rule:#2C2A26; --rule-soft:#232120;
-    --accent:#E08A66; --accent-dim:#2A211C; --accent-ink:#EFA98A;
-    --term-bg:#0B0A09; --term-edge:#38332E;
-  }
-}
-:root[data-theme="dark"]{
-  --bg:#141312; --panel:#1B1A18; --sunk:#201F1C;
-  --ink:#EDEAE3; --ink-2:#B0ABA1; --ink-3:#837E74;
-  --rule:#2C2A26; --rule-soft:#232120;
-  --accent:#E08A66; --accent-dim:#2A211C; --accent-ink:#EFA98A;
-  --term-bg:#0B0A09; --term-edge:#38332E;
-}
-
 *{box-sizing:border-box}
+html,body{height:100%}
 body{
-  margin:0; background:var(--bg); color:var(--ink);
-  font-family:var(--sans); font-size:15px; line-height:1.6;
+  margin:0; background:var(--term); color:var(--txt);
+  font-family:var(--mono); font-size:13px; line-height:1.7;
   -webkit-font-smoothing:antialiased;
 }
-.wrap{max-width:880px; margin:0 auto; padding:52px 24px 80px}
+#screen{
+  height:100%; overflow-y:auto; padding:22px 24px 30px;
+  max-width:1000px; margin:0 auto; cursor:text;
+}
+#out{white-space:pre-wrap; word-break:break-word}
+.dim{color:var(--dim)} .faint{color:var(--faint)}
+.ok{color:var(--ok)} .warn{color:var(--warn)}
+.stop{color:var(--stop)} .new{color:var(--new)}
+.b{font-weight:700;color:#fff}
 
-header{border-bottom:1px solid var(--rule); padding-bottom:26px}
-.eyebrow{
-  font-size:11.5px; font-weight:700; letter-spacing:.09em; text-transform:uppercase;
-  color:var(--accent-ink); margin-bottom:12px;
+.line{display:flex; gap:8px; align-items:baseline}
+.ps{color:var(--ok); flex:none}
+#typed{white-space:pre-wrap; word-break:break-word}
+#ghost{color:var(--faint)}
+.cur{
+  display:inline-block; width:7.5px; height:15px; background:var(--txt);
+  vertical-align:-3px; animation:bl 1.1s steps(1) infinite;
 }
-h1{
-  margin:0; font-size:31px; line-height:1.2; font-weight:600;
-  letter-spacing:-.02em; text-wrap:balance;
+@keyframes bl{50%{opacity:0}}
+@media (prefers-reduced-motion: reduce){.cur{animation:none}}
+.hide{display:none}
+#out a{color:var(--new);text-decoration:underline;text-underline-offset:3px}
+#out a:hover{color:#fff}
+/* Real focusable input, visually absent. Keeps a mobile keyboard available and
+   catches text inserted without per-character keydown events. */
+#kb{
+  position:absolute; width:1px; height:1px; opacity:0; padding:0; border:0;
+  background:transparent; color:transparent; outline:none; font:inherit;
 }
-.lede{margin:14px 0 0; font-size:16px; color:var(--ink-2); max-width:62ch}
 
-.steps{display:flex; flex-direction:column; gap:44px; margin-top:44px}
-.step{display:grid; grid-template-columns:34px minmax(0,1fr); gap:20px}
-.num{
-  font-family:var(--mono); font-size:12.5px; font-weight:700;
-  color:var(--accent-ink); background:var(--accent-dim);
-  border-radius:6px; height:28px; display:grid; place-items:center;
-  font-variant-numeric:tabular-nums;
-}
-.step h2{margin:2px 0 0; font-size:19px; font-weight:600; letter-spacing:-.01em}
-.step > div > p{margin:9px 0 0; color:var(--ink-2); max-width:60ch}
-.step > div > p.tight{margin-top:6px}
+.opt{padding-left:2px}
+.opt.sel{color:#fff}
+.opt.sel .mk{color:var(--new)}
+.mk{color:transparent}
 
-/* The terminal. One surface, both themes. */
-.term{
-  margin-top:16px; background:var(--term-bg); border:1px solid var(--term-edge);
-  border-radius:9px; padding:16px 18px; overflow-x:auto;
-  font-family:var(--mono); font-size:12.5px; line-height:1.75;
-  color:var(--t-txt); white-space:pre; tab-size:2;
+.hint{
+  position:fixed; left:0; right:0; bottom:0; text-align:center;
+  padding:9px; font-size:11px; color:var(--faint);
+  background:linear-gradient(transparent,var(--term) 55%); pointer-events:none;
 }
-.term b{font-weight:700; color:#fff}
-.dim{color:var(--t-dim)}
-.ok{color:var(--t-ok)}
-.warn{color:var(--t-warn)}
-.new{color:var(--t-accent)}
-.cmd{color:var(--t-dim)}
-.label{
-  font-family:var(--mono); font-size:10.5px; font-weight:700; letter-spacing:.08em;
-  text-transform:uppercase; color:var(--ink-3); margin-top:18px;
-}
-.caption{
-  margin:10px 0 0; font-size:13px; color:var(--ink-3); max-width:62ch;
-}
-.caption code{font-family:var(--mono); font-size:11.5px; color:var(--ink-2)}
-
-.note{
-  margin-top:16px; border-left:2px solid var(--accent); background:var(--accent-dim);
-  padding:12px 16px; border-radius:0 7px 7px 0;
-}
-.note p{margin:0; font-size:13.5px; color:var(--ink-2)}
-.note b{color:var(--ink)}
-
-footer{margin-top:56px; border-top:1px solid var(--rule); padding-top:22px}
-footer h3{margin:0 0 10px; font-size:13px; font-weight:600}
-footer p{margin:0 0 10px; font-size:12.5px; color:var(--ink-3); max-width:70ch}
-footer code{font-family:var(--mono); font-size:11.5px; color:var(--ink-2)}
-.legend{display:flex; flex-wrap:wrap; gap:8px 18px; margin:0 0 14px; padding:0; list-style:none}
-.legend li{font-size:12.5px; color:var(--ink-3); display:flex; align-items:center; gap:7px}
-.chip{
-  width:9px; height:9px; border-radius:2px; flex:none;
-  background:var(--t-accent); display:inline-block;
-}
-.chip.real{background:var(--ink-3)}
-
-@media(max-width:640px){
-  .wrap{padding:34px 16px 56px}
-  .step{grid-template-columns:1fr; gap:10px}
-  .num{width:28px}
-  h1{font-size:25px}
+kbd{
+  font:inherit; font-size:10.5px; color:var(--dim);
+  border:1px solid var(--edge); border-radius:3px; padding:0 4px;
 }
 </style>
 
-<div class="wrap">
+<div id="screen"><div id="out"></div><div class="line" id="prompt"><span class="ps">&gt;</span><span><span id="typed"></span><span id="ghost"></span><span class="cur" id="cur"></span></span></div><input id="kb" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" aria-label="terminal input"></div>
+<div class="hint"><kbd>&#8593;</kbd><kbd>&#8595;</kbd> history &nbsp; <kbd>Tab</kbd> complete &nbsp; <kbd>Enter</kbd> run</div>
 
-<header>
-  <div class="eyebrow">Design mock &middot; dev to production</div>
-  <h1>Promote from Claude Code</h1>
-  <p class="lede">
-    The developer never leaves the tool they are already in. Claude Code reads the
-    project, says plainly what will not survive the move, and proposes a sandbox that
-    replaces it. The browser finishes the job, because the account boundary forces a
-    handoff.
-  </p>
-</header>
+<script>
+var out=document.getElementById('out'), screenEl=document.getElementById('screen'),
+    typedEl=document.getElementById('typed'), ghostEl=document.getElementById('ghost'),
+    promptEl=document.getElementById('prompt'), curEl=document.getElementById('cur');
 
-<div class="steps">
+var buf='', hist=[], hp=-1, mode='shell', menu=null, onValue=null;
 
-  <section class="step">
-    <div class="num">1</div>
-    <div>
-      <h2>Answer the question a developer actually asks</h2>
-      <p>
-        Today <code style="font-family:var(--mono);font-size:12.5px">claude agents</code>
-        means background sessions on your laptop, and that is the whole discovery
-        failure: the word is spent on a local answer, so nobody learns the hosted
-        surface exists. The cheapest version of this proposal is this screen alone.
-      </p>
-      <div class="term"><span class="cmd">$ </span>claude agents
+/* The project. Values match prototype/fixtures/sample-project, and the rule
+   list is what promote.py reports as unable to cross. */
+var RULES=[
+  {k:'deny ', r:'Write(ledger/**)', fix:'mount ledger/ read-only', set:false},
+  {k:'deny ', r:'Bash(rm *)',       fix:'nothing to protect &mdash; the sandbox is discarded after every run', set:false},
+  {k:'allow', r:'Bash(python3 reconcile.py *)', fix:null,
+   why:'the sandbox runs any command. Narrow it in the image, or accept it.'},
+  {k:'mcp  ', r:'local-fs-index',   fix:null,
+   why:'runs from your machine. Publish it as an endpoint, or drop it.'}
+];
+var cap=null, sched=null;
 
-  <span class="dim">ON THIS MACHINE</span>
-  <span class="ok">&#9679;</span> 2 running                        <span class="dim">claude attach &lt;id&gt;</span>
-    <span class="dim">reconcile-nightly    12m   waiting on tests</span>
-    <span class="dim">docs-sweep           4h    idle</span>
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function w(html){out.innerHTML+=html+'\n'; screenEl.scrollTop=screenEl.scrollHeight}
+function nl(){w('')}
 
-  <span class="new">HOSTED</span>                              <span class="dim">runs when you are not here</span>
-  <span class="dim">&#9675;</span> <span class="dim">none yet</span>                          <span class="new">claude promote</span>
-</div>
-      <p class="caption">
-        Both halves of the word, in one place. The hosted row is the addition.
-      </p>
-    </div>
-  </section>
+var CMDS=['claude agents','claude promote','clear','help'];
 
-  <section class="step">
-    <div class="num">2</div>
-    <div>
-      <h2>Read the project, and be honest about the total</h2>
-      <p>
-        Most of a hosted agent already exists on disk. The interesting number is not
-        what carried over &mdash; it is the two lines under it.
-      </p>
-      <div class="term"><span class="cmd">$ </span>claude promote
+function complete(p){
+  if(!p) return '';
+  for(var i=0;i<CMDS.length;i++) if(CMDS[i].indexOf(p)===0) return CMDS[i].slice(p.length);
+  return '';
+}
+function draw(){
+  typedEl.textContent=buf;
+  ghostEl.textContent = mode==='shell' ? complete(buf) : '';
+}
 
-  <b>ledger-reconcile</b> <span class="dim">&middot; nightly revenue reconciliation</span>
+/* ---- commands ---------------------------------------------------------- */
 
-  <span class="ok">&#10003;</span> carries over    <span class="dim">model, instructions, tools, 1 skill, 1 service</span>
-  <span class="warn">&#9679;</span> needs you       <span class="dim">what this agent is for, in one line</span>
-  <span class="warn">&#9679;</span> does not carry  <span class="dim">3 rules, 1 local service</span>
-</div>
-      <p class="caption">
-        Counts come from the prototype's own output against its sample project.
-      </p>
-    </div>
-  </section>
+function cmdAgents(){
+  w('');
+  w('  <span class="dim">ON THIS MACHINE</span>');
+  w('  <span class="ok">&#9679;</span> 2 running                        <span class="dim">claude attach &lt;id&gt;</span>');
+  w('    <span class="dim">reconcile-nightly    12m   waiting on tests</span>');
+  w('    <span class="dim">docs-sweep           4h    idle</span>');
+  w('');
+  w('  <span class="new">HOSTED</span>                              <span class="dim">runs when you are not here</span>');
+  w('  <span class="faint">&#9675;</span> <span class="dim">none yet</span>                          <span class="new">claude promote</span>');
+  w('');
+}
 
-  <section class="step">
-    <div class="num">3</div>
-    <div>
-      <h2>Translate the rules, and admit the residue</h2>
-      <p>
-        This is the moment the whole proposal turns on. The rules a developer wrote to
-        keep an agent in its lane are exactly the part that cannot travel, and a hosted
-        sandbox starts with none of them. Showing this as an error would be wrong: it is
-        not a failure of the import, it is the job of the screen.
-      </p>
-      <div class="term">  <span class="warn">Three rules keep this agent in its lane on your machine.</span>
-  <span class="warn">A hosted sandbox enforces none of them.</span>
+function cmdHelp(){
+  w('');
+  w('  <span class="dim">claude agents</span>     local sessions, and hosted ones');
+  w('  <span class="dim">claude promote</span>    turn this project into a hosted agent');
+  w('  <span class="dim">clear</span>             clear the screen');
+  w('');
+}
 
-    <span class="dim">deny</span>  Write(ledger/**)          <span class="new">&#8594;</span>  mount <b>ledger/</b> read-only
-    <span class="dim">deny</span>  Bash(rm *)                <span class="new">&#8594;</span>  nothing to protect: the sandbox
-                                    is discarded after every run
-    <span class="dim">allow</span> Bash(python3 reconcile.py *)
-                              <span class="warn">&#8594;</span>  <span class="warn">no equivalent.</span> The sandbox runs
-                                    any command. Narrow it in the
-                                    image, or accept it.
+function cmdPromote(){
+  w('');
+  w('  <span class="b">ledger-reconcile</span> <span class="dim">&middot; nightly revenue reconciliation</span>');
+  w('');
+  w('  <span class="ok">&#10003;</span> carries over    <span class="dim">model, instructions, tools, 1 skill, 1 service</span>');
+  w('  <span class="warn">&#9679;</span> needs you       <span class="dim">what this agent is for, in one line</span>');
+  w('  <span class="warn">&#9679;</span> does not carry  <span class="dim">3 rules, 1 local service</span>');
+  w('');
+  w('  <span class="warn">Three rules keep this agent in its lane on your machine.</span>');
+  w('  <span class="warn">A hosted sandbox enforces none of them.</span>');
+  w('');
+  ask('Set sandbox limits now?',
+      ['Yes &mdash; walk me through them','No &mdash; the agent runs unrestricted'],
+      function(i){ i===0 ? rule(0) : bail(); });
+}
 
-    <span class="dim">mcp</span>   local-fs-index            <span class="warn">&#8594;</span>  <span class="warn">runs from your machine.</span> Publish
-                                    it as an endpoint, or drop it.
+function bail(){
+  w('');
+  w('  <span class="stop">Nothing replaces the rules you had.</span> The agent will run every');
+  w('  <span class="stop">night with no limit on what it can reach.</span>');
+  w('');
+  ask('Continue anyway?',['Go back','Create it unrestricted'],function(i){
+    if(i===0){ w(''); rule(0); return; }
+    w(''); w('  <span class="stop">&#9679;</span> unrestricted <span class="dim">&middot; no sandbox rules, no cap</span>'); w('');
+    askCap();
+  });
+}
 
-  <span class="new">&#9679;</span> Two are proposed above. Edit, accept, or set your own.
-</div>
-      <div class="note">
-        <p>
-          <b>Two of four translate. One has no equivalent and one has to be
-          rebuilt.</b> A screen that pretended every rule mapped cleanly would be
-          lying, and the developer would find out on the first unattended run.
-        </p>
-      </div>
-    </div>
-  </section>
+/* ---- the rules --------------------------------------------------------- */
 
-  <section class="step">
-    <div class="num">4</div>
-    <div>
-      <h2>Set the cap now, because there is no later</h2>
-      <p>
-        A spend cap can only be set when a run is created. A run started without one can
-        be killed, but never capped. That makes this screen the only chance, so it says
-        so rather than offering an optional field.
-      </p>
-      <div class="term">  <span class="new">Spend cap</span>    $ <b>25.00</b> per run
-                <span class="dim">A run started without a cap can be killed, but never</span>
-                <span class="dim">capped. This is the only time it can be set.</span>
+function rule(i){
+  if(i>=RULES.length){ residue(); return; }
+  var r=RULES[i];
+  if(!r.fix) return rule(i+1);
+  w('  <span class="dim">'+r.k+'</span>  '+esc(r.r));
+  ask('   &#8594; '+r.fix,
+      ['Accept','Skip &mdash; leave it unenforced'],
+      function(c){
+        r.set = c===0;
+        w('  '+(c===0
+            ? '<span class="ok">&#10003;</span> <span class="dim">'+r.fix+'</span>'
+            : '<span class="warn">&#9675;</span> <span class="warn">unenforced</span>'));
+        w('');
+        rule(i+1);
+      });
+}
 
-  <span class="new">Schedule</span>     <b>__________</b>
-                <span class="dim">CLAUDE.md says &ldquo;every night&rdquo;. That is not a time.</span>
+function residue(){
+  var left=RULES.filter(function(r){return !r.fix});
+  w('  <span class="warn">These have no sandbox equivalent.</span>');
+  w('');
+  left.forEach(function(r){
+    w('  <span class="dim">'+r.k+'</span>  '+esc(r.r));
+    w('        <span class="warn">&#8594;</span> <span class="dim">'+r.why+'</span>');
+  });
+  w('');
+  askCap();
+}
 
-  <span class="warn">This creates an agent, a sandbox and a schedule in your platform</span>
-  <span class="warn">organization &mdash; not the account signed in here.</span>
+/* ---- cap, schedule, org ------------------------------------------------ */
 
-  <span class="dim">&#8594;</span> <span class="new">open browser to confirm</span>  <span class="dim">&#8629;</span>
-</div>
-      <p class="caption">
-        The handoff is not a convenience. On the account this was built from, Claude
-        Code and the platform resolved to two different organizations, so confirming in
-        the browser is where the developer signs in to the one that will own the agent.
-      </p>
-    </div>
-  </section>
+function askCap(){
+  w('  <span class="new">Spend cap</span> <span class="dim">per run, in dollars.</span>');
+  w('  <span class="dim">A run started without a cap can be killed, but never capped.</span>');
+  w('  <span class="dim">This is the only time it can be set.</span>');
+  value('$ ', function(v){
+    var n=parseFloat(v);
+    if(!v){ cap=null; w('  <span class="warn">&#9675;</span> <span class="warn">no cap &mdash; this run can never be capped later</span>'); }
+    else if(isNaN(n)||n<=0){ w('  <span class="stop">Not a number. Enter a dollar amount, or press Enter to skip.</span>'); return askCap(); }
+    else { cap=n.toFixed(2); w('  <span class="ok">&#10003;</span> <span class="dim">$'+cap+' per run</span>'); }
+    w('');
+    askSched();
+  });
+}
 
-</div>
+function askSched(){
+  w('  <span class="new">Schedule</span>');
+  w('  <span class="dim">CLAUDE.md says &ldquo;every night&rdquo;. That is not a time.</span>');
+  value('', function(v){
+    sched=v||null;
+    w(v ? '  <span class="ok">&#10003;</span> <span class="dim">'+esc(v)+'</span>'
+        : '  <span class="warn">&#9675;</span> <span class="warn">no schedule &mdash; it will only run when you start it</span>');
+    w('');
+    org();
+  });
+}
 
-<footer>
-  <h3>What is real and what is proposed</h3>
-  <ul class="legend">
-    <li><span class="chip real"></span> Verified against the installed binaries</li>
-    <li><span class="chip"></span> Proposed &mdash; does not exist today</li>
-  </ul>
-  <p>
-    <b>Real.</b> <code>claude agents</code> exists and means background sessions.
-    <code>claude attach</code> takes the short id it prints. Spend caps are create-only
-    on a hosted run. Hosted agents connect to services over a URL, so a server started
-    locally has no hosted form. Claude Code and the platform CLI sign in to separate
-    organizations. Captured from Claude Code 2.1.259 and the platform CLI 1.29.0 on
-    3&nbsp;September&nbsp;2026.
-  </p>
-  <p>
-    <b>Proposed.</b> <code>claude promote</code>, the hosted row in
-    <code>claude agents</code>, the rule translations, and the browser handoff. None of
-    it ships.
-  </p>
-  <p>
-    <b>Where the numbers come from.</b> The three totals in step 2 and all four rules in
-    step 3 are produced by <code>prototype/promote.py</code> against
-    <code>prototype/fixtures/sample-project</code>, so the mock and the code cannot
-    disagree. The project shown is that fixture, not a real account.
-  </p>
-  <p>
-    The spend cap and the running background sessions are example values, filled in the
-    way a person would fill them. The schedule is deliberately empty: the fixture says
-    the job runs &ldquo;every night&rdquo;, which is not a time, and the prototype emits
-    no schedule at all. A flow that guessed one here would be inventing the developer's
-    intent at the last moment before the agent runs unwatched.
-  </p>
-</footer>
+function org(){
+  w('  <span class="warn">This creates an agent, a sandbox and a schedule in your platform</span>');
+  w('  <span class="warn">organization &mdash; not the account signed in here.</span>');
+  w('');
+  ask('Sign in there and create?',['Open browser','Cancel'],function(i){
+    if(i===1){ w(''); w('  <span class="dim">Cancelled. Nothing was created.</span>'); w(''); return done(); }
+    w('');
+    step('opening browser',function(){
+    step('signing in to platform organization',function(){
+      w('');
+      w('  <span class="new">&#8594;</span> <a href="promote-to-agent.html">confirm in the browser</a>'
+        +' <span class="faint">&mdash; the other half of this flow</span>');
+      w('');
+      step('waiting for confirmation',function(){
+      step('creating agent',function(){
+      step('creating sandbox',function(){
+      step('creating schedule',function(){ created(); });});});});});});
+  });
+}
 
-</div>
+function step(label,next){
+  w('  <span class="dim">&middot; '+label+'&hellip;</span>');
+  setTimeout(next,340);
+}
+
+function created(){
+  var kept=RULES.filter(function(r){return r.set}).length,
+      unen=RULES.filter(function(r){return r.fix&&!r.set}).length,
+      none=RULES.filter(function(r){return !r.fix}).length;
+  w('');
+  w('  <span class="ok">&#10003; agent created</span>');
+  w('');
+  w('  <span class="dim">sandbox    </span>'+(kept?'<span class="ok">'+kept+' rule'+(kept>1?'s':'')+' enforced</span>':'<span class="warn">nothing enforced</span>')
+    +(unen?'<span class="dim">, </span><span class="warn">'+unen+' skipped</span>':'')
+    +'<span class="dim">, </span><span class="warn">'+none+' with no equivalent</span>');
+  w('  <span class="dim">cap        </span>'+(cap?'<span class="ok">$'+cap+' per run</span>':'<span class="stop">none &mdash; cannot be added later</span>'));
+  w('  <span class="dim">schedule   </span>'+(sched?'<span class="ok">'+esc(sched)+'</span>':'<span class="warn">none</span>'));
+  w('');
+  if(!cap) w('  <span class="stop">This agent can be killed. It cannot be capped.</span>');
+  if(none) w('  <span class="dim">'+none+' thing'+(none>1?'s':'')+' you relied on locally '+(none>1?'are':'is')+' not enforced anywhere.</span>');
+  w('');
+  done();
+}
+
+function done(){
+  RULES.forEach(function(r){r.set=false}); cap=null; sched=null;
+  w('  <span class="faint">run</span> <span class="dim">claude promote</span> <span class="faint">again to try different answers</span>');
+  w('');
+  mode='shell';
+}
+
+/* ---- prompts ----------------------------------------------------------- */
+
+function ask(q,opts,cb){
+  mode='menu';
+  menu={q:q,opts:opts,i:0,cb:cb,anchor:out.innerHTML};
+  paintMenu();
+}
+function paintMenu(){
+  out.innerHTML=menu.anchor;
+  w('  '+menu.q);
+  menu.opts.forEach(function(o,i){
+    w('  <span class="opt'+(i===menu.i?' sel':'')+'"><span class="mk">'+(i===menu.i?'&#10095;':' ')+'</span> '+o+'</span>');
+  });
+  promptEl.classList.add('hide');
+}
+function chooseMenu(){
+  var m=menu; menu=null; mode='run';
+  out.innerHTML=m.anchor;
+  w('  '+m.q+'  <span class="new">'+m.opts[m.i]+'</span>');
+  w('');
+  promptEl.classList.remove('hide');
+  m.cb(m.i);
+}
+
+function value(label,cb){
+  mode='value'; onValue=cb; setBuf('');
+  document.querySelector('#prompt .ps').textContent=label||'>';
+  promptEl.classList.remove('hide');
+  draw();
+}
+function submitValue(){
+  var v=buf.trim(); setBuf('');
+  document.querySelector('#prompt .ps').textContent='>';
+  var cb=onValue; onValue=null; mode='run';
+  w('  <span class="dim">'+(v?esc(v):'(skipped)')+'</span>');
+  cb(v);
+}
+
+/* ---- shell ------------------------------------------------------------- */
+
+function run(line){
+  var c=line.trim();
+  w('<span class="ok">&gt;</span> '+esc(c));
+  if(!c) return;
+  hist.push(c); hp=hist.length;
+  if(c==='clear'){ out.innerHTML=''; boot(true); return; }
+  if(c==='help'){ return cmdHelp(); }
+  if(c==='claude agents'){ return cmdAgents(); }
+  if(c==='claude promote'){ mode='run'; return cmdPromote(); }
+  w('  <span class="stop">'+esc(c.split(' ')[0])+': not a command here.</span> <span class="dim">Try claude agents, claude promote, or help.</span>');
+  w('');
+}
+
+var kb=document.getElementById('kb');
+function focusKb(){ try{ kb.focus({preventScroll:true}); }catch(err){ kb.focus(); } }
+function setBuf(v){ buf=v; kb.value=v; draw(); }
+
+/* Text arrives through the input, so pasted and inserted text work too. */
+kb.addEventListener('input',function(){
+  if(mode==='menu'||mode==='run'){ kb.value=''; return; }
+  buf=kb.value; draw();
+});
+
+kb.addEventListener('keydown',function(e){
+  if(e.metaKey||e.ctrlKey||e.altKey) return;
+
+  if(mode==='menu'){
+    e.preventDefault();
+    if(e.key==='ArrowUp'){ menu.i=(menu.i+menu.opts.length-1)%menu.opts.length; paintMenu(); }
+    else if(e.key==='ArrowDown'){ menu.i=(menu.i+1)%menu.opts.length; paintMenu(); }
+    else if(e.key==='Enter'){ chooseMenu(); }
+    else if(/^[1-9]$/.test(e.key)){ var n=+e.key-1; if(n<menu.opts.length){ menu.i=n; chooseMenu(); } }
+    return;
+  }
+  if(mode==='run'){ e.preventDefault(); return; }
+
+  if(e.key==='Enter'){
+    e.preventDefault();
+    if(mode==='value') return submitValue();
+    var l=buf; setBuf(''); run(l);
+  }
+  else if(e.key==='Tab'){ e.preventDefault(); setBuf(buf+complete(buf)); }
+  else if(e.key==='ArrowUp'&&mode==='shell'){ e.preventDefault(); if(hp>0){ hp--; setBuf(hist[hp]); } }
+  else if(e.key==='ArrowDown'&&mode==='shell'){
+    e.preventDefault();
+    if(hp<hist.length-1){ hp++; setBuf(hist[hp]); } else { hp=hist.length; setBuf(''); }
+  }
+});
+
+screenEl.addEventListener('mousedown',function(e){
+  if(window.getSelection().toString()) return;   /* let people copy text */
+  e.preventDefault(); focusKb();
+});
+kb.addEventListener('blur',function(){ setTimeout(focusKb,0); });
+
+function boot(quiet){
+  if(!quiet){
+    w('<span class="dim">Claude Code 2.1.259 &middot; ~/ledger-reconcile</span>');
+    w('');
+    w('<span class="faint">A drivable mock of a promotion path that does not ship.</span>');
+    w('<span class="faint">Type </span><span class="dim">claude agents</span><span class="faint"> to start, or </span><span class="dim">help</span><span class="faint">.</span>');
+  }
+  w('');
+  mode='shell'; setBuf(''); focusKb();
+}
+boot(false);
+</script>
