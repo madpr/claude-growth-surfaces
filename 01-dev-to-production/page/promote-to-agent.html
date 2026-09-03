@@ -51,7 +51,7 @@ input.t::placeholder{color:var(--ink-3)}
 .req{font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--accent-ink)}
 .ok{color:var(--ok)}
 
-.perm{display:grid;grid-template-columns:repeat(auto-fill,minmax(232px,1fr));gap:4px 16px;padding:2px 0 0}
+.chip-al{display:inline-block;font-size:11px;font-weight:550;border-radius:5px;padding:1px 6px;background:var(--ok-dim);color:var(--ok);margin-left:6px}
 .prow{display:flex;align-items:center;gap:8px;padding:4px 0}
 .prow .n{font-family:var(--mono);font-size:12px;flex:1}
 .seg{display:inline-flex;border:1px solid var(--rule);border-radius:6px;overflow:hidden;flex:none}
@@ -112,10 +112,13 @@ input.t::placeholder{color:var(--ink-3)}
       <div class="f"><label>MCP servers</label>
         <span class="val" style="color:var(--ink-3)">None</span>
         <span class="from">.mcp.json</span></div>
-      <div class="perm" id="perms"></div>
+      <div class="f"><label>Tool permissions</label>
+        <span class="val" id="permval"></span>
+        <span class="from">settings.json</span></div>
     </div>
 
     <div class="grp" id="gaps"></div>
+    <div class="grp" id="reach" hidden></div>
     <div class="bar">
       <span class="m" id="msg"></span>
       <span class="r"><button class="btn">Save draft</button>
@@ -128,9 +131,21 @@ input.t::placeholder{color:var(--ink-3)}
 </div>
 
 <script>
-var TOOLS=[["bash","ask"],["read","allow"],["write","ask"],["edit","ask"],
-           ["glob","allow"],["grep","allow"],["web_search","allow"],["web_fetch","allow"]];
-var perm=TOOLS.map(function(t){return t[1]});
+var TOOLS=["bash","read","write","edit","glob","grep","web_search","web_fetch"];
+
+/* What each environment lets the same allowed tools touch. */
+var ENVS={
+  "cloud-sandbox-default":[
+    ["Filesystem","/mnt/session &middot; the repo, nothing else"],
+    ["Credentials","vault, substituted at egress"],
+    ["Network","api.anthropic.com, github.com"],
+    ["Host machine","unreachable"]],
+  "self-hosted-vpc":[
+    ["Filesystem","container volume you mount"],
+    ["Credentials","vault, substituted at egress"],
+    ["Network","your VPC egress rules"],
+    ["Host machine","unreachable"]]
+};
 
 /* Four fields with nothing on the Claude Code side to fill them. */
 var GAPS=[
@@ -143,13 +158,18 @@ var GAPS=[
 var gv={env:"",bud:"",rub:"",vault:"",cron:"Daily 02:00"};
 
 function render(){
-  document.getElementById("perms").innerHTML=TOOLS.map(function(t,i){
-    var v=perm[i];
-    return '<div class="prow"><span class="n">'+t[0]+'</span><span class="seg" data-i="'+i+'">'+
-      '<button data-v="allow" class="'+(v==="allow"?"on":"")+'">Allow</button>'+
-      '<button data-v="ask" class="'+(v==="ask"?"on a":"")+'">Ask</button>'+
-      '<button data-v="deny" class="'+(v==="deny"?"on d":"")+'">Deny</button></span></div>';
-  }).join("");
+  document.getElementById("permval").innerHTML =
+    '<span class="mono">'+TOOLS.join(", ")+'</span>' +
+    ' <span class="chip-al">Always allow</span>';
+
+  var env=gv.env, box=document.getElementById("reach");
+  box.hidden = !env;
+  if(env){
+    box.innerHTML='<div class="gname">Reach</div>'+ENVS[env].map(function(r){
+      return '<div class="f"><label>'+r[0]+'</label><span class="val">'+r[1]+'</span>'+
+             '<span class="from">'+env+'</span></div>';
+    }).join("");
+  }
 
   document.getElementById("gaps").innerHTML='<div class="gname">Unattended</div>'+
     GAPS.map(function(g){
@@ -172,21 +192,18 @@ function render(){
     }).join("");
 
   var open=GAPS.filter(function(g){return !gv[g.k]}).length;
-  var asks=perm.filter(function(v){return v==="ask"}).length;
+
   document.getElementById("prov").textContent =
     (GAPS.length-open+6)+" of "+(GAPS.length+6)+" from source";
   var bits=[];
   if(open) bits.push(open+" field"+(open>1?"s":"")+" need"+(open>1?"":"s")+" a value");
-  if(asks) bits.push(asks+" permission"+(asks>1?"s":"")+" still set to Ask");
   document.getElementById("msg").innerHTML = bits.length
     ? bits.join(" &middot; ") : "Ready. Nobody needs to be watching.";
-  document.getElementById("go").disabled = open>0 || asks>0;
+  document.getElementById("go").disabled = open>0;
 }
 
 document.addEventListener("click",function(e){
-  if(e.target.closest("[data-vault]")){gv.vault="vault_01Nightly"; render(); return;}
-  var b=e.target.closest(".seg button"); if(!b) return;
-  perm[+b.parentNode.getAttribute("data-i")]=b.getAttribute("data-v"); render();
+  if(e.target.closest("[data-vault]")){gv.vault="vault_01Nightly"; render();}
 });
 document.addEventListener("input",function(e){
   var k=e.target.getAttribute&&e.target.getAttribute("data-k");
