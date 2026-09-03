@@ -93,6 +93,9 @@ var RULES=[
    lost:'republish it as an endpoint, or drop it'}
 ];
 var cap=null, sched=null;
+/* Agents created in this session. `claude agents` reads this, so the command
+   that exists to reveal hosted agents actually reveals the one you just made. */
+var HOSTED=[];
 
 function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
 function w(html){out.innerHTML+=html+'\n'; screenEl.scrollTop=screenEl.scrollHeight}
@@ -112,6 +115,8 @@ function draw(){
 
 /* ---- commands ---------------------------------------------------------- */
 
+function pad(s,n){ s=String(s); while(s.length<n) s+=' '; return s; }
+
 function cmdAgents(){
   w('');
   w('  <span class="dim">ON THIS MACHINE</span>');
@@ -120,7 +125,17 @@ function cmdAgents(){
   w('    <span class="dim">docs-sweep           4h    idle</span>');
   w('');
   w('  <span class="new">HOSTED</span>                              <span class="dim">runs when you are not here</span>');
-  w('  <span class="faint">&#9675;</span> <span class="dim">none yet</span>                          <span class="new">claude promote</span>');
+  if(!HOSTED.length){
+    w('  <span class="faint">&#9675;</span> <span class="dim">none yet</span>                          <span class="new">claude promote</span>');
+  } else {
+    HOSTED.forEach(function(a){
+      w('  <span class="ok">&#9679;</span> '+esc(pad(a.name,20))
+        +'<span class="dim">'+pad(a.sched||'no schedule',14)+'</span>'
+        +(a.cap ? '<span class="dim">$'+a.cap+'/run</span>'
+                : '<span class="stop">uncapped</span>'));
+      w('    <span class="dim">'+a.kept+' of '+a.total+' rules enforced in the sandbox</span>');
+    });
+  }
   w('');
 }
 
@@ -256,6 +271,8 @@ function created(){
     +'<span class="dim">, </span><span class="warn">'+none+' with no equivalent</span>');
   w('  <span class="dim">cap        </span>'+(cap?'<span class="ok">$'+cap+' per run</span>':'<span class="stop">none &mdash; cannot be added later</span>'));
   w('  <span class="dim">schedule   </span>'+(sched?'<span class="ok">'+esc(sched)+'</span>':'<span class="warn">none</span>'));
+  HOSTED.push({name:'ledger-reconcile', cap:cap, sched:sched,
+               kept:kept, total:RULES.length});
   w('');
   if(!cap) w('  <span class="stop">This agent can be killed. It cannot be capped.</span>');
   RULES.filter(function(r){return !r.fix}).forEach(function(r){
@@ -267,8 +284,11 @@ function created(){
 }
 
 function done(){
+  /* Reset this run's answers. The created agent stays in HOSTED. */
   RULES.forEach(function(r){r.set=false}); cap=null; sched=null;
-  w('  <span class="faint">run</span> <span class="dim">claude promote</span> <span class="faint">again to try different answers</span>');
+  w('  <span class="faint">run</span> <span class="dim">claude agents</span>'
+    +'<span class="faint"> to see it, or </span><span class="dim">claude promote</span>'
+    +'<span class="faint"> again to try different answers</span>');
   w('');
   mode='shell';
 }
