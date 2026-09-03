@@ -7,13 +7,19 @@ prototype; the same workload unattended is a $1,000/month production workload. W
 keeps the human there is not model quality — it is not knowing what the agent will
 reach.
 
-Managed Agents already bounds that. `/v1/messages` does not. The lever is routing
+**This is a bet on direction, not a fix for a fully-evidenced problem today.** The
+failure is visible now at small scale, on individual machines, with a blast radius of
+one laptop and one repo. The bet is that it becomes the gating constraint when the
+same agents run unattended against company infrastructure, at fleet scale. A big bet
+held to the same evidentiary bar as a two-day fix is guaranteed to arrive late.
+
+Managed Agents already bounds this. `/v1/messages` does not. The lever is routing
 unattended work onto the surface where the bounds exist, which also happens to bill
 session runtime at $0.08/hour on top of model tokens.
 
 ## The gate is authority, not cost
 
-Fourteen issues in `anthropics/claude-code` ([`research/issues.tsv`](research/issues.tsv),
+Read these as an early indicator, not as proof that teams are blocked today. Fourteen issues in `anthropics/claude-code` ([`research/issues.tsv`](research/issues.tsv),
 each opened and read). Eleven are the agent acting outside its mandate rather than
 producing bad work.
 
@@ -30,7 +36,16 @@ worried."* Nothing broke and they filed anyway. That is what keeps a human in th
 and no spend cap addresses it.
 
 These are Claude Code issues, so they are directionally relevant rather than proof for
-the API. They describe the same decision.
+the API. They describe the same decision, at the scale where it currently occurs: one
+developer, one machine, one repo. Each of them is a rehearsal for the same event
+against shared infrastructure.
+
+The second piece of direction evidence is Anthropic's own build order. Session budgets
+shipped 7 August 2026, alongside outcome graders, scheduled deployments, credential
+vaults and per-session sandboxes — an entire surface whose reason to exist is agents
+running unattended. The bet here is not that this direction is real. The company has
+already committed to it in code. The bet is on what the binding constraint turns out
+to be when it arrives, and on getting the workloads there.
 
 ## Why this isn't solved already
 
@@ -81,11 +96,23 @@ Neither is designed. The next work is evidence, not code.
 One guardrail: **incidents on unattended runs**. If routing moves the failure rather
 than containing it, the argument is wrong.
 
+Because this is a bet, the metrics that matter first are leading ones, and all three
+are watchable today: growth in API traffic that runs on a schedule or unattended,
+growth in Managed Agents sessions, and the share of those sessions that set a budget
+or a rubric. If the first two are flat, the bet is early. If they climb and the third
+stays near zero, the bounds are not why anyone came.
+
 ## Risks
 
-- Cost anxiety was the first guess and quality the second; both were too abstract.
-  Authority is the third, and it rests on fourteen issues from one product. If teams do
-  not describe it this way, the premise is still wrong.
+- **Timing is the real risk.** For a bet on direction, early and wrong cost the same.
+  If fleets of unattended agents are three years out rather than one, this is a
+  correct idea built two years too soon, and the engineering ages badly.
+- Framing it as a bet buys the right to act ahead of the evidence and gives up
+  falsifiability in exchange. "Teams don't ship because of X" was testable; "this
+  becomes the constraint" is not, until it does. The discipline has to move to the
+  leading indicators below.
+- Authority rests on fourteen issues from one product. If teams do not describe it
+  this way as the scale grows, the premise is wrong.
 - The rubric fits artifact work — reports, models, pipelines — and fits open-ended
   codebase maintenance badly, which is where the evidence came from.
 - It resembles the M. Gating untrusted work on a check you specify is the parity gate's
