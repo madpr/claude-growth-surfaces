@@ -137,8 +137,8 @@ mandate rather than producing bad work.
 Issue #82063 states the problem in a user's own words: "no harm done, but it makes me
 very worried." Nothing broke, and they filed anyway.
 
-These are Claude Code issues, so they point in the right direction rather than proving
-the case for the API.
+These are Claude Code issues, not API issues. They show the behavior at laptop scale.
+They don't prove it happens against shared infrastructure.
 
 ## Competitive pressure
 
@@ -176,25 +176,26 @@ containing it, this proposal is wrong.
 growth in Managed Agents sessions, and the share of those sessions that set a budget or
 a rubric.
 
-## Test the cheapest claim first
+## Ship the pointer first
 
-Don't build the promotion path to find out whether discovery is the problem. Ship the
-pointer: disambiguate `claude agents`, name the hosted destination, and watch
-hosted-agent creation. That takes days.
+Test discovery before building the promotion path:
 
-If creation doesn't move, discovery was never the gate, and the argument in this
-document is wrong.
+1. Disambiguate `claude agents`.
+2. Name the hosted destination in the CLI.
+3. Watch hosted-agent creation for 30 days.
+
+This takes days. If creation doesn't move, discovery isn't the gate and this proposal
+is wrong.
 
 ## Risks
 
 - **The identity finding rests on one account, on a Pro subscription.** If a Console
   organization resolves to a single organization, the identity section describes a
   segment rather than the platform. Check a second account first.
-- **"Identity reconciliation is hard" is inferred, not verified.** Existing
-  organization-linking might solve it. The split might also be deliberate, because
-  subscriptions and metered billing are different business models. If it's deliberate,
-  unifying them is a policy argument, not a growth feature, and the cost estimate here
-  is wrong.
+- **"Identity reconciliation is hard" is inferred, not verified.** Two findings would
+  invalidate the estimate: existing organization-linking already solves it, or the split
+  is deliberate because subscriptions and metered billing are different business models.
+  If it's deliberate, unifying them is a policy argument, not a growth feature.
 - **Timing.** If unattended fleets are three years out rather than one, this is a
   correct proposal built two years early, and the engineering ages badly before anyone
   needs it.
@@ -203,7 +204,7 @@ document is wrong.
 - **This resembles the migration proposal.** Gating untrusted work on a check you
   specify is that proposal's hypothesis too.
 - **The grader is Claude judging Claude.**
-- **Teams might not accept a hosted sandbox** for work that touches their own
+- **Some teams won't accept a hosted sandbox** for work that touches their own
   infrastructure, which is the work with the largest blast radius.
 - **A team that already built its own metering and containment** gains only the egress
   row, and pays a migration to get it.
