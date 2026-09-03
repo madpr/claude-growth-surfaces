@@ -13,9 +13,10 @@ one laptop and one repo. The bet is that it becomes the gating constraint when t
 same agents run unattended against company infrastructure, at fleet scale. A big bet
 held to the same evidentiary bar as a two-day fix is guaranteed to arrive late.
 
-Managed Agents already bounds this. `/v1/messages` does not. The lever is routing
-unattended work onto the surface where the bounds exist, which also happens to bill
-session runtime at $0.08/hour on top of model tokens.
+Managed Agents bounds this. A harness you wrote around `/v1/messages` does not, and
+mostly never will. The lever is routing unattended work onto the surface where the
+bounds exist, which also happens to bill session runtime at $0.08/hour on top of model
+tokens.
 
 ## The gate is authority, not cost
 
@@ -54,23 +55,37 @@ and workspace limits, bounded auto-reload, a Spend Limits API, an Analytics cost
 Probing them killed four candidate ideas as already-built, including pooled org spend
 and per-team attribution.
 
-What is missing is any bound on a single unattended run. On `/v1/messages` there is no
-grader, no sandbox, and `task_budget` is documented as "a soft hint, not a hard cap" —
-advisory, token-denominated, and re-derived from the conversation you resend, so the
-server admits it loses track after compaction. A cumulative cap cannot be enforced from
-a position that cannot know the cumulative total.
+What is missing is any bound on a single unattended run. `/v1/messages` is invoked by
+a loop you wrote, in your process, on your machine: you own the retries, the tool
+execution, the credentials and the filesystem. The endpoint has no run to bound, and
+`task_budget` — the one thing that looks like a ceiling — is documented as "a soft
+hint, not a hard cap," re-derived from the conversation you resend, so the server
+admits it loses track after compaction.
 
-Managed Agents bounds all three currencies, and the third structurally rather than by
-asking the model nicely:
+Managed Agents is the same inference with an orchestrator above it. The agent loop
+runs on Anthropic's side; the container is where tools execute; sessions bill model
+tokens at list price plus runtime. So the bounds below are properties of that
+orchestrator, not of the endpoint:
 
-| Bound | `/v1/messages` | Managed Agents |
+| Bound | Your own harness | Managed Agents |
 |---|---|---|
-| Cost | `task_budget`, advisory | Session budget: dollar-denominated, enforced between model requests |
-| Quality | Nothing | `user.define_outcome`: a required rubric graded in a **separate context window**, iterating until satisfied |
-| Authority | Nothing | Per-session sandbox; vault credentials substituted at egress and never visible inside it |
+| Cost | Accumulate `usage`, stop the loop | Session budget: dollar-denominated, enforced between model requests |
+| Quality | Call a second model against a rubric | `user.define_outcome`: a required rubric graded in a **separate context window**, iterating until satisfied |
+| Authority | Container with scoped credentials | Per-session sandbox; **vault credentials substituted at egress and never visible inside it** |
 
-There is no sibling project's `.env` in a sandbox and no `C:\` to wipe. #85919 and
-#86667 are impossible there — not less likely, impossible.
+**A competent team can build the first two.** Anthropic hosts them rather than
+inventing them, and the sandbox is reproducible with real infrastructure work. The
+argument is not that customers are locked out. It is that this is three separate
+infrastructure problems — metering, evaluation and containment — and none of them is
+the thing the team set out to build.
+
+One row is different in kind. Egress substitution means the secret never enters the
+sandbox, so the agent never holds the credential material at all. A self-hosted
+container can scope credentials down; the process still has them. That is the bound
+that answers [#85919](https://github.com/anthropics/claude-code/issues/85919), the
+sharpest issue in the corpus — an agent that hit a 403, went looking, found a secret
+in a sibling project and used it. Scoping would not have stopped it. Not holding the
+secret would have.
 
 ## Cost to build
 
@@ -121,6 +136,9 @@ stays near zero, the bounds are not why anyone came.
   inherited in full.
 - Teams may not accept a hosted sandbox for work that touches their infrastructure,
   which is exactly the work with the largest blast radius.
+- A team that has already built its own metering and containment gets only the egress
+  row, and buys a migration to get it. The pitch is strongest before they build, which
+  makes timing a go-to-market problem as well as a product one.
 
 ## Evidence
 
