@@ -105,6 +105,37 @@ That answers the sharpest report in the corpus. An agent hit a permissions error
 searched for a way through, found an admin secret in a sibling project, and minted
 itself a token. Scoping the credential wouldn't have stopped it. Not holding it would.
 
+## Where else this applies
+
+Cowork is this argument already shipped, for people who never open a terminal. It runs
+"the same agentic architecture that powers Claude Code" inside Claude Desktop, takes
+multi-step work autonomously, and schedules tasks that run unattended in an isolated
+cloud environment on Anthropic's servers.
+
+Three things follow.
+
+**The direction is not speculative.** Anthropic has already built the path from local
+supervised work to scheduled unattended hosted work, once, for the audience that needed
+it first. This proposal is that same path for the surface where it is missing.
+
+**The portability gap is documented, not inferred.** The Cowork documentation states
+that it loads connectors, skills, and plugins from your claude.ai account and "doesn't
+read the Claude Code CLI's `~/.claude` directory on your machine. To use a skill or
+plugin that exists only in `~/.claude`, add it in Customize." A developer who configured
+Claude Code and then opens Cowork re-enters the work by hand. That is the same finding
+as the CLI-to-platform split, on a third surface, in Anthropic's own words.
+
+**It puts a question to the revenue claim above.** Cowork keeps unattended work on the
+subscription: it ships on all paid plans and reads the claude.ai account. This proposal
+converts flat-fee subscription work into metered platform usage. Anthropic's shipped
+answer for non-developers went the other way. Which model Claude Code's unattended path
+should follow is a live decision, and it changes who owns this work and how it is
+measured. Settle it before building.
+
+The same shape applies to claude.ai. A Project carries instructions, files, and
+connectors that already describe a repeatable job, and nothing turns one into something
+that runs on a schedule.
+
 ## Success metrics
 
 | Metric | What it tests |
@@ -213,6 +244,10 @@ prints no identifier, workspace, email, or name:
 ```
 ./research/probe.sh --identity
 ```
+
+Cowork behaviour is quoted from `claude.com/docs/cowork/overview` and
+`claude.com/product/cowork`, retrieved September 3, 2026. What limits a scheduled Cowork
+task can carry — a spend cap, a rubric, an approval gate — is not established here.
 
 Platform behavior was captured September 2–3, 2026, from Claude Code 2.1.259 and the
 platform CLI 1.29.0. Every count in this document is printed by the prototype, so the
