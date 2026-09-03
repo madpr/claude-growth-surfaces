@@ -13,6 +13,10 @@ one laptop and one repo. The bet is that it becomes the gating constraint when t
 same agents run unattended against company infrastructure, at fleet scale. A big bet
 held to the same evidentiary bar as a two-day fix is guaranteed to arrive late.
 
+[Open the prototype](https://claude.ai/code/artifact/e503ed07-defe-4063-a164-7f40537b1055) — one screen: what a working Claude Code configuration
+carries over, what you have to settle before nobody is watching, and the four bounds
+that have no source in Claude Code at all.
+
 Managed Agents bounds this. A harness you wrote around `/v1/messages` does not, and
 mostly never will. The lever is routing unattended work onto the surface where the
 bounds exist, which also happens to bill session runtime at $0.08/hour on top of model
@@ -101,9 +105,10 @@ secret would have.
 
 One to two months, and the design isn't done. Two candidate shapes, in increasing cost:
 
-- **A path from a loop to an agent.** Scan an existing agentic loop, emit the agent and
-  environment config, set a budget and a rubric, run it in the sandbox. Closest to a
-  product, and closest to the M — which is the problem.
+- **A promotion path.** Read a working Claude Code configuration, map what has an
+  equivalent, force a decision on what used to be asked at the prompt, and attach the
+  bounds that have no source. Closest to a product, and closest to the M — though the
+  third class inverts it: the M's is what breaks in translation, this is what you gain.
 - **Promotion as a surface.** Budget, rubric, sandbox scope and kill switch presented as
   the thing you configure before an agent runs unattended. Packaging as much as
   engineering.
