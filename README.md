@@ -18,7 +18,7 @@ already built, killing five candidate ideas. What survives is what survived that
 | **M** | [OpenAI → Claude migration](02-openai-migration/) | Acquisition | ~2 weeks | **Designed, working prototype** |
 | **L** | [Dev → production](01-dev-to-production/) | Expansion | 1–2 months | **Case written, working prototype** |
 
-[`02-openai-migration/`](02-openai-migration/) — [open the prototype →](https://claude.ai/code/artifact/13a609b1-6d14-49ac-99fe-644f4e0b29c9)
+[`02-openai-migration/`](02-openai-migration/) — [open the prototype →](https://madpr.github.io/claude-growth-surfaces/migrations/)
 
 Scans a repo for OpenAI SDK call sites, applies a rulebook, and blocks the pull
 request until your eval cases pass. The parity gate is the point: a language
