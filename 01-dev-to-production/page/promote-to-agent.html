@@ -1,0 +1,241 @@
+<title>Promote to Agent</title>
+
+<style>
+/* Console-native surface, matching 02-openai-migration/app/src/styles.css.
+   Coral is reserved for the gained column -- the three bounds that have no
+   source in Claude Code. That column carrying the only accent is the argument.
+   Single-theme by intent: this replicates a Console screen. */
+:root{
+  --bg:#FAFAF8; --panel:#FFFFFF; --sunk:#F4F3EF;
+  --ink:#191817; --ink-2:#5E5C55; --ink-3:#8E8B82;
+  --rule:#E6E4DC; --rule-soft:#F0EEE8;
+  --accent:#D97757; --accent-dim:#FBF0EA; --accent-ink:#A84E2C;
+  --ok:#2E7D5B; --ok-dim:#EAF4EF;
+  --warn:#A87613; --warn-dim:#FAF2E1;
+  --shadow:0 1px 2px rgba(25,24,23,.04);
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
+button{font-family:inherit;font-size:inherit;cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+
+.wrap{max-width:1080px;margin:0 auto;padding:24px 26px 56px}
+.crumbs{display:flex;align-items:center;gap:9px;flex-wrap:wrap;font-size:13px;color:var(--ink-3)}
+.crumbs h1{margin:0;font-size:20px;font-weight:600;letter-spacing:-.02em;color:var(--ink)}
+.tag{font-size:9.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;background:var(--accent-dim);color:var(--accent-ink);border:1px solid #F0D9CC;padding:3px 6px;border-radius:4px}
+.lede{margin:8px 0 0;font-size:13px;color:var(--ink-2);max-width:78ch}
+
+.src{display:flex;align-items:center;gap:10px;margin:18px 0 0;padding:11px 14px;background:var(--panel);border:1px solid var(--rule);border-radius:9px;box-shadow:var(--shadow);flex-wrap:wrap}
+.src .t{font-size:10px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-3)}
+.src .p{font-family:var(--mono);font-size:12.5px}
+.src .m{margin-left:auto;font-size:12px;color:var(--ink-3)}
+
+.legend{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:10px;margin-top:14px}
+.lg{padding:12px 14px;background:var(--panel);border:1px solid var(--rule);border-radius:9px;box-shadow:var(--shadow)}
+.lg.gain{border-color:#EBCDBE;background:var(--accent-dim)}
+.lg .n{font-size:22px;font-weight:550;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.lg .k{font-size:12.5px;font-weight:600;margin-top:1px}
+.lg .s{font-size:12px;color:var(--ink-2);margin-top:3px;line-height:1.45}
+.lg.gain .k,.lg.gain .n{color:var(--accent-ink)}
+.lg.gain .s{color:#7A4327}
+
+.card{background:var(--panel);border:1px solid var(--rule);border-radius:9px;box-shadow:var(--shadow);margin-top:16px;overflow:hidden}
+.hd{display:flex;align-items:baseline;gap:10px;padding:14px 16px 0;flex-wrap:wrap}
+.hd h2{margin:0;font-size:14.5px;font-weight:600}
+.hd .c{font-size:12.5px;color:var(--ink-3)}
+.hd .r{margin-left:auto;font-size:12px;color:var(--ink-3)}
+.hd p{margin:4px 0 0;font-size:12.5px;color:var(--ink-2);width:100%;max-width:76ch}
+
+table{border-collapse:collapse;width:100%;font-size:13px;margin-top:12px}
+thead th{text-align:left;font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);padding:8px 16px;border-bottom:1px solid var(--rule);white-space:nowrap}
+tbody td{padding:11px 16px;border-bottom:1px solid var(--rule-soft);vertical-align:top}
+tbody tr:last-child td{border-bottom:none}
+tbody tr.gain{background:var(--accent-dim)}
+.mono{font-family:var(--mono);font-size:12px}
+.dim{color:var(--ink-3)}
+.none{color:var(--accent-ink);font-style:italic}
+.note{font-size:11.5px;color:var(--ink-3);margin-top:3px;line-height:1.45}
+tr.gain .note{color:#7A4327}
+
+.chip{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:550;border-radius:5px;padding:2px 6px;white-space:nowrap}
+.chip-ok{background:var(--ok-dim);color:var(--ok)}
+.chip-warn{background:var(--warn-dim);color:var(--warn)}
+.chip-acc{background:#F6E2D6;color:var(--accent-ink)}
+
+.perm{display:flex;flex-direction:column;gap:5px;margin-top:8px}
+.prow{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;padding:6px 0;border-top:1px solid var(--rule-soft)}
+.prow:first-child{border-top:none}
+.pname{font-family:var(--mono);font-size:12px}
+.seg{display:inline-flex;border:1px solid var(--rule);border-radius:6px;overflow:hidden}
+.seg button{background:var(--panel);border:none;padding:3px 9px;font-size:11.5px;color:var(--ink-2)}
+.seg button.on{background:var(--ink);color:#fff;font-weight:550}
+.seg button.on.deny{background:var(--warn)}
+.seg button.on.ask{background:var(--ink-2)}
+
+.foot{margin-top:22px;border-top:1px solid var(--rule);padding-top:13px;font-size:12px;color:var(--ink-3);line-height:1.6}
+.foot b{color:var(--ink-2)}
+.bar{display:flex;align-items:center;gap:10px;padding:13px 16px;background:var(--sunk);border-top:1px solid var(--rule)}
+.bar .msg{font-size:12.5px;color:var(--ink-2)}
+.btn{white-space:nowrap;border:1px solid var(--rule);background:var(--panel);color:var(--ink);border-radius:6px;padding:6px 12px;font-size:12.5px;font-weight:500}
+.btn-primary{background:var(--ink);color:#fff;border-color:var(--ink)}
+.btn-primary:disabled{opacity:.4;cursor:not-allowed}
+.bar .right{margin-left:auto;display:flex;gap:8px;align-items:center}
+@media (max-width:640px){.wrap{padding:16px 13px 40px}}
+</style>
+
+<div class="wrap">
+  <div class="crumbs">
+    <span>Managed Agents</span><span>/</span><span>Agents</span><span>/</span>
+    <h1>Promote to agent</h1>
+    <span class="tag">Proposal</span>
+  </div>
+  <p class="lede">Take a Claude Code configuration that already works and run it unattended. Everything
+  that maps carries over. What has no equivalent in Claude Code is the reason to do this at all.</p>
+
+  <div class="src">
+    <span class="t">Source</span>
+    <span class="p">~/.claude</span>
+    <span class="dim">&middot;</span>
+    <span class="p">claude-growth-surfaces</span>
+    <span class="m">Read locally. Nothing is uploaded until you create the agent.</span>
+  </div>
+
+  <div class="legend" id="legend"></div>
+
+  <div class="card">
+    <div class="hd"><h2>Carried over</h2><span class="c" id="c-carry"></span>
+      <p>These have a direct equivalent in the agent config. Nothing to decide.</p></div>
+    <table><thead><tr><th>Claude Code</th><th>Agent config</th><th>Value</th></tr></thead>
+    <tbody id="t-carry"></tbody></table>
+  </div>
+
+  <div class="card">
+    <div class="hd"><h2>Needs a decision</h2><span class="c" id="c-decide"></span>
+      <p>Claude Code asks you at the moment a tool runs. An unattended agent cannot, so the
+      answers move to the agent config and are fixed before it starts.</p></div>
+    <table><thead><tr><th>Claude Code</th><th>Agent config</th><th>Decision</th></tr></thead>
+    <tbody id="t-decide"></tbody></table>
+    <div style="padding:0 16px 14px">
+      <div class="hd" style="padding:14px 0 0"><h2 style="font-size:13px">Tool permissions</h2>
+        <span class="c">8 built-in tools &middot; <span class="mono">agent_toolset_20260401</span></span>
+        <span class="r" id="permsum"></span></div>
+      <div class="perm" id="perms"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="hd"><h2>Gained</h2><span class="c">4 &middot; no source</span>
+      <p>None of these exist in Claude Code. They are what an unattended run is missing, and
+      they are the reason to promote rather than leave it on your machine.</p></div>
+    <table><thead><tr><th>Claude Code</th><th>Agent config</th><th>What it does</th></tr></thead>
+    <tbody id="t-gain"></tbody></table>
+    <div class="bar">
+      <span class="msg" id="msg"></span>
+      <span class="right">
+        <button class="btn">Save as draft</button>
+        <button class="btn btn-primary" id="create" disabled>Create agent</button>
+      </span>
+    </div>
+  </div>
+
+  <p class="foot"><b>Proposal, not a shipped feature.</b> The right-hand column is the real
+  <em>Create agent</em> form on <span class="mono">platform.claude.com</span> &mdash; General, Multiagent,
+  Skills and Tools, with tool permissions and an always-allow control &mdash; plus the session and
+  deployment fields that carry the budget, the rubric and the schedule. The left column is a real
+  <span class="mono">~/.claude</span> layout. The promotion step between them is what does not exist.
+  Read on 2 September 2026.</p>
+</div>
+
+<script>
+/* Left column: the shape of a real ~/.claude directory on this machine.
+   Right column: fields verified in the live Create agent form and the
+   Managed Agents API (sessions carry budget and outcome, deployments carry cron). */
+var CARRY = [
+  ["CLAUDE.md", "System prompt", "Project + user tier, concatenated", ""],
+  ["model &amp; effort", "Model", "claude-opus-5 &middot; effort high", ""],
+  ["~/.claude/skills/", "Skills", "2 skills", "Uploaded as skill references, max 20"],
+  ["~/.claude/plugins/", "Skills &amp; subagents", "2 plugins", "Unbundled into their parts"],
+  [".mcp.json", "Tools &rarr; MCP server", "0 servers", "Nothing to carry in this repo"],
+  ["~/.claude/tasks/", "Deployment &rarr; cron", "1 scheduled task", "Becomes the firing schedule"]
+];
+
+var DECIDE = [
+  ["settings.json <span class='dim'>permissions</span>", "Tool permissions", "8 tools to set below",
+   "Interactive sessions can ask. An unattended one cannot, so every answer is fixed up front."],
+  [".env <span class='dim'>&middot; local credentials</span>", "Credential vault", "2 secrets found",
+   "Moved into a vault and substituted at egress, so the sandbox never holds the secret."],
+  ["~/.claude/commands/", "<span class='none'>no equivalent</span>", "2 commands, dropped",
+   "Slash commands are an interactive affordance. There is no operator to type them."]
+];
+
+var GAIN = [
+  ["<span class='none'>nothing</span>", "Environment", "Per-session sandbox",
+   "Tools execute in a container, not on your filesystem. There is no sibling project to read."],
+  ["<span class='none'>nothing</span>", "Session budget", "<span class='mono'>max_list_cost</span>",
+   "A dollar ceiling enforced between model requests. The session pauses; it does not terminate."],
+  ["<span class='none'>nothing</span>", "Outcome rubric", "Graded, max 20 iterations",
+   "A grader in a separate context window scores the deliverable against criteria you write."],
+  ["<span class='none'>nothing</span>", "Deployment schedule", "Cron + run history",
+   "Every firing writes a run record, so a failure is a row rather than a silence."]
+];
+
+/* The 8 built-in tools, defaulting to the setting an unattended run can defend. */
+var TOOLS = [
+  ["bash", "ask"], ["read", "allow"], ["write", "ask"], ["edit", "ask"],
+  ["glob", "allow"], ["grep", "allow"], ["web_search", "allow"], ["web_fetch", "allow"]
+];
+var state = TOOLS.map(function(t){ return t[1]; });
+
+function row(r, cls){
+  return '<tr' + (cls ? ' class="' + cls + '"' : '') + '>' +
+    '<td class="mono">' + r[0] + '</td>' +
+    '<td>' + r[1] + '</td>' +
+    '<td>' + r[2] + (r[3] ? '<div class="note">' + r[3] + '</div>' : '') + '</td></tr>';
+}
+
+function render(){
+  document.getElementById("t-carry").innerHTML = CARRY.map(function(r){ return row(r); }).join("");
+  document.getElementById("t-decide").innerHTML = DECIDE.map(function(r){ return row(r); }).join("");
+  document.getElementById("t-gain").innerHTML = GAIN.map(function(r){ return row(r, "gain"); }).join("");
+  document.getElementById("c-carry").innerHTML = CARRY.length + " &middot; automatic";
+  document.getElementById("c-decide").innerHTML = DECIDE.length + " &middot; yours to settle";
+
+  document.getElementById("legend").innerHTML =
+    '<div class="lg"><div class="n">' + CARRY.length + '</div><div class="k">Carried over</div>' +
+      '<div class="s">Direct equivalents. Nothing to decide.</div></div>' +
+    '<div class="lg"><div class="n">' + DECIDE.length + '</div><div class="k">Needs a decision</div>' +
+      '<div class="s">Answers that used to happen at the prompt, fixed before the run.</div></div>' +
+    '<div class="lg gain"><div class="n">' + GAIN.length + '</div><div class="k">Gained</div>' +
+      '<div class="s">Bounds with no source in Claude Code. The reason to promote.</div></div>';
+
+  document.getElementById("perms").innerHTML = TOOLS.map(function(t, i){
+    var v = state[i];
+    return '<div class="prow"><span class="pname">' + t[0] + '</span>' +
+      '<span class="seg" data-i="' + i + '">' +
+        '<button data-v="allow" class="' + (v === "allow" ? "on" : "") + '">Always allow</button>' +
+        '<button data-v="ask" class="' + (v === "ask" ? "on ask" : "") + '">Ask</button>' +
+        '<button data-v="deny" class="' + (v === "deny" ? "on deny" : "") + '">Deny</button>' +
+      '</span></div>';
+  }).join("");
+
+  var asks = state.filter(function(v){ return v === "ask"; }).length;
+  document.getElementById("permsum").innerHTML = asks
+    ? '<span class="chip chip-warn">' + asks + ' still set to Ask</span>'
+    : '<span class="chip chip-ok">All settled</span>';
+  document.getElementById("create").disabled = asks > 0;
+  document.getElementById("msg").innerHTML = asks
+    ? "<b>" + asks + " tool" + (asks > 1 ? "s" : "") + " still set to Ask.</b> " +
+      "There is nobody to ask during an unattended run, so each one has to be allowed or denied first."
+    : "Every tool is settled. The agent can run without a person present.";
+}
+
+document.addEventListener("click", function(e){
+  var b = e.target.closest(".seg button");
+  if (!b) return;
+  state[+b.parentNode.getAttribute("data-i")] = b.getAttribute("data-v");
+  render();
+});
+render();
+</script>
