@@ -1,15 +1,17 @@
-<title>Promote to Agent</title>
+<title>Import from Claude Code</title>
 
 <style>
-/* Replica of platform.claude.com > Managed Agents > Agents > Deep researcher,
-   read 2 September 2026. Light, matching 02-openai-migration/app/src/styles.css.
-   Coral marks the one proposed section. */
+/* Replica of platform.claude.com > Managed Agents > Agents, read 2 September 2026.
+   Light, matching 02-openai-migration/app/src/styles.css. Coral marks the one
+   proposed section. Field states and counts are printed by ../prototype/promote.py
+   against ../prototype/fixtures/sample-project, so this page and the code agree. */
 :root{
   --bg:#FAFAF8;--panel:#FFFFFF;--sunk:#F4F3EF;--field:#FFFFFF;
   --ink:#191817;--ink-2:#5E5C55;--ink-3:#8E8B82;
   --rule:#E6E4DC;--rule-soft:#F0EEE8;
   --accent:#D97757;--accent-dim:#FBF0EA;--accent-ink:#A84E2C;
   --ok:#2E7D5B;--ok-dim:#EAF4EF;
+  --warn:#8A6A1F;--warn-dim:#FAF3E2;
   --link:#2C5FA8;
   --shadow:0 1px 2px rgba(25,24,23,.04);
   --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
@@ -53,20 +55,16 @@ a{color:var(--link);text-decoration:none}
 .btn{border:1px solid var(--rule);background:var(--panel);border-radius:7px;padding:6px 12px;font-size:13px;font-weight:500}
 .btn:hover{background:var(--sunk)}
 .btn-w{background:var(--ink);color:#fff;border-color:var(--ink);font-weight:550}
-.sub{margin:8px 0 0;font-size:13.5px;color:var(--ink-2)}
+.btn-w:disabled{opacity:.35;cursor:not-allowed}
+.sub{margin:8px 0 0;font-size:13.5px;color:var(--ink-2);max-width:660px}
 .meta{margin-top:5px;font-size:12px;color:var(--ink-3);font-family:var(--mono)}
 .meta .n{font-family:var(--sans)}
 
-.tabs{display:flex;gap:4px;margin-top:16px;border-bottom:1px solid var(--rule)}
-.tab{background:none;border:none;border-bottom:2px solid transparent;padding:9px 12px;font-size:13.5px;color:var(--ink-2)}
-.tab:hover{color:var(--ink)}
-.tab.on{color:var(--ink);font-weight:600;border-bottom-color:var(--ink)}
-
-.tbar{display:flex;align-items:center;margin-top:16px}
-.vsel{border:1px solid var(--rule);background:var(--panel);border-radius:7px;padding:5px 10px;font-size:12.5px;color:var(--ink-2)}
-.seg{margin-left:auto;display:inline-flex;border:1px solid var(--rule);border-radius:7px;overflow:hidden}
-.seg button{background:none;border:none;padding:5px 12px;font-size:12.5px;color:var(--ink-3)}
-.seg button.on{background:var(--sunk);color:var(--ink);font-weight:550}
+/* the tally, printed by promote.py */
+.tally{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px;max-width:880px}
+.tl{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--rule);background:var(--panel);border-radius:7px;padding:4px 10px;font-size:12.5px;color:var(--ink-2)}
+.tl b{font-family:var(--mono);font-size:12px;font-weight:600;color:var(--ink)}
+.tl.c b{color:var(--ok)} .tl.p b{color:var(--warn)} .tl.x b{color:var(--accent-ink)}
 
 .sec{display:grid;grid-template-columns:212px minmax(0,1fr);gap:28px;padding:22px 0;border-bottom:1px solid var(--rule-soft);max-width:880px}
 .sec:last-of-type{border-bottom:none}
@@ -79,42 +77,49 @@ a{color:var(--link);text-decoration:none}
 .i{width:100%;background:var(--field);border:1px solid var(--rule);border-radius:7px;padding:8px 11px;font-size:13px}
 textarea.i{resize:vertical;line-height:1.55;min-height:70px}
 .i.need{border-color:var(--accent);background:var(--accent-dim)}
+.i.part{border-color:#E4D3A8;background:var(--warn-dim)}
+.i.off{color:var(--ink-3);text-decoration:line-through}
 .mono{font-family:var(--mono);font-size:12.5px}
-.add{display:flex;gap:16px;flex-wrap:wrap}
-.add button{background:none;border:none;color:var(--ink-2);font-size:13px;padding:2px 0}
-.add button:hover{color:var(--ink)}
 .card{background:var(--panel);border:1px solid var(--rule);border-radius:9px;box-shadow:var(--shadow)}
 .ct{display:flex;align-items:center;gap:10px;padding:11px 13px}
 .ct .ic{width:26px;height:26px;border-radius:6px;background:var(--field);display:grid;place-items:center;font-size:12px;color:var(--ink-2)}
 .ct .nm{font-size:13px}
 .ct .nm span{display:block;font-family:var(--mono);font-size:11.5px;color:var(--ink-3)}
-.ct .x{margin-left:auto;color:var(--ink-3);background:none;border:none;font-size:14px}
 .cb{display:flex;align-items:center;gap:8px;padding:9px 13px;border-top:1px solid var(--rule);font-size:12.5px;color:var(--ink-2)}
 .cnt{background:var(--field);border-radius:5px;padding:0 6px;font-size:11.5px;color:var(--ink-2)}
 .al{margin-left:auto;display:inline-flex;align-items:center;gap:5px;background:var(--ok-dim);color:var(--ok);border-radius:6px;padding:3px 9px;font-size:12px}
 .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.src{margin-top:5px;font-size:11.5px;color:var(--ink-3);font-family:var(--mono)}
-.src.need{color:var(--accent-ink)}
 .lnk{background:none;border:none;color:var(--link);font-size:12.5px;padding:0}
 .rr{display:flex;gap:10px;padding:7px 11px;border-bottom:1px solid var(--rule-soft);font-size:12.5px}
 .rr:last-child{border-bottom:none}
 .rr span{color:var(--ink-2);width:112px;flex:none}
 .rr b{font-weight:450}
-.btn-w:disabled{opacity:.35;cursor:not-allowed}
+
+/* the margin note: state + where it came from + what it cost */
+.src{margin-top:5px;font-size:11.5px;color:var(--ink-3);font-family:var(--mono);display:flex;gap:7px;align-items:baseline;flex-wrap:wrap}
+.st{font-family:var(--sans);font-size:10.5px;font-weight:650;letter-spacing:.03em;text-transform:uppercase;border-radius:4px;padding:1px 6px;flex:none}
+.st.c{background:var(--ok-dim);color:var(--ok)}
+.st.p{background:var(--warn-dim);color:var(--warn)}
+.st.x{background:var(--accent-dim);color:var(--accent-ink)}
+.why{font-family:var(--sans);font-size:11.5px;color:var(--ink-2);line-height:1.5;flex-basis:100%;margin-top:2px}
+
+.dest{max-width:880px;margin-top:20px;border:1px solid var(--accent);background:var(--accent-dim);border-radius:9px;padding:14px 16px}
+.dest h3{margin:0 0 6px;font-size:13.5px;font-weight:600;color:var(--accent-ink)}
+.dest p{margin:0;font-size:12.5px;color:var(--ink-2);line-height:1.55}
+.dest table{border-collapse:collapse;margin:10px 0 0;font-size:12px}
+.dest td{padding:3px 14px 3px 0;font-family:var(--mono);color:var(--ink-2)}
+.dest td:first-child{font-family:var(--sans);color:var(--ink-3)}
+
 .foot{margin-top:26px;padding-top:14px;border-top:1px solid var(--rule);font-size:11.5px;color:var(--ink-3);line-height:1.6;max-width:880px}
 .foot b{color:var(--ink-2)}
-.tg{display:inline-flex;align-items:center;gap:8px;font-size:12.5px;color:var(--ink-2);border:1px solid var(--rule);background:var(--panel);border-radius:8px;padding:5px 10px;margin-left:8px}
-.sw{width:32px;height:19px;border-radius:10px;background:var(--rule);border:none;position:relative;padding:0;flex:none}
-.sw::after{content:"";position:absolute;top:2px;left:2px;width:15px;height:15px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.2);transition:transform .15s,background .15s}
-.sw.on{background:var(--accent)}
-.sw.on::after{transform:translateX(13px);background:#fff}
-@media(max-width:900px){.app{grid-template-columns:1fr}.side{display:none}.sec{grid-template-columns:1fr;gap:12px}.main{padding:18px 16px 40px}}
+.foot code{font-family:var(--mono);font-size:11px}
+@media(max-width:900px){.app{grid-template-columns:1fr}.side{display:none}.sec{grid-template-columns:1fr;gap:12px}.main{padding:18px 16px 40px}.row2{grid-template-columns:1fr}}
 </style>
 
 <div class="app">
   <aside class="side">
     <div class="brand">Claude Console</div>
-    <div class="ws"><span>Default</span><span class="caret">&#9662;</span></div>
+    <div class="ws"><span>Claude Code</span><span class="caret">&#9662;</span></div>
     <div class="omni"><span>Search Console&hellip;</span><kbd>&#8984;K</kbd></div>
     <nav class="nav">
       <button class="ni">Dashboard</button><button class="ni">API keys</button>
@@ -148,38 +153,92 @@ textarea.i{resize:vertical;line-height:1.55;min-height:70px}
       <span class="r"><button class="btn">Cancel</button>
         <button class="btn btn-w" id="go">Create 3 resources</button></span>
     </div>
-    <p class="sub">Runs a configuration that already works on your machine, in a sandbox, on a schedule.</p>
-    <p class="meta">~/.claude &middot; claude-growth-surfaces <span class="n">&middot; scanned just now</span></p>
+    <p class="sub">Runs a configuration that already works on your machine, in a sandbox,
+      on a schedule. The skeleton transfers. The containment does not, and this screen
+      is where you find that out &mdash; before the run, not after it.</p>
+    <p class="meta">sample-project &middot; nightly revenue reconciliation
+      <span class="n">&middot; scanned just now</span></p>
+
+    <div class="tally">
+      <span class="tl c">carried <b>3</b></span>
+      <span class="tl p">partial <b>3</b></span>
+      <span class="tl x">needs you <b>1</b></span>
+      <span class="tl x">cannot cross <b>2</b></span>
+      <span class="tl x">required <b>1</b></span>
+    </div>
 
     <section class="sec">
-      <div class="sl"><h2>Agent</h2><p>Model, prompt, skills and tools. Everything here has an
-        equivalent on your machine. <a href="#">Learn more &#8599;</a></p></div>
+      <div class="sl"><h2>Agent</h2><p>Model, prompt, skills and tools. Most of this has an
+        equivalent on your machine &mdash; and the exceptions are the point.
+        <a href="#">Learn more &#8599;</a></p></div>
       <div class="fl">
-        <div><label>Name</label><input class="i" value="Deep researcher"></div>
+
+        <div><label>Name</label><input class="i" value="sample-project">
+          <div class="src"><span class="st c">carried</span> directory name</div></div>
+
         <div><label>Model</label>
-          <div class="i mono" style="display:flex;align-items:center;gap:8px">claude-opus-5
-            <span style="color:var(--ink-3);font-family:var(--sans);font-size:12px">Low</span>
+          <div class="i mono" style="display:flex;align-items:center;gap:8px">claude-sonnet-5
             <span style="margin-left:auto;color:var(--ink-3)">&#9662;</span></div>
-          <div class="src">settings.json</div></div>
+          <div class="src"><span class="st c">carried</span> settings.json &middot; model: sonnet
+            <span class="why">The alias resolved to a model id. Claude Code takes
+              <code>sonnet</code>; the platform takes <code>claude-sonnet-5</code>.</span></div></div>
+
         <div><label>System prompt</label>
-          <textarea class="i" rows="7">You are a research agent. Given a question or topic:
+          <textarea class="i" rows="8"># Nightly revenue reconciliation
 
-1. Decompose it into 3-5 concrete sub-questions that, answered together, cover the topic.
-2. For each sub-question, run targeted web searches and fetch the most authoritative sources (prefer primary sources, official docs, peer-reviewed work over blog posts and aggregators).
-3. Read the sources in full &mdash; don't skim. Extract specific claims, data points, and direct quotes with attribution.
-4. Synthesize a report that answers the original question. Structure it by sub-question, cite every non-obvious claim inline, and close with a "confidence &amp; gaps" section noting where sources disagreed or where you couldn't find good coverage.
+This repo reconciles the billing export against the ledger and writes a variance
+report. It runs unattended every night.
 
-Be skeptical. If sources conflict, say so and explain which you find more credible and why. Don't paper over uncertainty with confident-sounding prose.</textarea>
-          <div class="src">CLAUDE.md</div></div>
+## Rules
+
+- Never write to `ledger/` &mdash; it is the source of truth and is append-only upstream.
+- Variance under $0.01 is rounding. Do not report it.
+- Every figure in the report must cite the row it came from.
+- If the export is missing a day, stop and report the gap. Do not interpolate.</textarea>
+          <div class="src"><span class="st c">carried</span> CLAUDE.md &middot; 607 chars</div></div>
+
+        <div><label>Description</label>
+          <input class="i need" placeholder="What is this agent for? One line.">
+          <div class="src"><span class="st x">needs you</span> no local source
+            <span class="why">Nothing in a Claude Code project states what the agent is
+              for in one line. The only field a person has to write.</span></div></div>
+
         <div><label>Skills</label>
-          <div class="i">huggingface-spaces, verify-before-claiming</div>
-          <div class="src">~/.claude/skills</div></div>
+          <div class="i part">variance-report</div>
+          <div class="src"><span class="st p">partial</span> .claude/skills/*/SKILL.md
+            <span class="why">The name carries over; the skill itself does not. Each must be
+              uploaded to the Skills API and referenced by id &mdash; a local directory is not
+              a source the platform can read.</span></div></div>
+
         <div><label>Tools</label>
           <div class="card"><div class="ct"><span class="ic">&#9776;</span>
             <span class="nm">Built-in tools<span>agent_toolset_20260401</span></span></div>
-            <div class="cb"><span>&#8250;</span> Tool permissions <span class="cnt">8</span>
-              <span class="al">&#10003; Always allow &#9662;</span></div></div>
-          <div class="src">settings.json &middot; carried over unchanged</div></div>
+            <div class="cb"><span>&#8250;</span> web_search <span class="cnt">disabled</span>
+              <span class="al">&#10003; from deny list</span></div></div>
+          <div class="src"><span class="st p">partial</span> settings.json &middot; permissions
+            <span class="why">Whole-tool enable and disable survives, via the toolset's
+              <code>configs</code>. Nothing finer does.</span></div></div>
+
+        <div><label>Tool permissions &middot; command patterns</label>
+          <div class="i need mono off">Bash(python3 reconcile.py *) &nbsp; Bash(rm *) &nbsp; Write(ledger/**)</div>
+          <div class="src"><span class="st x">cannot cross</span> 3 rules dropped
+            <span class="why">The hosted toolset enables or disables a whole tool. Containment
+              at this grain is an <em>environment</em> property on the target &mdash; the sandbox
+              and vault egress &mdash; not an agent property, so it cannot ride along on the
+              agent. <b>&ldquo;Never write to <code>ledger/</code>&rdquo; is now a sentence in a
+              prompt, not a rule.</b></span></div></div>
+
+        <div><label>MCP servers</label>
+          <div class="i part mono">ledger-db &middot; https://internal.example.com/mcp/ledger</div>
+          <div class="src"><span class="st p">partial</span> .mcp.json &middot; 1 of 2
+            <span class="why">URL-based servers translate directly.</span></div></div>
+
+        <div><label>MCP servers &middot; stdio</label>
+          <div class="i need mono off">local-fs-index &middot; npx @example/fs-index-mcp ./exports</div>
+          <div class="src"><span class="st x">cannot cross</span> 1 server dropped
+            <span class="why">Platform MCP servers are <code>type: "url"</code> over Streamable
+              HTTP. A server Claude Code launches as a subprocess has no representation on a
+              hosted agent, and must be published as an endpoint first.</span></div></div>
       </div>
     </section>
 
@@ -188,18 +247,23 @@ Be skeptical. If sources conflict, say so and explain which you find more credib
         machine cannot supply. <a href="#">Learn more &#8599;</a></p></div>
       <div class="fl">
         <div><label>Sandbox</label>
-          <select class="i" id="env">
+          <select class="i need" id="env">
             <option value="">Select an environment</option>
             <option value="cloud">Anthropic cloud sandbox</option>
             <option value="vpc">Self-hosted &middot; your VPC</option>
           </select>
-          <div class="src need">no equivalent &mdash; required</div></div>
+          <div class="src"><span class="st x">required</span> cannot be derived
+            <span class="why">A container image, network policy and credential vaults. A laptop
+              has none of these to hand over &mdash; which is also why the hosted surface is
+              worth reaching, and where the three dropped rules above go instead.</span></div></div>
         <div id="reach" hidden></div>
         <div><label>Credential vault</label>
           <div class="i" style="display:flex;align-items:center;gap:8px" id="vaultbox">
             <span id="vaulttxt" style="color:var(--ink-3)">2 secrets found in .env</span>
             <button class="lnk" id="vault" style="margin-left:auto">Move to a vault</button></div>
-          <div class="src">.env &middot; substituted at egress, never inside the sandbox</div></div>
+          <div class="src"><span class="st c">offered</span> .env
+            <span class="why">Substituted at egress, never visible inside the sandbox. The agent
+              never holds the credential material at all.</span></div></div>
       </div>
     </section>
 
@@ -208,24 +272,50 @@ Be skeptical. If sources conflict, say so and explain which you find more credib
         <a href="#">Learn more &#8599;</a></p></div>
       <div class="fl">
         <div><label>Schedule</label><input class="i" value="0 2 * * *  &middot;  daily 02:00">
-          <div class="src">~/.claude/tasks</div></div>
+          <div class="src"><span class="st c">carried</span> CLAUDE.md &middot; &ldquo;every night&rdquo;</div></div>
         <div class="row2">
           <div><label>Session budget <span class="opt">(optional)</span></label>
             <input class="i" placeholder="0.00 USD" id="bud">
-            <div class="src need">no equivalent</div></div>
+            <div class="src"><span class="st x">no equivalent</span></div></div>
           <div><label>Outcome rubric <span class="opt">(optional)</span></label>
             <select class="i" id="rub"><option value="">None</option>
-              <option value="1">research-quality.md</option></select>
-            <div class="src need">no equivalent</div></div>
+              <option value="1">variance-report.md</option></select>
+            <div class="src"><span class="st x">no equivalent</span></div></div>
         </div>
+        <p style="margin:0;font-size:11.5px;color:var(--ink-2);line-height:1.55">Both are empty
+          because nothing on your machine sets them. A session budget is <b>create-only</b> &mdash;
+          a session started without one can never be capped, only killed. This screen is the
+          moment to set it.</p>
       </div>
     </section>
 
-    <p class="foot"><b>Proposal, not a shipped feature.</b> Field names and objects are the live
-    Console: an agent, an environment and a deployment, created together. The agent values are the
-    real <em>Deep researcher</em> agent. Budget and rubric are optional on a deployment and empty
-    here because nothing on your machine sets them &mdash; the import is the moment you would.
-    Read 2 September 2026.</p>
+    <div class="dest">
+      <h3>This creates resources in a different organization</h3>
+      <p>Claude Code signs in through claude.ai against your subscription. The platform signs in
+        against a developer organization. On the account this was built from they were two
+        organization ids for one email address &mdash; so promotion crosses an identity boundary,
+        not just a tooling gap. The workspace already named <em>Claude Code</em> is one the
+        Claude Code CLI is not signed in to.</p>
+      <table>
+        <tr><td>signed in here</td><td>claude.ai &middot; subscription</td></tr>
+        <tr><td>creating in</td><td>developer organization &middot; workspace &ldquo;Claude Code&rdquo;</td></tr>
+      </table>
+    </div>
+
+    <p class="foot"><b>Proposal, not a shipped feature.</b> The navigation, objects and field
+    names are the live Console, read 2 September 2026: an agent, an environment and a deployment,
+    created together. The one addition is this screen.
+    <br><br>
+    <b>Every state and count on this page is printed by the prototype.</b>
+    <code>../prototype/promote.py map fixtures/sample-project</code> reports
+    <code>resolved 3 &nbsp; lossy 3 &nbsp; human 1 &nbsp; blocked 2 &nbsp; underivable 1</code>,
+    shown here as carried / partial / needs you / cannot cross / required. The values are that
+    fixture's, not a real account's, so the page and the code cannot disagree. An earlier draft of
+    this screen said tools were &ldquo;carried over unchanged&rdquo;; the prototype falsified it.
+    <br><br>
+    <b>The identity split is n=1</b>, observed on a Pro subscription on 3 September 2026. A
+    Console organization may well resolve to a single org, in which case that panel describes a
+    segment rather than the platform.</p>
   </main>
 </div>
 
@@ -233,10 +323,12 @@ Be skeptical. If sources conflict, say so and explain which you find more credib
 var ENVS={
   cloud:[["Filesystem","the repo, mounted at /mnt/session"],
          ["Host machine","unreachable"],
-         ["Network","allowlist"]],
+         ["Network","allowlist"],
+         ["ledger/","read-only mount &mdash; the dropped rule, enforced"]],
   vpc:[["Filesystem","a volume you mount"],
        ["Host machine","unreachable"],
-       ["Network","your VPC egress rules"]]
+       ["Network","your VPC egress rules"],
+       ["ledger/","read-only mount &mdash; the dropped rule, enforced"]]
 };
 function render(){
   var v=document.getElementById("env").value, box=document.getElementById("reach");
@@ -248,7 +340,7 @@ function render(){
 }
 document.getElementById("env").addEventListener("change",render);
 document.getElementById("vault").addEventListener("click",function(){
-  document.getElementById("vaulttxt").textContent="vault_01Research";
+  document.getElementById("vaulttxt").textContent="vault_01Reconcile";
   document.getElementById("vaulttxt").style.color="var(--ink)";
   this.remove();
 });

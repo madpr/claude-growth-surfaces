@@ -1,0 +1,16 @@
+{
+  "model": "sonnet",
+  "permissions": {
+    "allow": [
+      "Bash(python3 reconcile.py *)",
+      "Read",
+      "Glob",
+      "Grep"
+    ],
+    "deny": [
+      "WebSearch",
+      "Bash(rm *)",
+      "Write(ledger/**)"
+    ]
+  }
+}

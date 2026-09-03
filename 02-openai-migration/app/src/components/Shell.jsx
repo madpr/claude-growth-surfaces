@@ -90,10 +90,10 @@ export default function Shell({ children }) {
             Credits <span className="val">$11.28</span>
           </div>
           <div className="row">
-            <span className="avatar">p</span>
+            <span className="avatar">&nbsp;</span>
             <span className="who">
-              pratheeksha
-              <span>Admin · pratheeksha’s Individual Org</span>
+              Signed in
+              <span>Admin · Individual Org</span>
             </span>
           </div>
         </div>

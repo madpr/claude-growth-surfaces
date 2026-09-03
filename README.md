@@ -6,13 +6,17 @@ Three ideas, sized by engineering cost: one tactical (≤2–3 days), one medium
 (~2 weeks), one big bet (1–2 months). Each covers hypothesis, success metrics,
 implementation, prioritization, risks and mitigations.
 
+Each one was checked against what the platform already ships before it was written
+up, and the checking is the load-bearing part: five surfaces were probed and found
+already built, killing five candidate ideas. What survives is what survived that.
+
 ## The three ideas
 
 | | Idea | Theme | Eng cost | Status |
 |---|---|---|---|---|
 | **S** | [Cache break-even](03-cache-breakeven/) | Monetization | ≤ 2–3 days | **Designed, working prototype** |
 | **M** | [OpenAI → Claude migration](02-openai-migration/) | Acquisition | ~2 weeks | **Designed, working prototype** |
-| **L** | [Dev → production](01-dev-to-production/) | Expansion | 1–2 months | **Direction chosen, not designed** |
+| **L** | [Dev → production](01-dev-to-production/) | Expansion | 1–2 months | **Case written, working prototype** |
 
 [`02-openai-migration/`](02-openai-migration/) — [open the prototype →](https://claude.ai/code/artifact/13a609b1-6d14-49ac-99fe-644f4e0b29c9)
 
@@ -38,29 +42,42 @@ page.
 
 A response header naming the fields the compatibility layer drops was the other
 candidate for this slot. It is a clean two-day item, but it shares a hypothesis with
-the M and would strain the brief's "span different themes" constraint.
+the M and would strain the span-different-themes constraint.
 
-Start with [`01-dev-to-production/README.md`](01-dev-to-production/README.md).
-It carries the verified platform facts, the dead ends already ruled out, and the
-open questions — enough to resume without re-researching.
+[`01-dev-to-production/`](01-dev-to-production/) — run the prototype:
+`cd 01-dev-to-production/prototype && ./promote.py map fixtures/sample-project`
 
-Ideas go here after they are checked against what `platform.claude.com` already
-ships — pricing tiers and how limits are communicated, what Console workspaces
-and spend limits already cover, how prompt caching and the Batch API are
-surfaced, and what the signup-to-first-call path costs. A first pass produced
-generic growth-playbook material (rate-limit upgrade prompts, live keys in docs,
-efficiency-drives-volume, pooled org spend) that had not been verified against
-any of it. That verification comes first.
+A supervised workload is a $10/month prototype; unattended it is a $1,000/month
+production workload. Managed Agents is where the unattended version is bounded. The
+gap is that Claude Code and the platform are two CLIs that divide one account, collide
+on every word you would search — `agents` means background sessions on your laptop —
+and, on the account tested, resolve to two different organizations.
+
+The prototype is the missing verb: it reads a Claude Code project and emits the agent
+the platform would run, then names what cannot cross. Its own count corrected this
+case's first draft. The skeleton transfers; the containment does not, which is the
+same conclusion fourteen reproduced issues reach from the other direction.
+
+It carries the verified platform facts and the dead ends already ruled out, so it is
+the file to start with.
+
+The surfaces probed and found mature: billing and spend controls, prompt caching, API
+key lifecycle, rate limits, and the Managed Agents control plane — which already has a
+CLI, and a recommended one. A first pass, before any of that checking, produced generic
+growth-playbook material (rate-limit upgrade prompts, live keys in docs,
+efficiency-drives-volume, pooled org spend). None of it survived contact with the
+product. Probing an obvious surface and finding it already built is a result, not a
+dead end, and it is most of the work behind these three.
 
 ## Bonus
 
 **[Billing attribution & spend confidence](bonus-billing-attribution/)** —
 [read the case →](https://claude.ai/code/artifact/0502f696-82e4-45c8-9a93-38b70868752a)
 
-Included as a bonus rather than as one of the three. It came from a real
-painpoint, and it is the only item here that survived verification: a defect
-reproduced on the current build, 26 public issues with $1,799.83 in self-reported
-losses, and a working prototype.
+Included as a bonus rather than as one of the three. It came from a real painpoint
+and it set the evidentiary bar the rest of the repo is held to: a defect reproduced
+on the current build, 26 public issues with $1,799.83 in self-reported losses, and a
+working prototype.
 
 It sits outside the slate because it is scoped to Claude Code rather than the
 API product. Its revenue path is also indirect — it moves spend off metered
@@ -69,9 +86,10 @@ protects is subscription retention, where a $1,200–$2,400/year plan outweighs 
 few hundred dollars of one-off metered spend at stake. Argued in its README
 rather than papered over.
 
-It is here because it shows the standard the three ideas should meet: a defect
-reproduced on the current build, a corpus of real user reports, and something
-that runs.
+It is here because it set that standard first, and because the standard held: every
+number on a page in this repo is printed by the prototype behind it, so a page and
+its code cannot disagree. Twice that rule has forced a written claim to be corrected
+rather than the number to be rounded.
 
 ## Repo layout
 
@@ -84,7 +102,7 @@ bonus-<slug>/      supporting work, outside the slate
   research/        collected evidence, raw
 ```
 
-## Constraints from the brief
+## Constraints
 
 - Ideas should **span different themes**, not three variations on one hypothesis.
 - **At least two** should be growth-shaped (acquisition / activation / retention /
