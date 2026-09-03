@@ -79,6 +79,16 @@ argument is not that customers are locked out. It is that this is three separate
 infrastructure problems — metering, evaluation and containment — and none of them is
 the thing the team set out to build.
 
+Anthropic's own hosting guidance already points the same way, for a different
+reason. The Agent SDK hosting page tells self-hosters that if they "do not need
+infrastructure control, custom isolation, or your own data plane," they should
+"consider Managed Agents instead." That is a hosting-convenience argument aimed at
+someone who would rather not operate containers. It is corroboration that the
+destination is right, and it is not a motion: nothing targets a workload, measures a
+move, or tells a team the thing blocking them is containment. The same page lists the
+egress-proxy credential pattern under production concerns to build yourself, alongside
+multi-tenant isolation and horizontal scaling.
+
 One row is different in kind. Egress substitution means the secret never enters the
 sandbox, so the agent never holds the credential material at all. A self-hosted
 container can scope credentials down; the process still has them. That is the bound
