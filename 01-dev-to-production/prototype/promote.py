@@ -17,9 +17,9 @@ to Claude Code anywhere in its agent, environment or deployment surface.
 
 This is the missing verb, run locally against a project directory.
 
-    ./promote.py map  fixtures/sample-project
-    ./promote.py emit fixtures/sample-project
-    ./promote.py emit fixtures/sample-project --json
+    ./promote.py map  fixtures/ledger-reconcile
+    ./promote.py emit fixtures/ledger-reconcile
+    ./promote.py emit fixtures/ledger-reconcile --json
 
 `map` reports what each Managed Agents field resolves to, and why the ones that
 do not, do not. `emit` writes the YAML bodies `ant` accepts on stdin.

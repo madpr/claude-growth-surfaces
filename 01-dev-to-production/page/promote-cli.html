@@ -75,7 +75,7 @@ var out=document.getElementById('out'), screenEl=document.getElementById('screen
 
 var buf='', hist=[], hp=-1, mode='shell', menu=null, onValue=null;
 
-/* The project. Values match prototype/fixtures/sample-project, and the rule
+/* The project. Values match prototype/fixtures/ledger-reconcile, and the rule
    list is what promote.py reports as unable to cross. */
 var RULES=[
   {k:'deny ', r:'Write(ledger/**)', fix:'mount ledger/ read-only', set:false},
@@ -109,7 +109,7 @@ function cmdAgents(){
   w('');
   w('  <span class="dim">ON THIS MACHINE</span>');
   w('  <span class="ok">&#9679;</span> 2 running                        <span class="dim">claude attach &lt;id&gt;</span>');
-  w('    <span class="dim">reconcile-nightly    12m   waiting on tests</span>');
+  w('    <span class="dim">fix-flaky-tests      12m   waiting on tests</span>');
   w('    <span class="dim">docs-sweep           4h    idle</span>');
   w('');
   w('  <span class="new">HOSTED</span>                              <span class="dim">runs when you are not here</span>');

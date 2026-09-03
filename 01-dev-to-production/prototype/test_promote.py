@@ -17,7 +17,7 @@ import promote as p
 
 FAIL = []
 HERE = os.path.dirname(os.path.abspath(__file__))
-FIXTURE = os.path.join(HERE, "fixtures", "sample-project")
+FIXTURE = os.path.join(HERE, "fixtures", "ledger-reconcile")
 
 
 def check(name, cond, detail=""):
@@ -55,7 +55,7 @@ check("resolves the model alias to an id",
       f["model"]["value"] == "claude-sonnet-5",
       "got %r" % f["model"]["value"])
 check("names the agent from the directory",
-      f["name"]["value"] == "sample-project")
+      f["name"]["value"] == "ledger-reconcile")
 check("every finding carries a status the renderer knows",
       all(x["status"] in p.LABEL for x in found))
 check("every unresolved finding explains itself",

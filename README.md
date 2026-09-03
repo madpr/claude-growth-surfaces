@@ -45,7 +45,7 @@ candidate for this slot. It is a clean two-day item, but it shares a hypothesis 
 the M and would strain the span-different-themes constraint.
 
 [`01-dev-to-production/`](01-dev-to-production/) — run the prototype:
-`cd 01-dev-to-production/prototype && ./promote.py map fixtures/sample-project`
+`cd 01-dev-to-production/prototype && ./promote.py map fixtures/ledger-reconcile`
 
 A supervised workload is a $10/month prototype; unattended it is a $1,000/month
 production workload. Managed Agents is where the unattended version is bounded. The

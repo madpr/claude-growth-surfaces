@@ -204,7 +204,7 @@ API:
 
 ```
 ./research/probe.sh
-./prototype/promote.py map prototype/fixtures/sample-project
+./prototype/promote.py map prototype/fixtures/ledger-reconcile
 ```
 
 One command needs credentials. It reports only whether the two organizations agree, and
