@@ -14,10 +14,11 @@ still pass. Settle both decisions and the merge unblocks.
 
 ## Why this isn't solved already
 
-Most of it already ships. The OpenAI SDK compatibility layer translates `tools` and
-`tool_calls` server-side. The Claude GitHub App already has repo access, granted for
-Code Review. The Console's prompt improver handles the prose half, and is marketed for
-"prompts originally written for other AI models."[^1]
+Part of it already ships. The OpenAI SDK compatibility layer translates `tools` and
+`tool_calls` server-side, and the Claude GitHub App already has repo access, granted
+for Code Review. The Console's prompt improver, which used to handle the prose half,
+is gone — no Workbench in the nav, and its docs page now redirects to the general
+prompting guide.
 
 What's missing is telling you what broke. The compatibility layer "silently ignores"
 most unsupported fields, and two of them carry your output contract: `response_format`
@@ -26,6 +27,12 @@ evaluation and you lose schema enforcement, then read the unenforced result as t
 model's ceiling. Prompt caching is unsupported there too, so the cost saving that
 justifies migrating — 46% on the seeded workload, most of it from caching — is
 invisible from the place you'd measure it.
+
+Prompt tuning is now nobody's job. Anthropic's own docs warn that a prompt "well-tuned
+to OpenAI specifically" degrades on Claude, and the tool that fixed that has been
+retired. The migration flags prompts that look OpenAI-tuned as a decision rather than
+rewriting them silently — an unreviewable prose change is the last thing you want in a
+migration pull request.
 
 ## The parity gate
 
@@ -78,9 +85,3 @@ The prototype runs on seeded data. It reads no repository and runs no inference.
 No user report backs the claim that developers reach the wrong conclusion from a
 compatibility-layer evaluation. It follows from documented behaviour. Close that gap
 first.
-
-[^1]: Verify before submitting. The dedicated docs page for the Console prompting
-tools now redirects to the general prompting guide, and the Console's Build section
-lists Playground, Files, Skills and Batches — no Workbench, which is where the
-improver used to live. If it has been retired, the gap this idea addresses is larger,
-not smaller.
