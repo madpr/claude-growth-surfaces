@@ -1,13 +1,222 @@
 <!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Migrations — Claude Console</title>
-    <script type="module" crossorigin src="./assets/index-CpdWJ6UA.js"></script>
-    <link rel="stylesheet" crossorigin href="./assets/index-DCUkxtJ8.css">
-  </head>
-  <body>
-    <div id="root"></div>
-  </body>
-</html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Claude API growth surfaces</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap">
+
+<style>
+/* Index for the working demos. Palette carried from the pages it links to:
+   the same warm ground, the same coral, and the terminal's own near-black for
+   the demo that is a terminal. */
+:root{
+  --bg:#FAFAF8; --panel:#FFFFFF; --sunk:#F4F3EF;
+  --ink:#191817; --ink-2:#5E5C55; --ink-3:#8E8B82;
+  --rule:#E6E4DC; --rule-soft:#F0EEE8;
+  --accent:#D97757; --accent-dim:#FBF0EA; --accent-ink:#A84E2C;
+  --term:#111010; --term-txt:#E9E5DD; --term-dim:#7E786D; --term-new:#E08A66;
+  --ok:#2E7D5B;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#141312; --panel:#1B1A18; --sunk:#201F1C;
+    --ink:#EDEAE3; --ink-2:#B0ABA1; --ink-3:#837E74;
+    --rule:#2C2A26; --rule-soft:#232120;
+    --accent:#E08A66; --accent-dim:#2A211C; --accent-ink:#EFA98A;
+    --term:#0B0A09; --ok:#74AE8D;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#141312; --panel:#1B1A18; --sunk:#201F1C;
+  --ink:#EDEAE3; --ink-2:#B0ABA1; --ink-3:#837E74;
+  --rule:#2C2A26; --rule-soft:#232120;
+  --accent:#E08A66; --accent-dim:#2A211C; --accent-ink:#EFA98A;
+  --term:#0B0A09; --ok:#74AE8D;
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font-family:var(--sans); font-size:16px; line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1000px; margin:0 auto; padding:64px 32px 90px}
+a{color:inherit}
+
+header{border-bottom:1px solid var(--rule); padding-bottom:30px}
+.eyebrow{
+  font-family:var(--mono); font-size:11.5px; font-weight:700;
+  letter-spacing:.1em; text-transform:uppercase; color:var(--accent-ink);
+}
+h1{margin:14px 0 0; font-size:36px; line-height:1.15; font-weight:600; letter-spacing:-.025em; text-wrap:balance}
+.lede{margin:16px 0 0; font-size:17px; color:var(--ink-2); max-width:60ch}
+
+h2.sh{
+  margin:48px 0 0; font-size:12px; font-weight:700; letter-spacing:.09em;
+  text-transform:uppercase; color:var(--ink-3); font-family:var(--mono);
+}
+
+.cards{display:grid; grid-template-columns:1fr 1fr; gap:18px; margin-top:18px}
+.card{
+  display:flex; flex-direction:column; text-decoration:none;
+  border:1px solid var(--rule); border-radius:12px; background:var(--panel);
+  overflow:hidden; transition:border-color .14s, transform .14s;
+}
+.card:hover{border-color:var(--accent); transform:translateY(-2px)}
+.card:focus-visible{outline:2px solid var(--accent); outline-offset:3px}
+.card .body{padding:18px 20px 20px}
+.card h3{margin:0; font-size:17px; font-weight:600; letter-spacing:-.01em}
+.card p{margin:7px 0 0; font-size:13.5px; color:var(--ink-2); line-height:1.55}
+.card .go{
+  margin-top:13px; font-family:var(--mono); font-size:12px; color:var(--accent-ink);
+  font-weight:500;
+}
+
+/* Each preview is drawn from the page it links to. */
+.pv{height:158px; border-bottom:1px solid var(--rule); overflow:hidden; position:relative}
+.pv.termpv{background:var(--term); padding:14px 16px; font-family:var(--mono); font-size:10.5px; line-height:1.6; color:var(--term-txt); white-space:pre}
+.pv .d{color:var(--term-dim)} .pv .n{color:var(--term-new)}
+.pv.uipv{background:var(--sunk); padding:13px 15px}
+.pv .bar{height:7px; border-radius:3px; background:var(--rule); margin-bottom:8px}
+.pv .bar.s{width:38%} .pv .bar.m{width:62%} .pv .bar.l{width:80%}
+.pv .chip{
+  display:inline-block; font-family:var(--mono); font-size:9.5px; font-weight:700;
+  letter-spacing:.05em; text-transform:uppercase; padding:1px 5px; border-radius:3px;
+  background:var(--accent-dim); color:var(--accent-ink); margin-bottom:9px;
+}
+.pv .rulerow{
+  display:flex; gap:7px; align-items:center; font-family:var(--mono);
+  font-size:10px; color:var(--ink-2); padding:3px 0;
+}
+.pv .tick{color:var(--ok); font-weight:700}
+.pv .cross{color:#8A6A1F; font-weight:700}
+
+.flow{
+  display:flex; align-items:center; gap:10px; margin-top:14px;
+  font-family:var(--mono); font-size:12px; color:var(--ink-3);
+}
+.flow b{color:var(--ink-2); font-weight:500}
+
+.rows{margin-top:16px; border:1px solid var(--rule); border-radius:11px; overflow:hidden}
+.row{
+  display:flex; gap:16px; align-items:baseline; padding:14px 18px;
+  border-bottom:1px solid var(--rule-soft); text-decoration:none; color:inherit;
+}
+.row:last-child{border-bottom:none}
+.row:hover{background:var(--sunk)}
+.row .k{
+  font-family:var(--mono); font-size:11px; font-weight:700; letter-spacing:.06em;
+  color:var(--ink-3); width:26px; flex:none; padding-top:2px;
+}
+.row .t{flex:1; min-width:0}
+.row .t b{font-size:15px; font-weight:600; display:block}
+.row .t span{font-size:13.5px; color:var(--ink-2)}
+.row .arw{color:var(--accent-ink); font-family:var(--mono); font-size:13px; flex:none}
+
+footer{margin-top:52px; padding-top:20px; border-top:1px solid var(--rule); font-size:13px; color:var(--ink-3); line-height:1.65}
+footer code{font-family:var(--mono); font-size:12px; color:var(--ink-2)}
+footer a{color:var(--accent-ink)}
+
+@media(max-width:760px){
+  .wrap{padding:38px 18px 60px}
+  h1{font-size:27px}
+  .cards{grid-template-columns:1fr}
+}
+</style>
+
+<div class="wrap">
+
+<header>
+  <div class="eyebrow">Claude API &middot; growth surfaces</div>
+  <h1>Move unattended work onto the platform</h1>
+  <p class="lede">
+    Claude Code runs agents you supervise. Managed Agents runs agents you don't. Almost
+    nobody crosses from one to the other, because the two halves are separate tools on
+    separate accounts that collide on every word you would search.
+  </p>
+</header>
+
+<h2 class="sh">Working demos</h2>
+
+<div class="cards">
+
+  <a class="card" href="promote-cli.html">
+    <div class="pv termpv"><span class="d">&gt;</span> claude promote
+
+  <span class="d">&#10003; carries over    model, tools, 1 skill</span>
+  <span class="n">&#9679;</span> <span class="d">does not carry  3 rules, 1 service</span>
+
+  <span class="n">deny</span>  <span class="d">Write(ledger/**)</span>
+     <span class="n">&#8594;</span> <span class="d">mount ledger/ read-only</span></div>
+    <div class="body">
+      <h3>Promote from Claude Code</h3>
+      <p>
+        A terminal you can type into. Read the project, translate the rules that cannot
+        travel, set a cap that can never be added later.
+      </p>
+      <div class="go">Type into it &#8594;</div>
+    </div>
+  </a>
+
+  <a class="card" href="promote-to-agent.html">
+    <div class="pv uipv">
+      <span class="chip">Proposal</span>
+      <div class="bar l"></div>
+      <div class="rulerow"><span class="tick">&#10003;</span> Write(ledger/**)</div>
+      <div class="rulerow"><span class="tick">&#10003;</span> Bash(rm *)</div>
+      <div class="rulerow"><span class="cross">&#9675;</span> Bash(python3 &hellip;)</div>
+      <div class="rulerow"><span class="cross">&#9675;</span> local-fs-index</div>
+    </div>
+    <div class="body">
+      <h3>Confirm hosted agent</h3>
+      <p>
+        The browser screen the terminal hands off to, in the organization the CLI was
+        not signed in to. Toggle what gets enforced and watch the sandbox change.
+      </p>
+      <div class="go">Open the screen &#8594;</div>
+    </div>
+  </a>
+
+</div>
+
+<div class="flow">
+  <b>claude promote</b> <span>&#8594;</span> <span>account boundary</span>
+  <span>&#8594;</span> <b>confirm in browser</b>
+  <span>&#8212; the demos link to each other, in both directions</span>
+</div>
+
+<h2 class="sh">The rest of the work</h2>
+
+<div class="rows">
+  <a class="row" href="migrations/">
+    <span class="k">M</span>
+    <span class="t"><b>OpenAI &#8594; Claude migration</b>
+      <span>Rewrites every call site, then blocks the pull request until the repository's
+      own tests still pass. The gate is the product.</span></span>
+    <span class="arw">&#8594;</span>
+  </a>
+  <a class="row" href="https://github.com/madpr/claude-growth-surfaces/tree/master/01-dev-to-production">
+    <span class="k">L</span>
+    <span class="t"><b>The case behind these demos</b>
+      <span>Problem, goals, non-goals, metrics and open questions &mdash; plus the
+      prototype that decides what can and cannot cross.</span></span>
+    <span class="arw">&#8599;</span>
+  </a>
+  <a class="row" href="https://github.com/madpr/claude-growth-surfaces">
+    <span class="k">&#9679;</span>
+    <span class="t"><b>Repository</b>
+      <span>Every figure on these pages is printed by the prototype behind it.</span></span>
+    <span class="arw">&#8599;</span>
+  </a>
+</div>
+
+<footer>
+  Both demos are proposals. Nothing here ships. Navigation, objects and field names
+  replicate the live product; what each demo adds is marked. The project shown is
+  <code>prototype/fixtures/ledger-reconcile</code>, and which rules can and cannot be
+  enforced is decided by <code>prototype/promote.py</code>, so the pages and the code
+  cannot disagree.
+</footer>
+
+</div>
