@@ -1,217 +1,253 @@
 <title>Promote to Agent</title>
 
 <style>
-/* Console-native, matching 02-openai-migration/app/src/styles.css.
-   Coral marks only the fields nothing could fill. */
+/* Replica of platform.claude.com > Managed Agents > Agents > Deep researcher,
+   read 2 September 2026. Light, matching 02-openai-migration/app/src/styles.css.
+   Coral marks the one proposed section. */
 :root{
-  --bg:#FAFAF8;--panel:#FFFFFF;--sunk:#F4F3EF;
+  --bg:#FAFAF8;--panel:#FFFFFF;--sunk:#F4F3EF;--field:#FFFFFF;
   --ink:#191817;--ink-2:#5E5C55;--ink-3:#8E8B82;
   --rule:#E6E4DC;--rule-soft:#F0EEE8;
   --accent:#D97757;--accent-dim:#FBF0EA;--accent-ink:#A84E2C;
-  --ok:#2E7D5B;--ok-dim:#EAF4EF;--warn:#A87613;--warn-dim:#FAF2E1;
+  --ok:#2E7D5B;--ok-dim:#EAF4EF;
+  --link:#2C5FA8;
   --shadow:0 1px 2px rgba(25,24,23,.04);
   --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
   --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
 }
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
-button,input,select{font-family:inherit;font-size:inherit}
+button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit}
 button{cursor:pointer}
+a{color:var(--link);text-decoration:none}
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
 
-.wrap{max-width:880px;margin:0 auto;padding:24px 26px 48px}
-.crumbs{display:flex;align-items:center;gap:9px;font-size:13px;color:var(--ink-3);flex-wrap:wrap}
-.crumbs h1{margin:0;font-size:20px;font-weight:600;letter-spacing:-.02em;color:var(--ink)}
-.tag{font-size:9.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;background:var(--accent-dim);color:var(--accent-ink);border:1px solid #F0D9CC;padding:3px 6px;border-radius:4px}
+.app{display:grid;grid-template-columns:210px minmax(0,1fr);min-height:100vh}
+.side{border-right:1px solid var(--rule);padding:14px 10px;position:sticky;top:0;height:100vh;overflow:hidden;display:flex;flex-direction:column}
+.brand{font-size:15px;font-weight:600;letter-spacing:-.01em;padding:2px 8px 12px}
+.ws{display:flex;align-items:center;gap:8px;border:1px solid var(--rule);border-radius:7px;padding:6px 9px;font-size:12.5px;margin-bottom:9px}
+.ws .caret{margin-left:auto;color:var(--ink-3);font-size:10px}
+.omni{display:flex;align-items:center;gap:8px;border:1px solid var(--rule);border-radius:7px;padding:6px 9px;font-size:12.5px;color:var(--ink-3);margin-bottom:12px}
+.omni kbd{margin-left:auto;font-family:var(--mono);font-size:10px;color:var(--ink-3)}
+.nav{display:flex;flex-direction:column;gap:1px;overflow-y:auto;flex:1}
+.nav::-webkit-scrollbar{width:0}
+.ni{display:flex;align-items:center;gap:8px;padding:6px 9px;border-radius:6px;color:var(--ink-2);font-size:13px;background:none;border:none;text-align:left;width:100%}
+.ni:hover{background:var(--sunk);color:var(--ink)}
+.ni.on{background:var(--sunk);color:var(--ink);font-weight:550}
+.ni.sub{padding-left:22px;font-size:12.5px}
+.nl{font-size:12.5px;color:var(--ink-2);padding:11px 9px 4px;display:flex;align-items:center;gap:8px}
+.nl .c{margin-left:auto;color:var(--ink-3);font-size:10px}
+.badge{margin-left:auto;font-size:9px;font-weight:700;letter-spacing:.06em;background:var(--accent-dim);color:var(--accent-ink);padding:1px 5px;border-radius:4px}
+.sfoot{border-top:1px solid var(--rule);padding-top:8px;font-size:12.5px;color:var(--ink-2)}
+.sfoot .row{display:flex;align-items:center;gap:8px;padding:6px 9px}
+.sfoot .v{margin-left:auto;font-family:var(--mono);font-size:11.5px;color:var(--ink-3)}
 
-.src{display:flex;align-items:center;gap:9px;margin-top:14px;padding:9px 13px;background:var(--sunk);border:1px solid var(--rule);border-radius:8px;font-size:12.5px;color:var(--ink-2)}
-.src .p{font-family:var(--mono);font-size:12px;color:var(--ink)}
-.src .r{margin-left:auto}
+.main{min-width:0;padding:22px 28px 60px}
+.crumb{font-size:13px;color:var(--ink-3);display:flex;gap:8px;align-items:center}
+.crumb b{color:var(--ink-2);font-weight:400}
+.h{display:flex;align-items:center;gap:10px;margin-top:12px;flex-wrap:wrap}
+.h h1{margin:0;font-size:23px;font-weight:600;letter-spacing:-.02em}
+.pill{font-size:11px;font-weight:550;border-radius:5px;padding:2px 7px;background:var(--ok-dim);color:var(--ok)}
+.pill-p{background:var(--accent-dim);color:var(--accent-ink)}
+.h .r{margin-left:auto;display:flex;gap:8px;align-items:center}
+.btn{border:1px solid var(--rule);background:var(--panel);border-radius:7px;padding:6px 12px;font-size:13px;font-weight:500}
+.btn:hover{background:var(--sunk)}
+.btn-w{background:var(--ink);color:#fff;border-color:var(--ink);font-weight:550}
+.sub{margin:8px 0 0;font-size:13.5px;color:var(--ink-2)}
+.meta{margin-top:5px;font-size:12px;color:var(--ink-3);font-family:var(--mono)}
+.meta .n{font-family:var(--sans)}
 
-.card{background:var(--panel);border:1px solid var(--rule);border-radius:9px;box-shadow:var(--shadow);margin-top:14px}
-.chd{display:flex;align-items:center;gap:10px;padding:13px 16px;border-bottom:1px solid var(--rule)}
-.chd h2{margin:0;font-size:14px;font-weight:600}
-.chd .r{margin-left:auto;font-size:11.5px;color:var(--ink-3)}
-.seg2{display:inline-flex;border:1px solid var(--rule);border-radius:6px;overflow:hidden}
-.seg2 button{background:var(--panel);border:none;padding:3px 10px;font-size:11.5px;color:var(--ink-2)}
-.seg2 button.on{background:var(--sunk);color:var(--ink);font-weight:550}
+.tabs{display:flex;gap:4px;margin-top:16px;border-bottom:1px solid var(--rule)}
+.tab{background:none;border:none;border-bottom:2px solid transparent;padding:9px 12px;font-size:13.5px;color:var(--ink-2)}
+.tab:hover{color:var(--ink)}
+.tab.on{color:var(--ink);font-weight:600;border-bottom-color:var(--ink)}
 
-.grp{padding:6px 16px 14px}
-.grp + .grp{border-top:1px solid var(--rule-soft)}
-.gname{font-size:10px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-3);padding:12px 0 8px}
-.f{display:grid;grid-template-columns:132px minmax(0,1fr) 152px;gap:12px;align-items:center;padding:6px 0}
-.f label{font-size:12.5px;color:var(--ink-2)}
-.val{font-size:13px;min-width:0}
-.val .mono{font-family:var(--mono);font-size:12px}
-.from{font-size:11.5px;color:var(--ink-3);justify-self:end;text-align:right;font-family:var(--mono)}
-input.t,select.t{width:100%;border:1px solid var(--rule);background:var(--panel);border-radius:6px;padding:6px 9px;color:var(--ink)}
-input.t::placeholder{color:var(--ink-3)}
-.need input.t,.need select.t{border-color:var(--accent);background:var(--accent-dim)}
-.need .from{color:var(--accent-ink)}
-.req{font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--accent-ink)}
-.ok{color:var(--ok)}
+.tbar{display:flex;align-items:center;margin-top:16px}
+.vsel{border:1px solid var(--rule);background:var(--panel);border-radius:7px;padding:5px 10px;font-size:12.5px;color:var(--ink-2)}
+.seg{margin-left:auto;display:inline-flex;border:1px solid var(--rule);border-radius:7px;overflow:hidden}
+.seg button{background:none;border:none;padding:5px 12px;font-size:12.5px;color:var(--ink-3)}
+.seg button.on{background:var(--sunk);color:var(--ink);font-weight:550}
 
-.chip-al{display:inline-block;font-size:11px;font-weight:550;border-radius:5px;padding:1px 6px;background:var(--ok-dim);color:var(--ok);margin-left:6px}
-.prow{display:flex;align-items:center;gap:8px;padding:4px 0}
-.prow .n{font-family:var(--mono);font-size:12px;flex:1}
-.seg{display:inline-flex;border:1px solid var(--rule);border-radius:6px;overflow:hidden;flex:none}
-.seg button{background:var(--panel);border:none;padding:2px 7px;font-size:11px;color:var(--ink-3)}
-.seg button.on{background:var(--ink);color:#fff;font-weight:550}
-.seg button.on.d{background:var(--warn)}
-.seg button.on.a{background:var(--ink-2)}
-
-.bar{display:flex;align-items:center;gap:10px;padding:12px 16px;background:var(--sunk);border-top:1px solid var(--rule);border-radius:0 0 9px 9px}
-.bar .m{font-size:12.5px;color:var(--ink-2)}
-.btn{border:1px solid var(--rule);background:var(--panel);color:var(--ink);border-radius:6px;padding:6px 12px;font-size:12.5px;font-weight:500;white-space:nowrap}
-.btn-p{background:var(--ink);color:#fff;border-color:var(--ink)}
-.btn-p:disabled{opacity:.35;cursor:not-allowed}
-.bar .r{margin-left:auto;display:flex;gap:8px}
-.foot{margin-top:18px;font-size:11.5px;color:var(--ink-3);line-height:1.6}
+.sec{display:grid;grid-template-columns:212px minmax(0,1fr);gap:28px;padding:22px 0;border-bottom:1px solid var(--rule-soft);max-width:880px}
+.sec:last-of-type{border-bottom:none}
+.sec.prop{background:linear-gradient(90deg,var(--accent-dim),transparent 70%);border-radius:9px;padding:22px 16px;margin-left:-16px}
+.sl h2{margin:0;font-size:14.5px;font-weight:600}
+.sl p{margin:6px 0 0;font-size:12.5px;color:var(--ink-2);line-height:1.5}
+.fl{display:flex;flex-direction:column;gap:14px;min-width:0}
+.fl label{display:block;font-size:12.5px;margin-bottom:5px}
+.fl .opt{color:var(--ink-3)}
+.i{width:100%;background:var(--field);border:1px solid var(--rule);border-radius:7px;padding:8px 11px;font-size:13px}
+textarea.i{resize:vertical;line-height:1.55;min-height:70px}
+.i.need{border-color:var(--accent);background:var(--accent-dim)}
+.mono{font-family:var(--mono);font-size:12.5px}
+.add{display:flex;gap:16px;flex-wrap:wrap}
+.add button{background:none;border:none;color:var(--ink-2);font-size:13px;padding:2px 0}
+.add button:hover{color:var(--ink)}
+.card{background:var(--panel);border:1px solid var(--rule);border-radius:9px;box-shadow:var(--shadow)}
+.ct{display:flex;align-items:center;gap:10px;padding:11px 13px}
+.ct .ic{width:26px;height:26px;border-radius:6px;background:var(--field);display:grid;place-items:center;font-size:12px;color:var(--ink-2)}
+.ct .nm{font-size:13px}
+.ct .nm span{display:block;font-family:var(--mono);font-size:11.5px;color:var(--ink-3)}
+.ct .x{margin-left:auto;color:var(--ink-3);background:none;border:none;font-size:14px}
+.cb{display:flex;align-items:center;gap:8px;padding:9px 13px;border-top:1px solid var(--rule);font-size:12.5px;color:var(--ink-2)}
+.cnt{background:var(--field);border-radius:5px;padding:0 6px;font-size:11.5px;color:var(--ink-2)}
+.al{margin-left:auto;display:inline-flex;align-items:center;gap:5px;background:var(--ok-dim);color:var(--ok);border-radius:6px;padding:3px 9px;font-size:12px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.foot{margin-top:26px;padding-top:14px;border-top:1px solid var(--rule);font-size:11.5px;color:var(--ink-3);line-height:1.6;max-width:880px}
 .foot b{color:var(--ink-2)}
-@media(max-width:640px){.f{grid-template-columns:1fr;gap:4px}.from{justify-self:start;text-align:left}}
+.tg{display:inline-flex;align-items:center;gap:8px;font-size:12.5px;color:var(--ink-2);border:1px solid var(--rule);background:var(--panel);border-radius:8px;padding:5px 10px;margin-left:8px}
+.sw{width:32px;height:19px;border-radius:10px;background:var(--rule);border:none;position:relative;padding:0;flex:none}
+.sw::after{content:"";position:absolute;top:2px;left:2px;width:15px;height:15px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.2);transition:transform .15s,background .15s}
+.sw.on{background:var(--accent)}
+.sw.on::after{transform:translateX(13px);background:#fff}
+@media(max-width:900px){.app{grid-template-columns:1fr}.side{display:none}.sec{grid-template-columns:1fr;gap:12px}.main{padding:18px 16px 40px}}
 </style>
 
-<div class="wrap">
-  <div class="crumbs"><span>Managed Agents</span><span>/</span><span>Agents</span><span>/</span>
-    <h1>Promote to agent</h1><span class="tag">Proposal</span></div>
+<div class="app">
+  <aside class="side">
+    <div class="brand">Claude Console</div>
+    <div class="ws"><span>Default</span><span class="caret">&#9662;</span></div>
+    <div class="omni"><span>Search Console&hellip;</span><kbd>&#8984;K</kbd></div>
+    <nav class="nav">
+      <button class="ni">Dashboard</button>
+      <button class="ni">API keys</button>
+      <div class="nl">Build<span class="c">&#9662;</span></div>
+      <button class="ni sub">Playground<span class="badge">NEW</span></button>
+      <button class="ni sub">Files</button><button class="ni sub">Skills</button>
+      <button class="ni sub">Batches</button>
+      <div class="nl">Managed Agents<span class="c">&#9662;</span></div>
+      <button class="ni sub">Quickstart</button>
+      <button class="ni sub on">Agents</button>
+      <button class="ni sub">Sessions</button>
+      <button class="ni sub">Deployments</button>
+      <button class="ni sub">Environments</button>
+      <button class="ni sub">Credential vaults</button>
+      <button class="ni sub">Memory stores</button>
+      <div class="nl">Analytics<span class="c">&#8250;</span></div>
+      <div class="nl">Claude Code<span class="c">&#8250;</span></div>
+      <div class="nl">Manage<span class="c">&#8250;</span></div>
+    </nav>
+    <div class="sfoot">
+      <div class="row">Notifications</div>
+      <div class="row">Documentation</div>
+      <div class="row">Credits <span class="v">$11.28</span></div>
+    </div>
+  </aside>
 
-  <div class="src">Reading <span class="p">~/.claude</span> and
-    <span class="p">claude-growth-surfaces</span>
-    <span class="r"><button class="btn" style="padding:3px 9px;font-size:11.5px">Rescan</button></span></div>
+  <main class="main">
+    <div class="crumb"><b>Agents</b><span>/</span><span>Deep researcher</span></div>
 
-  <div class="card">
-    <div class="chd"><h2>Agent config</h2>
-      <span class="r" id="prov"></span>
-      <span class="seg2"><button class="on">Rendered</button><button>Raw</button></span></div>
+    <div class="h">
+      <h1>Deep researcher</h1>
+      <span class="pill">Active</span>
+      <span class="pill pill-p" id="prov" hidden>Promoted from Claude Code</span>
+      <span class="r">
+        <button class="btn btn-w">&#9654; Start session</button>
+        <button class="btn" style="padding:6px 10px">&#8942;</button>
+      </span>
+    </div>
+    <p class="sub">Conducts multi-step web research with source synthesis and citations.</p>
+    <p class="meta">agent_01PhrvnAz7o3Brm6EFvLPiKK <span class="n">&middot; Last updated 2 days ago</span></p>
 
-    <div class="grp">
-      <div class="gname">General</div>
-      <div class="f"><label>Name</label>
-        <span class="val"><input class="t" value="support-triage-nightly"></span>
-        <span class="from">directory name</span></div>
-      <div class="f"><label>Model</label>
-        <span class="val"><select class="t"><option>claude-opus-5 &middot; high</option></select></span>
-        <span class="from">settings.json</span></div>
-      <div class="f"><label>System prompt</label>
-        <span class="val mono">2.1 KB</span>
-        <span class="from">CLAUDE.md</span></div>
+    <div class="tabs">
+      <button class="tab on">Configuration</button>
+      <button class="tab">Sessions</button>
+      <button class="tab">Deployments</button>
+      <button class="tab">Observability</button>
     </div>
 
-    <div class="grp">
-      <div class="gname">Skills</div>
-      <div class="f"><label>Skills</label>
-        <span class="val">huggingface-spaces, verify-before-claiming</span>
-        <span class="from">~/.claude/skills</span></div>
+    <div class="tbar">
+      <span class="vsel">Version: <b style="color:var(--ink)">v1</b> &#9662;</span>
+      <span class="seg"><button class="on">Rendered</button><button>Raw</button></span>
     </div>
 
-    <div class="grp">
-      <div class="gname">Tools</div>
-      <div class="f"><label>Built-in tools</label>
-        <span class="val mono">agent_toolset_20260401</span>
-        <span class="from">8 tools</span></div>
-      <div class="f"><label>MCP servers</label>
-        <span class="val" style="color:var(--ink-3)">None</span>
-        <span class="from">.mcp.json</span></div>
-      <div class="f"><label>Tool permissions</label>
-        <span class="val" id="permval"></span>
-        <span class="from">settings.json</span></div>
-    </div>
+    <section class="sec">
+      <div class="sl"><h2>General</h2><p>What this agent is and how it&rsquo;s prompted.</p></div>
+      <div class="fl">
+        <div><label>Name</label><input class="i" value="Deep researcher"></div>
+        <div><label>Model</label>
+          <div class="i mono" style="display:flex;align-items:center;gap:8px">claude-opus-5
+            <span style="color:var(--ink-3);font-family:var(--sans);font-size:12px">Low</span>
+            <span style="margin-left:auto;color:var(--ink-3)">&#9662;</span></div></div>
+        <div><label>Description <span class="opt">(optional)</span></label>
+          <textarea class="i" rows="2">Conducts multi-step web research with source synthesis and citations.</textarea></div>
+        <div><label>System prompt <span class="opt">(optional)</span></label>
+          <textarea class="i" rows="14">You are a research agent. Given a question or topic:
 
-    <div class="grp" id="gaps"></div>
-    <div class="grp" id="reach" hidden></div>
-    <div class="bar">
-      <span class="m" id="msg"></span>
-      <span class="r"><button class="btn">Save draft</button>
-        <button class="btn btn-p" id="go" disabled>Create agent</button></span></div>
-  </div>
+1. Decompose it into 3-5 concrete sub-questions that, answered together, cover the topic.
+2. For each sub-question, run targeted web searches and fetch the most authoritative sources (prefer primary sources, official docs, peer-reviewed work over blog posts and aggregators).
+3. Read the sources in full &mdash; don't skim. Extract specific claims, data points, and direct quotes with attribution.
+4. Synthesize a report that answers the original question. Structure it by sub-question, cite every non-obvious claim inline, and close with a "confidence &amp; gaps" section noting where sources disagreed or where you couldn't find good coverage.
 
-  <p class="foot"><b>Proposal, not a shipped feature.</b> The fields are the live
-  <em>Create agent</em> form on <span class="mono">platform.claude.com</span>, plus the session and
-  deployment fields that carry the budget, rubric and schedule. Read 2 September 2026.</p>
+Be skeptical. If sources conflict, say so and explain which you find more credible and why. Don't paper over uncertainty with confident-sounding prose.</textarea></div>
+      </div>
+    </section>
+
+    <section class="sec">
+      <div class="sl"><h2>Multiagent</h2><p>Subagents this agent can spawn and delegate work to. <a href="#">Learn more &#8599;</a></p></div>
+      <div class="fl"><div class="add"><button>+ Add subagent</button><button>+ Add advisor</button></div></div>
+    </section>
+
+    <section class="sec">
+      <div class="sl"><h2>Skills</h2><p>Packaged instructions and scripts this agent loads when it needs them. <a href="#">Learn more &#8599;</a></p></div>
+      <div class="fl"><div class="add"><button>+ Add skill</button></div></div>
+    </section>
+
+    <section class="sec">
+      <div class="sl"><h2>Tools</h2><p>Everything this agent can call: built-in tools, MCP servers, and your own tool definitions. <a href="#">Learn more &#8599;</a></p></div>
+      <div class="fl">
+        <div class="card">
+          <div class="ct"><span class="ic">&#9776;</span>
+            <span class="nm">Built-in tools<span>agent_toolset_20260401</span></span>
+            <button class="x">&times;</button></div>
+          <div class="cb"><span>&#8250;</span> Tool permissions <span class="cnt">8</span>
+            <span class="al">&#10003; Always allow &#9662;</span></div>
+        </div>
+        <div class="add"><button>+ Add MCP server</button><button>+ Add custom tool</button></div>
+      </div>
+    </section>
+
+    <section class="sec prop" id="unatt">
+      <div class="sl"><h2>Unattended <span class="pill pill-p">Proposed</span></h2>
+        <p>Defaults every session and deployment inherits when nobody is watching.
+        <a href="#">Learn more &#8599;</a></p></div>
+      <div class="fl">
+        <div><label>Environment</label>
+          <div class="i need" style="display:flex;align-items:center;color:var(--accent-ink)">
+            Not set <span style="margin-left:auto">&#9662;</span></div></div>
+        <div class="row2">
+          <div><label>Session budget</label>
+            <input class="i need" placeholder="0.00 USD"></div>
+          <div><label>Outcome rubric</label>
+            <div class="i need" style="display:flex;align-items:center;color:var(--accent-ink)">
+              Not set <span style="margin-left:auto">&#9662;</span></div></div>
+        </div>
+        <div><label>Credential vault</label>
+          <div class="i need" style="display:flex;align-items:center;color:var(--accent-ink)">
+            Not set <span style="margin-left:auto">&#9662;</span></div></div>
+      </div>
+    </section>
+
+    <p class="foot"><b>Replica of Managed Agents &rsaquo; Agents &rsaquo; Deep researcher on
+    platform.claude.com, read 2 September 2026.</b> Every field above the marked section is the
+    live page and its real values. The <em>Unattended</em> section is the proposal: environment,
+    budget, rubric and vault are set per session today, so nothing on an agent says whether it can
+    be left alone.
+    <span class="tg"><button class="sw on" id="sw" role="switch" aria-checked="true"
+      aria-label="Show the proposed section"></button><span id="lbl">Showing the proposal</span></span></p>
+  </main>
 </div>
 
 <script>
-var TOOLS=["bash","read","write","edit","glob","grep","web_search","web_fetch"];
-
-/* What each environment lets the same allowed tools touch. */
-var ENVS={
-  "cloud-sandbox-default":[
-    ["Filesystem","/mnt/session &middot; the repo, nothing else"],
-    ["Credentials","vault, substituted at egress"],
-    ["Network","api.anthropic.com, github.com"],
-    ["Host machine","unreachable"]],
-  "self-hosted-vpc":[
-    ["Filesystem","container volume you mount"],
-    ["Credentials","vault, substituted at egress"],
-    ["Network","your VPC egress rules"],
-    ["Host machine","unreachable"]]
-};
-
-/* Four fields with nothing on the Claude Code side to fill them. */
-var GAPS=[
-  {k:"env",  label:"Environment",    type:"select", ph:"Select environment"},
-  {k:"bud",  label:"Session budget", type:"money",  ph:"0.00"},
-  {k:"rub",  label:"Outcome rubric", type:"select", ph:"Attach a rubric"},
-  {k:"vault",label:"Credentials",     type:"vault",  ph:"2 found in .env"},
-  {k:"cron", label:"Schedule",       type:"text",   ph:"", val:"Daily 02:00", from:"~/.claude/tasks"}
-];
-var gv={env:"",bud:"",rub:"",vault:"",cron:"Daily 02:00"};
-
-function render(){
-  document.getElementById("permval").innerHTML =
-    '<span class="mono">'+TOOLS.join(", ")+'</span>' +
-    ' <span class="chip-al">Always allow</span>';
-
-  var env=gv.env, box=document.getElementById("reach");
-  box.hidden = !env;
-  if(env){
-    box.innerHTML='<div class="gname">Reach</div>'+ENVS[env].map(function(r){
-      return '<div class="f"><label>'+r[0]+'</label><span class="val">'+r[1]+'</span>'+
-             '<span class="from">'+env+'</span></div>';
-    }).join("");
-  }
-
-  document.getElementById("gaps").innerHTML='<div class="gname">Unattended</div>'+
-    GAPS.map(function(g){
-      var filled=!!gv[g.k], need=!filled;
-      var field = g.type==="vault"
-        ? (filled
-            ? '<span class="mono">'+gv[g.k]+'</span>'
-            : '<button class="btn" data-vault="1" style="padding:5px 10px;font-size:12px">Move 2 secrets to a vault</button>')
-        : g.type==="money"
-        ? '<input class="t" inputmode="decimal" data-k="'+g.k+'" placeholder="'+g.ph+'" value="'+gv[g.k]+'">'
-        : g.type==="text"
-        ? '<input class="t" data-k="'+g.k+'" value="'+gv[g.k]+'">'
-        : '<select class="t" data-k="'+g.k+'"><option value="">'+g.ph+'</option>'+
-          (g.k==="env"?'<option>cloud-sandbox-default</option><option>self-hosted-vpc</option>'
-                      :'<option>triage-quality.md</option>')+'</select>';
-      return '<div class="f'+(need?" need":"")+'"><label>'+g.label+
-        (g.k==="bud"?' <span class="mono" style="color:var(--ink-3)">USD</span>':'')+'</label>'+
-        '<span class="val">'+field+'</span>'+
-        '<span class="from">'+(g.from?g.from:(need?'<span class="req">Required</span>':'<span class="ok">set</span>'))+'</span></div>';
-    }).join("");
-
-  var open=GAPS.filter(function(g){return !gv[g.k]}).length;
-
-  document.getElementById("prov").textContent =
-    (GAPS.length-open+6)+" of "+(GAPS.length+6)+" from source";
-  var bits=[];
-  if(open) bits.push(open+" field"+(open>1?"s":"")+" need"+(open>1?"":"s")+" a value");
-  document.getElementById("msg").innerHTML = bits.length
-    ? bits.join(" &middot; ") : "Ready. Nobody needs to be watching.";
-  document.getElementById("go").disabled = open>0;
-}
-
-document.addEventListener("click",function(e){
-  if(e.target.closest("[data-vault]")){gv.vault="vault_01Nightly"; render();}
+var on = true;
+document.getElementById("sw").addEventListener("click", function(){
+  on = !on;
+  this.classList.toggle("on", on);
+  this.setAttribute("aria-checked", String(on));
+  document.getElementById("unatt").hidden = !on;
+  document.getElementById("prov").hidden = !on;
+  document.getElementById("lbl").textContent = on
+    ? "Showing the proposal" : "Showing the page as it ships";
 });
-document.addEventListener("input",function(e){
-  var k=e.target.getAttribute&&e.target.getAttribute("data-k");
-  if(k){gv[k]=e.target.value; if(e.target.tagName==="SELECT") render();}
-});
-document.addEventListener("change",function(e){
-  var k=e.target.getAttribute&&e.target.getAttribute("data-k");
-  if(k){gv[k]=e.target.value; render();}
-});
-render();
+document.getElementById("prov").hidden = false;
 </script>
