@@ -10,7 +10,7 @@ stops them is that nobody can prove the switch is safe. The gate is the product.
 **Cost:** ~2 weeks.
 **Theme:** acquisition.
 
-[Open the prototype](https://madpr.github.io/claude-growth-surfaces/) — one screen: 33
+[Open the prototype](https://madpr.github.io/claude-growth-surfaces/migrations/) — one screen: 33
 call sites rewritten, 5 decisions only a person can make, and whether the tests still
 pass. Settle both decisions and the merge unblocks.
 

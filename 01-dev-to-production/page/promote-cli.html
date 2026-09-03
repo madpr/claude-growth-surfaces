@@ -85,9 +85,12 @@ var RULES=[
   {k:'deny ', r:'Write(ledger/**)', fix:'mount ledger/ read-only', set:false},
   {k:'deny ', r:'Bash(rm *)',       fix:'nothing to protect &mdash; the sandbox is discarded after every run', set:false},
   {k:'allow', r:'Bash(python3 reconcile.py *)', fix:null,
-   why:'the sandbox runs any command. Narrow it in the image, or accept it.'},
+   why:'the only pre-approved command &mdash; everything else stopped for you.\n'
+      +'              Nothing stops for you at 02:00, and the sandbox runs anything.',
+   lost:'you lose the approval gate, not a rule'},
   {k:'mcp  ', r:'local-fs-index',   fix:null,
-   why:'runs from your machine. Publish it as an endpoint, or drop it.'}
+   why:'a server your machine starts. A hosted agent cannot reach it.',
+   lost:'republish it as an endpoint, or drop it'}
 ];
 var cap=null, sched=null;
 
@@ -178,7 +181,7 @@ function rule(i){
 
 function residue(){
   var left=RULES.filter(function(r){return !r.fix});
-  w('  <span class="warn">These have no sandbox equivalent.</span>');
+  w('  <span class="warn">These two do not come across at all.</span>');
   w('');
   left.forEach(function(r){
     w('  <span class="dim">'+r.k+'</span>  '+esc(r.r));
@@ -255,7 +258,10 @@ function created(){
   w('  <span class="dim">schedule   </span>'+(sched?'<span class="ok">'+esc(sched)+'</span>':'<span class="warn">none</span>'));
   w('');
   if(!cap) w('  <span class="stop">This agent can be killed. It cannot be capped.</span>');
-  if(none) w('  <span class="dim">'+none+' thing'+(none>1?'s':'')+' you relied on locally '+(none>1?'are':'is')+' not enforced anywhere.</span>');
+  RULES.filter(function(r){return !r.fix}).forEach(function(r){
+    w('  <span class="warn">not carried</span>  '+esc(r.r)
+      +'\n              <span class="dim">'+r.lost+'</span>');
+  });
   w('');
   done();
 }
