@@ -152,9 +152,14 @@ Roll the change out in three stages:
 2. **Warn.** When `ANTHROPIC_API_KEY` selects API billing on a machine that has
    an active subscription, report it at session start, in every session type
    including `claude -p`. Name the variable, name the displaced subscription, and
-   give the one-line migration command. Sessions with no subscription present
-   produce no warning, because their billing is already correct.
-3. **Switch.** Move `ANTHROPIC_API_KEY` to level 8.
+   give the one-line migration command. The same status line that names the
+   credential also reports remaining subscription headroom, so a developer who
+   moves onto subscription billing sees the rate-limit ceiling at the moment it
+   applies. Sessions with no subscription present produce no warning, because
+   their billing is already correct.
+3. **Switch.** Move `ANTHROPIC_API_KEY` to level 8. The switch ships after the
+   stage 2 warning has been live for a full release window, so a developer who
+   wants API billing has seen the message and set `CLAUDE_CODE_API_KEY`.
 
 **Caution:** Don't skip stage 2. Unattended sessions are where the cost of this
 behavior lands, and they're also where a silent change of billing source is
@@ -162,16 +167,41 @@ hardest to notice in either direction.
 
 The status line in [prototype/statusline-billing.sh](prototype/statusline-billing.sh)
 implements the stage 2 signal. It detects displacement rather than reading the
-reported auth method, by probing `claude auth status` twice — once as the
-environment stands, and once with the credential variables stripped — and
+reported auth method, by probing `claude auth status` twice, once as the
+environment stands and once with the credential variables stripped, and
 comparing the results.
+
+### The rebill key
+
+Stage 2 also adds one key to interactive sessions. When the warning fires, a
+single keystroke switches billing for the rest of that session to your
+subscription. The prototype binds it to Option+B and appends the hint to the
+warning:
+
+```
+ANTHROPIC_API_KEY displaced your pro subscription
+  ↳ press ⌥B to bill the subscription instead
+```
+
+Pressing it prints what changed and the one-line permanent fix, and the status
+line reports the subscription as the paying credential from that point on:
+
+```
+Billing switched to your pro subscription for this session.
+To make it permanent: unset ANTHROPIC_API_KEY
+```
+
+The key changes billing for the current session only. Your environment is
+unchanged, so the next session starts on `ANTHROPIC_API_KEY` again until you
+apply the fix. Non-interactive sessions get the warning and no key, because no
+one is at the terminal to press it.
 
 ## Alternatives considered
 
 **Warn but don't change precedence.** Keeps every existing configuration working
 and needs no migration. Rejected as insufficient on its own: a warning that
 appears in every session becomes background noise, and the problem persists for
-anyone who dismisses it. This is stage 2 of the migration, not a destination.
+anyone who dismisses it. This is stage 2 of the migration, not the end state.
 
 **Prompt in non-interactive mode.** A prompt requires someone to answer it.
 Scheduled runs and continuous integration have no one at the terminal, so the
@@ -186,25 +216,6 @@ population and leaves everyone else working.
 gap described in [Problem](#problem) but not the default. You'd still have to
 check, and unattended sessions still have no one checking.
 
-## Risks
-
-**A developer misses the migration and their billing source changes.** Someone
-who wants API billing, has a subscription, and ignores the stage 2 warning moves
-onto subscription billing without acting. The consequence is bounded: their
-subscription usage rises and their API spend falls, and no charge occurs that
-they didn't already agree to. Mitigate with the warning window and by naming the
-exact command in the message.
-
-**Another variable becomes the ambiguous one.** If tooling starts setting
-`CLAUDE_CODE_API_KEY` broadly, the problem returns under a new name. This is
-unlikely, because the name has no meaning outside Claude Code — which is the
-property the proposal depends on.
-
-**Subscription rate limits become the constraint instead.** A developer moved
-from API billing to subscription billing gains a rate-limit ceiling they didn't
-have. Report remaining headroom in the same surface that reports the credential,
-so the tradeoff is visible at the moment it applies.
-
 ## Success metrics
 
 | Metric | Direction | Reads as |
@@ -214,7 +225,3 @@ so the tradeoff is visible at the moment it applies.
 | Sessions setting `CLAUDE_CODE_API_KEY` | Up, then flat | Deliberate API users migrating successfully |
 | Support contacts about unexpected Console charges | Down | The outcome the change exists to produce |
 | Stage 2 warnings shown per week | Down over the window | Migration progressing rather than stalling |
-
-If the first metric is near zero before the change ships, this is a support
-problem rather than a product one, and the proposal doesn't justify the
-migration cost. That query decides whether to build it.

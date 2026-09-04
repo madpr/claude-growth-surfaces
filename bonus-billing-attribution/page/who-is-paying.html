@@ -38,9 +38,10 @@ button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
 
 /* ---------------- the two controls ---------------- */
 .rig{
-  flex:none; display:flex; flex-wrap:wrap; align-items:center; gap:9px 26px;
-  padding:11px 22px; border-bottom:1px solid var(--edge); background:var(--panel);
+  flex:none; display:flex; flex-direction:column; gap:8px;
+  padding:11px 22px 12px; border-bottom:1px solid var(--edge); background:var(--panel);
 }
+.ctls{display:flex; flex-wrap:wrap; align-items:center; gap:9px 26px}
 .ctl{display:flex; align-items:center; gap:9px; min-width:0}
 .ctl .k{
   font-size:10.5px; font-weight:700; letter-spacing:.1em; text-transform:uppercase;
@@ -52,8 +53,8 @@ button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
 .seg button.on{background:var(--raise); color:var(--txt); font-weight:500}
 .seg button.on.alt{color:var(--new)}
 .rig .why{
-  margin-left:auto; font-size:11.5px; color:var(--faint); text-align:right;
-  max-width:44ch; line-height:1.5;
+  margin:0; font-size:13px; font-weight:400; color:var(--dim); text-align:left;
+  max-width:80ch; line-height:1.5;
 }
 
 /* ---------------- the terminal ---------------- */
@@ -116,24 +117,26 @@ kbd{font:inherit; font-size:11.5px; color:var(--dim);
 
 @media(max-width:900px){
   body{font-size:13.5px}
-  .rig{padding:10px 14px} .rig .why{display:none}
+  .rig{padding:10px 14px 11px}
   #screen{padding:16px 14px 6px} #sl{padding:10px 14px} .hint{padding:8px 14px 10px}
 }
 </style>
 
 <div class="rig">
-  <div class="ctl">
-    <span class="k">Machine</span>
-    <div class="seg" id="mseg">
-      <button data-m="laptop" class="on">laptop &middot; Pro subscription</button>
-      <button data-m="ci">build box &middot; no subscription</button>
+  <div class="ctls">
+    <div class="ctl">
+      <span class="k">Machine</span>
+      <div class="seg" id="mseg">
+        <button data-m="laptop" class="on">laptop &middot; Pro subscription</button>
+        <button data-m="ci">build box &middot; no subscription</button>
+      </div>
     </div>
-  </div>
-  <div class="ctl">
-    <span class="k">Precedence</span>
-    <div class="seg" id="pseg">
-      <button data-p="today" class="on">ships today</button>
-      <button data-p="proposed" class="alt">proposed</button>
+    <div class="ctl">
+      <span class="k">Precedence</span>
+      <div class="seg" id="pseg">
+        <button data-p="today" class="on">ships today</button>
+        <button data-p="proposed" class="alt">proposed</button>
+      </div>
     </div>
   </div>
   <p class="why">
@@ -540,9 +543,25 @@ screenEl.addEventListener('mousedown',function(e){
 kb.addEventListener('blur',function(){ setTimeout(focusKb,0) });
 
 /* ---- the two controls -------------------------------------------------- */
+/* Changing a control ends a running session and keeps the environment, so the
+   next `claude` shows the new setting's effect. An open key dialog is dismissed
+   with no answer recorded. */
+function endSession(reason){
+  if(mode==='menu'){
+    out.innerHTML=menu.anchor; menu=null; promptEl.classList.remove('hide');
+    mode='shell'; psEl.textContent='$'; setBuf('');
+    w('  <span class="dim">Dialog dismissed, '+reason+' changed. No answer recorded.</span>');
+    return;
+  }
+  if(!session) return;
+  session=null; mode='shell'; psEl.textContent='$'; setBuf('');
+  w('  <span class="dim">Session ended, '+reason+' changed.</span>');
+  paintStatus();
+}
 document.getElementById('mseg').addEventListener('click',function(e){
   var b=e.target.closest('button'); if(!b) return;
   if(machine===b.dataset.m) return;
+  endSession('machine');
   machine=b.dataset.m;
   [].forEach.call(this.children,function(c){ c.classList.toggle('on', c===b) });
   w('  <span class="new">─</span> <span class="dim">machine: '+b.textContent.trim()+'</span>');
@@ -552,6 +571,7 @@ document.getElementById('mseg').addEventListener('click',function(e){
 document.getElementById('pseg').addEventListener('click',function(e){
   var b=e.target.closest('button'); if(!b) return;
   if(precedence===b.dataset.p) return;
+  endSession('precedence');
   precedence=b.dataset.p;
   [].forEach.call(this.children,function(c){ c.classList.toggle('on', c===b) });
   w('  <span class="new">─</span> <span class="dim">precedence: '+b.textContent.trim()
