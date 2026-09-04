@@ -13,9 +13,6 @@ between two products instead.
 - **L.** A developer whose Claude Code project should run unattended promotes it to a
   hosted agent, with limits set before the first run.
 
-Ship S first: it is a two-day test that also reads whether subscribers want an entry
-point to the platform at all. Then M. Then L's discovery test, before any L build.
-
 **North star:** increase Claude API revenue · **Sizing:** one tactical, one medium, one
 big bet · **Evidence:** primary sources and running prototypes only
 
@@ -70,16 +67,6 @@ Under that rule:
 | **L** | [Dev → production](01-dev-to-production/) | Expansion | 1 to 2 months | Case written, prototype running, two drivable demos |
 
 S and M carry a direct revenue path, and L carries one that is direct but lagging.
-
-### Ship order
-
-1. **S first.** It is a two-day test, and it also reads whether subscribers want an
-   entry point to the platform at all.
-2. **M second.** Its first milestone runs locally, needs no account, and is a complete
-   product on its own, so it does not wait on the answer from S.
-3. **L's discovery test before any L build.** Name Managed Agents inside Claude Code
-   and watch hosted-agent creation for 30 days, which takes days and measures
-   discovery before the build spends months.
 
 ### S — Developer platform entry point
 
