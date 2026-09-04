@@ -32,7 +32,6 @@ big bet · **Evidence:** primary sources and running prototypes only
 | **M** | [OpenAI → Claude migration](02-openai-migration/) | [Terminal demo](https://madpr.github.io/claude-growth-surfaces/migrate.html) | Acquisition | About 2 weeks | Designed, working prototype |
 | **L** | [Dev → production](01-dev-to-production/) | [Terminal demo](https://madpr.github.io/claude-growth-surfaces/promote-cli.html) · [Browser demo](https://madpr.github.io/claude-growth-surfaces/promote-to-agent.html) | Expansion | 1 to 2 months | Case written, prototype running, two drivable demos |
 
-
 ### Bonus
 
 **[Billing attribution](bonus-billing-attribution/)** ·

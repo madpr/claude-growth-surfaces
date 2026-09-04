@@ -5,19 +5,17 @@ inside a spend cap, a quality rubric, and a sandbox that never shows the agent i
 credentials. Nothing moves a project from one to the other; this proposal builds that
 path, with the limits set before the first unattended run.
 
-**Status:** Case written, prototype running, two drivable demos.
-**Cost:** 1 to 2 months.
-**Theme:** expansion.
+**Status:** Case written, prototype running, two drivable demos · **Cost:** 1 to 2 months ·
+**Theme:** expansion
 
 ## Problem
 
 The obvious words typed into Claude Code (`claude agents`, `environment`, `session`,
-`budget`) all return local answers, so the search ends there. The platform CLI was not
-on my machine. Signed in, it reported a different organization ID than Claude Code for
-the same email; that organization already held a workspace named, exactly, "Claude
-Code", and my hosted agent list was empty. That boundary is the revenue event, a flat
-subscription fee becoming metered usage plus runtime, and why the estimate is months:
-the rename is days, the identity work is the rest.
+`budget`) all return local answers, so the search ends there. The platform CLI reported
+a different organization ID than Claude Code for the same email; that organization
+already held a workspace named, exactly, "Claude Code", and my hosted agent list was
+empty. That boundary is the revenue event, a flat subscription fee becoming metered
+usage plus runtime.
 
 The two tools never mention each other and collide on every searchable word.
 
@@ -35,93 +33,20 @@ The two tools never mention each other and collide on every searchable word.
 - Have the developer set the spend cap and the rubric in that same step.
 - Convert flat-fee subscription work into metered platform usage.
 
-## Non-goals
-
-- Spend caps, rubrics, credential isolation. All three already ship.
-- A general migration tool. This is one path, from Claude Code to a hosted agent.
-
 ## Proposed experience
 
-One command turns a working project into a hosted agent, the sandbox it runs in, and
-the schedule it runs on. Of the hosted agent's fields, three transfer intact (name,
-model, CLAUDE.md as the system prompt), three arrive degraded (tools lose
-command-pattern granularity, skills must be uploaded to the Skills API, MCP servers
-translate only when URL-based), and two have no hosted equivalent: permission rules,
-since a hosted toolset has nothing like `Bash(rm *)`, and the sandbox itself, since a
-laptop has no container image, network policy, or credential store to hand over. The
-command makes the developer create the sandbox and set its limits, nothing defaulted.
-
-## First cheap milestone
-
-First, test whether discovery is the gate. Make Claude Code's `agents` command name
-the hosted product, put Managed Agents where someone searching would look, and watch
-hosted-agent creation for 30 days. Days of work.
-
-The prototype also prints what one promoted workload bills at list price, tokens only,
-for the fixture's model, Claude Sonnet 5: $2 per million input tokens and $10 per
-million output tokens, uncached, from the platform pricing page retrieved September 3,
-2026. Input per run and runs per night are unknown, so the table sweeps both.
-
-| Input tokens per run | 1 run/night | 3 runs/night | 10 runs/night |
-| --- | --- | --- | --- |
-| 200,000 | $18.00 | $54.00 | $180.00 |
-| 1,000,000 | $90.00 | $270.00 | $900.00 |
-| 5,000,000 | $450.00 | $1,350.00 | $4,500.00 |
-
-Every cell assumes 30 nights a month and output at one tenth of input. Runtime bills
-on top at $0.08 per session-hour and is not in the table. None of this is a forecast.
-
-## What the first test settles
-
-Whether discovery is the gate: hosted-agent creation in the 30 days after the pointer
-ships.
-
-Whether the organization split is only a consumer-subscription thing. My one account
-is on a Pro plan; a second sign-in on a Console plan would tell me, and
-`research/probe.sh` reports whether the two tools agree without printing either
-identifier.
-
-Whether unattended workloads already run at scale on the platform: scheduled and
-hosted-session traffic, both under Success metrics.
-
-## Why hosted rather than self-built
-
-The limits belong to the orchestrator above the model.
-
-| Limit | Building it yourself | Hosted |
-| --- | --- | --- |
-| Cost | Track usage and stop your own loop | A dollar cap enforced between model requests |
-| Quality | Call a second model against a rubric | A required rubric, graded in a separate context |
-| Authority | A container with scoped credentials | A per-session sandbox where secrets are substituted at egress and never visible inside |
-
-A competent team can build the first two. In #85919 the agent hit a 403, found an
-admin secret in a sibling project's `.env`, and minted itself a token with more
-capabilities than it had. A better-scoped credential would not have helped; the hosted
-sandbox never holds one.
-
-## Where else this applies
-
-Cowork is the same argument shipped for people who never open a terminal. It runs
-"the same agentic architecture that powers Claude Code" inside Claude Desktop,
-schedules unattended tasks on Anthropic's servers, and "doesn't read the Claude Code
-CLI's `~/.claude` directory". Under [the decision rule this repo states](../README.md),
-work stays on the subscription while it is one person's, run interactively or on their
-own account, and moves to the platform when it runs unattended against infrastructure
-a team owns, needs limits someone other than the operator sets, or bills an
-organization rather than a person. Cowork's tasks are one person's on their own
-account, so they stay; this proposal covers the team-owned work the rule moves.
+One command turns a working project into a hosted agent, the sandbox it runs in, and the
+schedule it runs on. The command makes the developer create the sandbox, set its limits,
+and fill in the gaps, with nothing defaulted.
 
 ## Success metrics
 
-| Metric | What it reads |
+| Metric | What it tests |
 | --- | --- |
-| Traffic that runs on a schedule | Leading. Unattended work is growing |
-| Hosted-agent sessions | Leading. That work runs on the platform |
-| Share of runs that set a spend cap and a rubric | Leading. Limits are the reason people came |
 | Workloads that move to unattended operation, against their supervised baseline | The core claim |
 | Spend 90 days after the move | Lagging. The revenue claim |
 
-The guardrail is incidents on unattended runs, against the supervised baseline.
+Guardrail: incidents on unattended runs, against the supervised baseline.
 
 ## Evidence
 
@@ -153,8 +78,5 @@ place of `map` prints the cost table.
 ./prototype/promote.py map prototype/fixtures/ledger-reconcile
 ```
 
-The Cowork quotes are from claude.com/docs/cowork/overview and
-claude.com/product/cowork, retrieved September 3, 2026. The tool behavior is from
-Claude Code 2.1.259 and the platform CLI 1.29.0, captured September 2 and 3, 2026.
 Two drivable demos: [terminal](https://madpr.github.io/claude-growth-surfaces/promote-cli.html) and
 [browser](https://madpr.github.io/claude-growth-surfaces/promote-to-agent.html).
