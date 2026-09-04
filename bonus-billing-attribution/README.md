@@ -37,7 +37,8 @@ prototype that runs. That is the bar the three ideas should meet.
 
 ## Findings
 
-Verified on Claude Code v2.1.252, 31 August 2026.
+Verified on Claude Code v2.1.252, 31 August 2026, and reproduced on v2.1.260,
+3 September 2026.
 
 **The diagnostic surface reports the same answer in both states.** Setting
 `ANTHROPIC_API_KEY` displaces an active subscription while `authMethod` continues
@@ -158,6 +159,15 @@ ANTHROPIC_API_KEY=sk-ant-test0000000000000000000000004f2a \
   ./prototype/statusline-billing.sh < prototype/mock-session.json
 ```
 
+The capture's five-hour window has since reset, so the continuity projection
+reads `finishes` on a raw replay. Re-clock the window to see the projection that
+produced the output above:
+
+```bash
+jq '.rate_limits.five_hour.resets_at = (now + 2100 | floor)' \
+  prototype/mock-session.json | ./prototype/statusline-billing.sh
+```
+
 Install by pointing `statusLine.command` in `~/.claude/settings.json` at it.
 Auth probe costs ~210 ms, cached 30 s, keyed on a fingerprint of the credential
 env vars so a change invalidates immediately. Render: 68 ms.
@@ -172,11 +182,19 @@ env vars so a change invalidates immediately. Render: 68 ms.
 - If declined tool calls do not fall once headroom is visible, the hesitation was
   about blast radius rather than exhaustion — a different, larger problem.
 
-## Published case
+## Mock
 
-The written case, with the reproducible defect, the evidence corpus and the
-prototype output rendered as a page:
+`page/who-is-paying.html` — drive the precedence order:
+<https://madpr.github.io/claude-growth-surfaces/who-is-paying.html>
 
-<https://claude.ai/code/artifact/0502f696-82e4-45c8-9a93-38b70868752a>
+A terminal you type into. Export the key most machines already carry, start a
+session, and watch which credential pays. Two controls change the answer: the
+machine (a laptop with a subscription, or a build box without one) and the
+precedence order (the one that ships, or the one proposed here).
 
-`page/billing-attribution.html` is its source.
+The custom API key dialog, the fields `claude auth status --json` reports, and
+the `/cost` layout are replicated from Claude Code v2.1.260. Everything the
+proposal adds — the status line's billing badge, the displacement note, the
+rebill key — is marked in the transcript. Figures come from the fixture through
+the arithmetic in the status line script, so the page and the code cannot
+disagree.

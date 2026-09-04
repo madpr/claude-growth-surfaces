@@ -90,9 +90,9 @@ remaining work is the parity gate, which is narrower than the whole migration.
 [Terminal demo](https://madpr.github.io/claude-growth-surfaces/promote-cli.html) ·
 [Browser demo](https://madpr.github.io/claude-growth-surfaces/promote-to-agent.html)
 
-A supervised workload is a $10-per-month prototype. Unattended, it is a
-$1,000-per-month production workload, and Managed Agents is where the unattended version
-gets its limits. Claude Code and the platform are two command lines that divide one
+A workload a developer supervises is bounded by that attention. Running unattended, it
+is bounded only by the limits it was given, and Managed Agents is where those limits
+live. Claude Code and the platform are two command lines that divide one
 account, collide on every word you would search — `agents` means background sessions on
 your laptop — and, on the account tested, resolve to two different organizations.
 
@@ -103,7 +103,8 @@ direction.
 
 ## Bonus
 
-**[Billing attribution and spend confidence](bonus-billing-attribution/)**
+**[Billing attribution and spend confidence](bonus-billing-attribution/)** ·
+[Drive the mock](https://madpr.github.io/claude-growth-surfaces/who-is-paying.html)
 
 Outside the slate because it is scoped to Claude Code rather than the API product, and
 because its revenue path runs the other way: it moves spend off metered billing and onto
@@ -114,6 +115,11 @@ one-off metered spend at stake. Its own README argues that trade rather than hid
 It is included because it set the evidence bar the rest of the repo is held to: a defect
 reproduced on the current build, 26 public issues carrying $1,799.83 in self-reported
 losses, and a working prototype.
+
+The mock is that prototype made drivable. Export the API key most machines already
+carry, start a session, and watch a subscription stop paying without saying so. Two
+controls change the answer: whether the machine has a subscription, and whether the
+precedence order is the one that ships or the one proposed.
 
 ## What was ruled out
 

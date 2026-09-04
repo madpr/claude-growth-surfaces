@@ -316,8 +316,8 @@ function cmdAuth(){
   w('');
   if(!sub()){
     mn('Not reproduced on a machine with no subscription signed in, so this mock\n'
-      +'does not print an answer for it. Both states below were reproduced on a\n'
-      +'machine that has one.');
+      +'does not print an answer for it. The two states it does print were both\n'
+      +'reproduced on a machine that has one.');
     w('');
     return;
   }
@@ -556,8 +556,8 @@ document.getElementById('pseg').addEventListener('click',function(e){
   [].forEach.call(this.children,function(c){ c.classList.toggle('on', c===b) });
   w('  <span class="new">─</span> <span class="dim">precedence: '+b.textContent.trim()
    +(precedence==='proposed'
-      ? ' · ANTHROPIC_API_KEY now sits below your subscription'
-      : ' · ANTHROPIC_API_KEY outranks your subscription')+'</span>');
+      ? ' · ANTHROPIC_API_KEY drops below the subscription, CLAUDE_CODE_API_KEY takes its level'
+      : ' · ANTHROPIC_API_KEY outranks the subscription, CLAUDE_CODE_API_KEY is not read')+'</span>');
   w('');
   paintStatus(); focusKb();
 });

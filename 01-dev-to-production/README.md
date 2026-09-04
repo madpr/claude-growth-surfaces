@@ -13,10 +13,14 @@ runs on a schedule, inside limits you set before it runs.
 
 ## Problem
 
-A supervised workload is a $10-per-month prototype. The same workload running
-unattended is a $1,000-per-month production workload. Managed Agents is where the
-unattended version gets its limits: spend caps, quality rubrics, and credentials the
-agent never sees.
+A workload a developer supervises runs only while someone is watching it, and what
+bounds its spend is that attention. The same workload running unattended runs on a
+schedule, and nothing bounds its spend except the limits it was given. Managed Agents is
+where those limits live: spend caps, quality rubrics, and credentials the agent never
+sees.
+
+How much larger unattended spend is on any real account is not established here. The
+shift that matters is what does the bounding, not a multiple.
 
 Three things stop developers from getting there:
 
@@ -215,7 +219,8 @@ shared infrastructure.
 
 **Competitive pressure.**
 [`antigravity-for-claude-code`](https://github.com/yuting0624/antigravity-for-claude-code)
-is an unaffiliated Claude Code plugin with 303 stars that routes token-heavy work out of
+is an unaffiliated Claude Code plugin with 305 stars, as of September 3, 2026, that
+routes token-heavy work out of
 Claude Code to Gemini. It installs a hook that makes offloading the default.
 
 Routing to a competitor needs no identity work: different vendor, separate credentials,
@@ -251,7 +256,8 @@ task can carry — a spend cap, a rubric, an approval gate — is not establishe
 
 Platform behavior was captured September 2–3, 2026, from Claude Code 2.1.259 and the
 platform CLI 1.29.0. Every count in this document is printed by the prototype, so the
-case and the code can't disagree. One documented behavior doesn't reproduce: the docs
+case and the code can't disagree. No spend figure appears anywhere in this case,
+because none can be sourced without account data. One documented behavior doesn't reproduce: the docs
 warn that signing in to the platform tool triggers a credential conflict with Claude
 Code. It doesn't. The two never contend, because they resolve to different
 organizations.
