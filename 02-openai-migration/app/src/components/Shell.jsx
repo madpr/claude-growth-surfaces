@@ -87,7 +87,7 @@ export default function Shell({ children }) {
         <div className="side-foot">
           <div className="row">Documentation</div>
           <div className="row">
-            Credits <span className="val">$11.28</span>
+            Credits <span className="val">····</span>
           </div>
           <div className="row">
             <span className="avatar">&nbsp;</span>

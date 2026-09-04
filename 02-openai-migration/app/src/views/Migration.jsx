@@ -1,6 +1,6 @@
 import {
   project, automatic, autoSites, decisions, decisionSites, totalSites,
-  tests, testsAfter, cost, callSites,
+  tests, testsAfter, blocking, cost, callSites,
 } from '../data.js'
 import { Chip, Detail } from '../components/ui.jsx'
 
@@ -12,7 +12,8 @@ const money = (n) => `$${Math.round(n).toLocaleString('en-US')}`
 export default function Migration({ choices, setChoices }) {
   const open = decisions.filter((d) => !choices[d.id])
   const passing = testsAfter(choices)
-  const ready = open.length === 0 && passing === tests.total
+  // Settled decisions whose chosen option leaves tests failing, by decision id.
+  const held = Object.fromEntries(blocking(choices).map((b) => [b.decision.id, b]))
 
   return (
     <div className="page">
@@ -45,13 +46,17 @@ export default function Migration({ choices, setChoices }) {
 
         {decisions.map((d) => {
           const picked = choices[d.id]
+          const hold = held[d.id]
+          const state = !picked ? '' : hold ? ' warn' : ' done'
           return (
-            <div className={`card decision${picked ? ' done' : ''}`} key={d.id}>
+            <div className={`card decision${state}`} key={d.id}>
               <div className="d-head">
                 <code className="d-construct">{d.construct}</code>
-                <Chip kind={picked ? 'ok' : 'crit'}>
-                  {picked ? 'decided' : `${d.sites} sites`}
-                </Chip>
+                {!picked
+                  ? <Chip kind="crit">{d.sites} sites</Chip>
+                  : hold
+                    ? <Chip kind="warn">leaves {hold.left} failing</Chip>
+                    : <Chip kind="ok">decided</Chip>}
               </div>
 
               <dl className="fields">
@@ -114,6 +119,16 @@ export default function Migration({ choices, setChoices }) {
                 : `${tests.recovered} cases recovered`}
             </span>
           </div>
+        </div>
+      </section>
+
+      <section>
+        <h2>What it costs, at list price</h2>
+        <p className="sub">
+          An illustration from public list prices on the seeded workload, not a measurement.
+        </p>
+
+        <div className="card proof">
           <div className="proof-row">
             <span className="p-k">Cost per month</span>
             <span className="p-v">
@@ -157,9 +172,7 @@ export default function Migration({ choices, setChoices }) {
             ))}
           </tbody>
         </table>
-        <p className="note">
-          Showing {callSites.length} of {totalSites}. Seeded data — no repository is read.
-        </p>
+        <p className="note">Seeded data — no repository is read.</p>
       </Detail>
 
       <p className="note">

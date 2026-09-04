@@ -7,13 +7,14 @@ The rewrite isn't what stops teams from switching, and neither is model quality.
 stops them is that nobody can prove the switch is safe, so the parity gate is the part
 worth building.
 
-**Status:** designed, working prototype.
-**Cost:** ~2 weeks.
+**Status:** Designed, working prototype.
+**Cost:** About 2 weeks.
 **Theme:** acquisition.
 
-[Open the prototype](https://madpr.github.io/claude-growth-surfaces/migrations/) — one screen: 33
-call sites rewritten, 5 decisions only a person can make, and whether the tests still
-pass. Settle both decisions and the merge unblocks.
+[Open the prototype](https://madpr.github.io/claude-growth-surfaces/migrations/). One
+screen: 33 call sites rewritten, two decisions covering five call sites that only a
+person can make, and whether the tests still pass. Settle both decisions and the merge
+unblocks.
 
 ## Problem
 
@@ -26,8 +27,11 @@ the decision stalls in review and the workload stays where it is.
 
 Most of what an outsider would propose building is already there:
 
-- The OpenAI SDK compatibility layer translates tool definitions and tool calls
-  server-side.
+- The OpenAI SDK compatibility layer, an endpoint on Anthropic's API. Point the
+  OpenAI SDK at it with a Claude key and a Claude model name, and Chat Completions
+  requests are translated server-side, tool definitions and tool calls included.
+  Anthropic documents it as a way "to test and compare model capabilities", and "not
+  considered a long-term or production-ready solution".
 - The Claude GitHub App already has repository access, granted for code review.
 
 One thing that used to exist is gone. The Console's prompt improver handled the prose
@@ -44,7 +48,7 @@ unenforced result as the model's ceiling.
 
 **The cost case is invisible from the place you'd measure it.** Prompt caching isn't
 supported through the compatibility layer either. On the seeded workload, most of a 46%
-saving comes from caching — none of which shows up in an evaluation run through the
+saving comes from caching, and none of it shows up in an evaluation run through the
 layer.
 
 **Prompt tuning is nobody's job.** Anthropic's own documentation warns that a prompt
@@ -64,15 +68,15 @@ been retired.
   wants in a migration pull request.
 - Covering every language and endpoint. The first version is Python and Chat
   Completions.
-- Replacing the compatibility layer. It's the right on-ramp; it's the wrong place to
-  evaluate from.
+- Replacing the compatibility layer. It's the right way to try Claude from existing
+  code, and the wrong place to run an evaluation.
 
 ## Proposed experience
 
 A developer points the tool at their repository. It produces three things:
 
 1. **The mechanical rewrite.** Every call site that translates cleanly, translated.
-2. **The decisions.** Anything a person has to judge, surfaced rather than guessed —
+2. **The decisions.** Anything a person has to judge, surfaced rather than guessed:
    prompts that look OpenAI-tuned, and fields whose behavior changes.
 3. **The gate.** The repository's own test suite already passes against OpenAI. That's
    the baseline. The pull request stays blocked until it passes against Claude too.
@@ -91,9 +95,7 @@ new target language, a compiler, and a non-incremental rewrite. None of those ho
 | Metered spend 90 days after merge, against the account's pre-migration baseline | The revenue claim |
 | Scan to merged pull request | Where the funnel leaks. Below 40% means the report isn't enough. |
 
-**Guardrail:** production regressions after a passing gate should be about zero. A gate
-that passes bad migrations is worse than no gate, and it's the one failure that kills
-the product outright.
+**Guardrail:** Production regressions after a passing gate, target zero.
 
 ## Ship the skill first
 
@@ -103,47 +105,39 @@ the product outright.
 | 2. Console — the rest | Decisions that persist, organization view, pull request status check, funnel metrics | Console components, the Claude GitHub App, the repository's own CI |
 
 Milestone 1 runs locally, needs no account, and is a complete product on its own.
-Milestone 2 buys measurement: every metric above is uncollectible from a local tool that
-prints a report.
+Milestone 2 adds measurement: the success metrics above are collected there. The
+published prototype shows the milestone 2 screen because that is where the gate state
+and the funnel metrics become visible; milestone 1 prints the same three sections as a
+static report.
 
-## Risks
+## What the first milestone settles
 
-- **If most OpenAI workloads port in an afternoon, the premise fails.** Switching cost
-  wouldn't be the barrier, and none of this matters.
-- **The gate has to be trusted.** If it isn't, this reduces to a codemod.
-- **Targeting isn't possible today.** The Usage and Cost APIs group by model, workspace,
-  and key. There's no endpoint dimension, so nothing public separates Chat Completions
-  traffic from Messages traffic. Without it, milestone 2 loses its strongest
-  justification and the skill has to be found rather than offered.
-
-AWS Transform and Moderne prove the pattern works at enterprise scale. Neither exists
-for provider migration; every provider ships a compatibility shim instead.
-
-## Open questions
-
-**No user report backs the central claim.** That developers reach the wrong conclusion
-from a compatibility-layer evaluation follows from documented behavior, not from anyone
-saying it happened to them. Close that gap before milestone 2.
+- **Whether switching cost is the barrier:** the scan-to-merge rate from milestone 1's
+  report.
+- **Whether the gate is trusted:** production regressions after a passing gate, tracked
+  from the first merged migration.
+- **Who to offer it to:** milestone 2 adds an endpoint dimension to usage reporting, so
+  the skill is offered to organizations with Chat Completions traffic rather than found.
 
 ## Evidence
 
-Platform quotations come from Anthropic documentation fetched September 1, 2026.
-
-Both prototypes run on seeded data. They read no repository and run no inference.
-
-The 46% saving is computed in the published prototype from public list prices as of
-September 1, 2026, on a workload of 12,400 requests per day with a 71% cache hit rate.
-It's an illustration of the gap the compatibility layer hides, not a measurement of any
-real account.
-
-The linter behind the decisions runs locally:
+- **Platform behavior:** the [OpenAI SDK compatibility
+  page](https://platform.claude.com/docs/en/cli-sdks-libraries/libraries/openai-sdk)
+  and the prompting documentation, fetched September 1 and 3, 2026. The layer's stated
+  purpose, its ignored fields, the retired prompt improver, and the prompt-tuning
+  warning are quoted from them.
+- **Precedent:** AWS Transform and Moderne run this pattern at enterprise scale for
+  language migrations. No provider ships it for provider migration; each ships a
+  compatibility shim instead.
+- **The linter:** [`prototype/migration_lint.py`](prototype/migration_lint.py)
+  classifies every field the compatibility layer ignores. On the seeded payload it
+  prints 7 breaks contract, 2 native rejects, 4 changes result, 3 inert. The seven
+  contract breaks are structured output and strict tool schemas. Tests pin the counts.
+- **The 46%:** computed in the published prototype from public list prices as of
+  September 1, 2026, on a seeded workload of 12,400 requests a day at a 71% cache hit
+  rate. An illustration of what the compatibility layer hides, not a measurement.
+- Both prototypes run on seeded data, read no repository, and run no inference.
 
 ```
-cd prototype
-python3 migration_lint.py fixtures/support-triage.json
-python3 test_migration_lint.py
+cd prototype && python3 migration_lint.py fixtures/support-triage.json && python3 test_migration_lint.py
 ```
-
-It classifies each ignored field by whether it breaks the output contract, gets rejected
-natively, changes the result, or drops input — because "20 fields are ignored" isn't a
-finding, and four of them are.

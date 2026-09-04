@@ -169,6 +169,7 @@ section h2 .count {
 /* one card per decision -- fixed field labels, data values */
 .decision { padding: 16px 20px 18px; display: flex; flex-direction: column; gap: 12px; }
 .decision.done { background: var(--ok-dim); border-color: #CCE3D7; }
+.decision.warn { background: var(--warn-dim); border-color: #EBD9A8; }
 .d-head { display: flex; align-items: center; gap: 10px; }
 .d-construct { font-family: var(--mono); font-size: 14px; font-weight: 600; color: var(--ink); }
 .d-head .chip { margin-left: auto; flex: none; }
@@ -231,6 +232,7 @@ td.num { font-variant-numeric: tabular-nums; text-align: right; white-space: now
 }
 .chip-ok { background: var(--ok-dim); color: var(--ok); }
 .chip-crit { background: var(--crit-dim); color: var(--crit); }
+.chip-warn { background: var(--warn-dim); color: var(--warn); }
 .chip-mute { background: var(--sunk); color: var(--ink-2); }
 .chip-acc { background: var(--accent-dim); color: #A84E2C; }
 

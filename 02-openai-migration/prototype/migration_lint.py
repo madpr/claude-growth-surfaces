@@ -201,7 +201,7 @@ def check_schema(schema, path="$", seen=None, out=None):
 
 # --------------------------------------------------------------------------
 
-def lint(payload, target="claude-opus-5"):
+def lint(payload, target="claude-sonnet-5"):
     """`target` is the Claude model being migrated TO -- the native-rejection
     checks are properties of that model, not of the OpenAI model in the payload."""
     findings = []
@@ -354,7 +354,7 @@ def lint(payload, target="claude-opus-5"):
 
 # --------------------------------------------------------------------------
 
-def translate(payload, target="claude-opus-5"):
+def translate(payload, target="claude-sonnet-5"):
     """Emit the native /v1/messages equivalent, minus what current models reject."""
     model = target
     out = {"model": model,
@@ -486,7 +486,7 @@ def translate(payload, target="claude-opus-5"):
 
 # --------------------------------------------------------------------------
 
-def render(payload, findings, target="claude-opus-5"):
+def render(payload, findings, target="claude-sonnet-5"):
     counts = {}
     for f in findings:
         counts[f["severity"]] = counts.get(f["severity"], 0) + 1
@@ -536,7 +536,7 @@ def _wrap(text, width):
 def main(argv):
     args = [a for a in argv[1:] if not a.startswith("--")]
     flags = {a for a in argv[1:] if a.startswith("--")}
-    target = "claude-opus-5"
+    target = "claude-sonnet-5"
     for f in list(flags):
         if f.startswith("--target="):
             target = f.split("=", 1)[1]

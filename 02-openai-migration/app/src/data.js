@@ -14,17 +14,19 @@ export const project = {
 }
 
 // What the migration rewrites without asking. Grouped for reading, not for
-// completeness -- the full list expands under "the 39 call sites".
+// completeness: the full list expands under "Every call site". `matches` names
+// the call-site labels each group covers, so the two tables are checked
+// against each other at load (see the guard below callSites).
 export const automatic = [
-  { what: 'client = OpenAI(…) → Anthropic(…)', sites: 6 },
-  { what: 'tools[].function.parameters → input_schema', sites: 7 },
-  { what: 'system messages hoisted into the system field', sites: 3 },
-  { what: 'temperature and top_p removed (400 on current models)', sites: 3 },
-  { what: 'seed, frequency_penalty dropped (no equivalent)', sites: 4 },
-  { what: 'stop → stop_sequences', sites: 2 },
-  { what: 'reasoning_effort → output_config.effort', sites: 1 },
-  { what: 'strict: true carried over where the schema allows', sites: 5 },
-  { what: 'cache_control added after the stable prefix', sites: 2 },
+  { what: 'client = OpenAI(…) → Anthropic(…)', sites: 6, matches: ['client = OpenAI(…)'] },
+  { what: 'tools[].function.parameters → input_schema', sites: 7, matches: ['tools[].function.parameters'] },
+  { what: 'system messages hoisted into the system field', sites: 3, matches: ['system messages'] },
+  { what: 'temperature and top_p removed (400 on current models)', sites: 3, matches: ['temperature', 'top_p'] },
+  { what: 'seed, frequency_penalty dropped (no equivalent)', sites: 4, matches: ['seed', 'frequency_penalty'] },
+  { what: 'stop → stop_sequences', sites: 2, matches: ['stop'] },
+  { what: 'reasoning_effort → output_config.effort', sites: 1, matches: ['reasoning_effort'] },
+  { what: 'strict: true carried over where the schema allows', sites: 5, matches: ['tools[].strict'] },
+  { what: 'cache_control added after the stable prefix', sites: 2, matches: ['stable system + tools prefix'] },
 ]
 
 export const autoSites = automatic.reduce((n, a) => n + a.sites, 0)
@@ -60,7 +62,6 @@ export const decisions = [
 ]
 
 export const decisionSites = decisions.reduce((n, d) => n + d.sites, 0)
-export const totalSites = autoSites + decisionSites
 
 // The gate. A compiler cannot tell you whether a prompt still works, so the
 // merge waits on the repo's own tests.
@@ -76,7 +77,21 @@ export function testsAfter(choices) {
   return tests.total - tests.regressed + recovered
 }
 
-// Public list prices per million tokens, 1 September 2026.
+// Settled decisions whose chosen option leaves tests failing that another
+// option of the same decision would recover. The status bar names them and
+// the decision card marks them, both from this list rather than by construct.
+export function blocking(choices) {
+  return decisions.flatMap((d) => {
+    const picked = d.options.find((o) => o.id === choices[d.id])
+    if (!picked) return []
+    const better = d.options.reduce((a, b) => (b.recovers > a.recovers ? b : a))
+    if (better.recovers <= picked.recovers) return []
+    return [{ decision: d, picked, better, left: d.failingTests.length - picked.recovers }]
+  })
+}
+
+// Public list prices per million tokens, 1 September 2026. An illustration on
+// the seeded workload, not a measurement of any account.
 export const cost = (() => {
   const reqPerDay = 12400
   const stable = 2600, variable = 600, out = 180
@@ -92,7 +107,8 @@ export const cost = (() => {
   }
 })()
 
-// Progressive detail: shown only when someone asks for it.
+// Progressive detail: shown only when someone asks for it. Every call site the
+// scan found, one row each. The header count is this table's length.
 export const callSites = [
   ['src/triage/client.py', 14, 'client = OpenAI(…)', 'auto'],
   ['src/triage/client.py', 31, 'stable system + tools prefix', 'auto'],
@@ -110,12 +126,54 @@ export const callSites = [
   ['src/triage/schemas.py', 12, 'response_format.json_schema', 'D1'],
   ['src/triage/tools.py', 22, 'tools[].function.parameters', 'auto'],
   ['src/triage/tools.py', 29, 'tools[].strict', 'auto'],
+  ['src/triage/tools.py', 47, 'tools[].function.parameters', 'auto'],
+  ['src/triage/tools.py', 54, 'tools[].strict', 'auto'],
+  ['src/triage/tools.py', 68, 'tools[].function.parameters', 'auto'],
   ['src/ingest/webhook.py', 38, 'client = OpenAI(…)', 'auto'],
   ['src/ingest/webhook.py', 66, 'temperature', 'auto'],
   ['src/ingest/webhook.py', 91, 'frequency_penalty', 'auto'],
+  ['src/ingest/backfill.py', 17, 'client = OpenAI(…)', 'auto'],
+  ['src/ingest/backfill.py', 42, 'seed', 'auto'],
+  ['src/agents/router.py', 12, 'client = OpenAI(…)', 'auto'],
+  ['src/agents/router.py', 24, 'stable system + tools prefix', 'auto'],
   ['src/agents/router.py', 33, 'reasoning_effort', 'auto'],
+  ['src/agents/router.py', 51, 'tools[].function.parameters', 'auto'],
+  ['src/agents/router.py', 58, 'tools[].strict', 'auto'],
   ['src/agents/router.py', 72, 'assistant prefill', 'D2'],
+  ['src/agents/summarize.py', 9, 'client = OpenAI(…)', 'auto'],
+  ['src/agents/summarize.py', 18, 'system messages', 'auto'],
   ['src/agents/summarize.py', 29, 'assistant prefill', 'D2'],
   ['src/agents/summarize.py', 41, 'frequency_penalty', 'auto'],
+  ['src/agents/summarize.py', 52, 'stop', 'auto'],
+  ['tests/conftest.py', 8, 'client = OpenAI(…)', 'auto'],
+  ['tests/conftest.py', 23, 'tools[].function.parameters', 'auto'],
   ['tests/test_classify.py', 21, 'response_format.json_schema', 'D1'],
 ]
+
+// Guard. The summary counts and the call-site table are two views of one scan.
+// If they disagree, throw at load rather than publish a page that says one
+// number in the header and lists another in the table.
+;(() => {
+  const count = (pred) => callSites.filter(pred).length
+  const problems = []
+  for (const a of automatic) {
+    const n = count(([, , what, owner]) => owner === 'auto' && a.matches.includes(what))
+    if (n !== a.sites) problems.push(`"${a.what}": summary says ${a.sites}, table lists ${n}`)
+  }
+  for (const d of decisions) {
+    const n = count(([, , , owner]) => owner === d.id)
+    if (n !== d.sites) problems.push(`${d.id}: summary says ${d.sites}, table lists ${n}`)
+  }
+  const known = new Set(automatic.flatMap((a) => a.matches))
+  for (const [file, line, what, owner] of callSites) {
+    if (owner === 'auto' && !known.has(what)) problems.push(`${file}:${line} "${what}" matches no automatic rule`)
+    if (owner !== 'auto' && !decisions.some((d) => d.id === owner)) problems.push(`${file}:${line} owner ${owner} is not a decision`)
+  }
+  const autoRows = count(([, , , owner]) => owner === 'auto')
+  if (autoRows !== autoSites) problems.push(`automatic: summary says ${autoSites}, table lists ${autoRows}`)
+  const files = new Set(callSites.map(([file]) => file)).size
+  if (files !== project.files) problems.push(`files: project says ${project.files}, table spans ${files}`)
+  if (problems.length) throw new Error(`data.js is inconsistent: ${problems.join('; ')}`)
+})()
+
+export const totalSites = callSites.length

@@ -144,6 +144,16 @@ order = [ml.ORDER.index(x["severity"]) for x in ml.lint(json.load(
     open(HERE / "fixtures" / "support-triage.json")))]
 check("findings sorted by severity", order == sorted(order))
 
+# The README quotes the linter's summary line for the seeded payload. Pin it, so the
+# case and the tool cannot drift apart.
+from collections import Counter
+_counts = Counter(f["severity"] for f in ml.lint(json.load(
+    open(HERE / "fixtures" / "support-triage.json"))))
+check("seeded payload: 7 breaks contract, 2 native rejects, 4 changes result, 3 inert",
+      (_counts[ml.BREAKS_CONTRACT], _counts[ml.NATIVE_REJECTS],
+       _counts[ml.CHANGES_RESULT], _counts[ml.INERT]) == (7, 2, 4, 3),
+      dict(_counts))
+
 print()
 if FAIL:
     print(f"{len(FAIL)} failing: {FAIL}")
