@@ -1,24 +1,51 @@
 # Claude API — growth surfaces
 
+Three ideas for growing Claude API revenue, sized as one tactical, one medium, and one
+big bet. None of them adds a feature inside a product, because the surfaces a growth
+team would reach for first are already built: billing, spend controls, caching, key
+lifecycle, rate limits, and the agent control plane. Each idea removes a manual step
+between two products instead.
+
+- **S.** A claude.ai subscriber who wants to build finds the platform in the left rail,
+  not in a settings menu.
+- **M.** A team moving code off the OpenAI SDK gets a merge gate that proves the
+  migration held.
+- **L.** A developer whose Claude Code project should run unattended promotes it to a
+  hosted agent, with limits set before the first run.
+
+Ship S first: it is a two-day test that also reads whether subscribers want an entry
+point to the platform at all. Then M. Then L's discovery test, before any L build.
+
 **North star:** increase Claude API revenue · **Sizing:** one tactical, one medium, one
 big bet · **Evidence:** primary sources and running prototypes only
 
 ## Problem
 
-The platform is mature wherever you would reach first. Billing, spend controls, prompt
-caching, key lifecycle, and rate limits are all built, and the control plane already has
-a recommended command line. An idea aimed at one of them proposes rebuilding something
-that already works.
+At each of the three places, the customer does the work by hand today:
 
-What is not built sits **between** products, where a customer does the work by hand:
-
-| Seam | What the customer does today |
+| Between | What the customer does today |
 |---|---|
 | claude.ai and the platform | Goes looking for the platform, and lands on a credential |
 | Another vendor and Claude | Translates the code, then cannot prove behavior held |
 | Claude Code and hosted agents | Rebuilds the limits that kept the work safe on a laptop |
 
-Each idea below closes one seam. None of them proposes rebuilding something that ships.
+Each idea below removes one of those steps.
+
+## Which surface carries the work
+
+One rule decides whether work belongs on the subscription or on the platform:
+
+> Work stays on the subscription while it is one person's: run interactively, or on
+> their own account. It moves to the platform when it runs unattended against
+> infrastructure a team owns, needs limits someone other than the operator sets, or
+> bills an organization rather than a person.
+
+Under that rule:
+
+- **S** is the entry point a subscriber uses when they start building for others.
+- **M** is unaffected by the rule, because the customer starts on the platform.
+- **L** is the moment a workload stops being watched and moves.
+- **The bonus** is the guarantee that nothing moves silently.
 
 ## Goals
 
@@ -31,20 +58,28 @@ Each idea below closes one seam. None of them proposes rebuilding something that
 ## Non-goals
 
 - Rebuilding detection, diagnosis, spend caps, or control planes that already ship.
-- Ideas that need internal data to be stated at all. Where internal data would sharpen
-  a case, the case names the question and marks who can answer it.
+- Ideas that need internal data to be stated at all.
 - Three variations on one hypothesis. The slate spans different themes by construction.
 
 ## The slate
 
 | | Idea | Theme | Engineering cost | Status |
 |---|---|---|---|---|
-| **S** | [Developer platform entry point](03-platform-entry/) | Activation | ≤ 2–3 days | Designed, working prototype |
-| **M** | [OpenAI → Claude migration](02-openai-migration/) | Acquisition | ~2 weeks | Designed, working prototype |
-| **L** | [Dev → production](01-dev-to-production/) | Expansion | 1–2 months | Case written, working prototype |
+| **S** | [Developer platform entry point](03-platform-entry/) | Activation | 2 to 3 days | Designed, working prototype |
+| **M** | [OpenAI → Claude migration](02-openai-migration/) | Acquisition | About 2 weeks | Designed, working prototype |
+| **L** | [Dev → production](01-dev-to-production/) | Expansion | 1 to 2 months | Case written, prototype running, two drivable demos |
 
-At least two are growth-shaped rather than core-product. Revenue impact is direct for
-S and M, and direct but slower for L.
+S and M carry a direct revenue path, and L carries one that is direct but lagging.
+
+### Ship order
+
+1. **S first.** It is a two-day test, and it also reads whether subscribers want an
+   entry point to the platform at all.
+2. **M second.** Its first milestone runs locally, needs no account, and is a complete
+   product on its own, so it does not wait on the answer from S.
+3. **L's discovery test before any L build.** Name Managed Agents inside Claude Code
+   and watch hosted-agent creation for 30 days, which takes days and measures
+   discovery before the build spends months.
 
 ### S — Developer platform entry point
 
@@ -57,14 +92,16 @@ Neither reaches the left rail, the one surface a subscriber sees every session. 
 row there, point it at the dashboard, and show it to subscribers who declare
 engineering work.
 
-Two findings set the size and the risk:
+Two findings set the size and the scope:
 
 - **The clicks are already counted.** Both existing links carry tracking tags, so a
   placement test starts with a number to beat rather than building measurement first.
 - **The obvious moment is taken.** At the plan limit, claude.ai offers usage credits,
-  which keep metered spend on the subscription. Cowork and the referral reward do the
-  same. Three shipped surfaces route an existing user's value to the subscription rather
-  than the platform, so this case argues against a pattern and says so under Risks.
+  which keep metered spend on the subscription, and Cowork keeps scheduled work there
+  too. Two shipped surfaces keep one person's work on their own account, which is what
+  the rule above says they should do. The rail row is the entry point the decision rule
+  describes, for a subscriber who starts building for others, and it leaves the
+  plan-limit moment alone.
 
 ### M — OpenAI → Claude migration
 
@@ -72,9 +109,9 @@ Two findings set the size and the risk:
 [Open the prototype](https://madpr.github.io/claude-growth-surfaces/migrations/)
 
 Scans a repository for OpenAI SDK call sites, applies a rulebook, and blocks the pull
-request until your eval cases pass. A language migration gates on a compiler, and no
-compiler tells you whether a prompt still works, so the merge gates on the repository's
-own tests instead.
+request until the repository's own tests pass against Claude. A language migration
+gates on a compiler, and no compiler tells you whether a prompt still works, so the
+merge gates on those tests instead.
 
 Prompt rewriting, tool translation, and repository access all already ship. The
 remaining work is the parity gate, which is narrower than the whole migration.
@@ -87,28 +124,31 @@ remaining work is the parity gate, which is narrower than the whole migration.
 
 A workload a developer supervises is bounded by that attention. Running unattended, it
 is bounded only by the limits it was given, and Managed Agents is where those limits
-live. Claude Code and the platform are two command lines that divide one
-account, collide on every word you would search — `agents` means background sessions on
-your laptop — and, on the account tested, resolve to two different organizations.
+live. Claude Code and the platform are two command lines that divide one account. They
+collide on every word you would search, so that inside Claude Code "agents" means
+background sessions on your laptop, and on the account tested they resolve to two
+different organizations.
 
 The prototype reads a Claude Code project, emits the agent the platform would run, and
-names what cannot cross. Three fields transfer intact, three degrade, and two have no
-hosted equivalent. Fourteen reproduced issues reach the same conclusion from the other
-direction.
+names what does not transfer. Three fields transfer intact, three degrade, and two have
+no hosted equivalent. Fourteen issues, each opened and read, reach the same conclusion
+from the other direction.
 
 ## Bonus
 
-**[Billing attribution and spend confidence](bonus-billing-attribution/)** ·
+**[Billing attribution](bonus-billing-attribution/)** ·
 [Drive the mock](https://madpr.github.io/claude-growth-surfaces/who-is-paying.html)
 
 Outside the slate because it is scoped to Claude Code rather than the API product, and
 because its revenue path runs the other way: it moves spend off metered billing and onto
 a subscription the customer has already bought. What that protects is subscription
-retention, where a $1,200–$2,400 annual plan outweighs the few hundred dollars of
-one-off metered spend at stake. Its own README argues that trade.
+retention: the loss in those reports is trust in a plan already paid for, not the
+refund.
 
-Behind it: a defect reproduced on the current build, 26 public issues carrying
-$1,799.83 in self-reported losses, and a working prototype.
+Under the rule above, the bonus is the guarantee that a person's interactive session is
+never billed to an organization without saying so. Behind it are a defect reproduced on
+the current build, a written proposal, a working prototype, and 26 public issues
+carrying $1,799.83 in self-reported losses.
 
 The mock is that prototype made drivable. Export the API key most machines already
 carry, start a session, and watch a subscription stop paying without saying so. Two
@@ -117,21 +157,14 @@ precedence order is the one that ships or the one proposed.
 
 ## What was ruled out
 
-Five surfaces were probed and found mature: billing and spend controls, prompt caching,
-API key lifecycle, rate limits, and the Managed Agents control plane. Five candidate
-ideas died with them.
-
-An earlier pass, before that checking, produced generic growth-playbook material:
-rate-limit upgrade prompts, live keys in documentation, efficiency-drives-volume, and
-pooled organization spend. Every one of them described something the platform already
-does.
+Each idea was checked against what the platform ships before it was designed. Five
+surfaces were probed and found mature: billing and spend controls, prompt caching, API
+key lifecycle, rate limits, and the Managed Agents control plane. Five candidate ideas
+died with them.
 
 Embedding the platform dashboard inside claude.ai was also tested and refused: the
-platform sets `frame-ancestors 'self'`, and its session cookies would not travel into a
+platform sets `frame-ancestors 'self'`, and its session cookies do not reach a
 cross-site frame in any case.
-
-Probing an obvious surface and finding it already built is a result. It is most of the
-work behind these three.
 
 ## Evidence standards
 
@@ -139,24 +172,11 @@ work behind these three.
   no deep-research numbers, and no third-party benchmarks at face value.
 - Every issue in a corpus is opened and read, not matched on title.
 - Prototypes run on seeded fixtures. They read no account and make no API calls.
-- Every figure in a case is printed by the prototype behind it. This checks provenance,
-  not worth: a figure computed from invented inputs passes it, so cases state no number
-  that would need data an outsider does not have.
+- Every figure in a case is printed by the prototype behind it, so a case and its code
+  cannot disagree. Where an input is not public, the prototype sweeps it and the case
+  reads the table.
 - Findings that cannot be reproduced without exposing an account ship as scripts that
   print the finding and none of the values.
-
-## Open questions
-
-These cut across the slate rather than belonging to one case.
-
-- **Does Anthropic intend the subscription or the platform to carry an existing
-  customer's incremental work?** Three shipped surfaces choose the subscription. S argues
-  against that, the bonus leans into it, and L's revenue framing depends on the answer.
-- **Is the subscription and platform organization split deliberate?** If it is, unifying
-  the two is a policy argument rather than a growth feature, and L's estimate is wrong.
-  Observed on one account; a second account settles whether it generalizes.
-- **What a subscriber with no organization sees on the platform dashboard.** If that page
-  is empty, S should keep pointing at the API keys page.
 
 ## Repo layout
 

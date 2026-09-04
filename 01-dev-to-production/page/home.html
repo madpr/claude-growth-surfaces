@@ -3,8 +3,8 @@
 
 <style>
 /* Index for the slate. Ordered and described the way the repository README is:
-   three ideas sized by engineering cost, then the bonus. Palette carried from
-   the pages it links to. */
+   the thesis, the decision rule, then three ideas in ship order and the bonus.
+   Palette carried from the pages it links to. */
 :root{
   --bg:#FAFAF8; --panel:#FFFFFF; --sunk:#F4F3EF;
   --ink:#191817; --ink-2:#5E5C55; --ink-3:#8E8B82;
@@ -49,6 +49,19 @@ header{border-bottom:1px solid var(--rule); padding-bottom:28px}
 h1{margin:14px 0 0; font-size:34px; line-height:1.15; font-weight:600; letter-spacing:-.025em}
 .lede{margin:15px 0 0; font-size:16.5px; color:var(--ink-2); max-width:64ch}
 .lede b{color:var(--ink); font-weight:600}
+
+/* The decision rule the README states; every case cites it. */
+.rule{
+  margin-top:28px; padding:20px 24px; background:var(--sunk);
+  border:1px solid var(--rule); border-radius:11px;
+}
+.rule .eyebrow{color:var(--ink-3)}
+.rule blockquote{
+  margin:10px 0 0; padding:2px 0 2px 16px; border-left:3px solid var(--accent);
+  font-size:16px; color:var(--ink); max-width:70ch;
+}
+.rule p{margin:12px 0 0; font-size:14.5px; color:var(--ink-2); max-width:70ch}
+.rule p b{color:var(--ink); font-weight:600}
 
 .idea{
   display:grid; grid-template-columns:64px minmax(0,1fr); gap:26px;
@@ -125,6 +138,7 @@ footer a{color:var(--accent-ink)}
   .idea{grid-template-columns:44px minmax(0,1fr); gap:16px; padding:26px 0}
   .size{height:36px; font-size:16px}
   .demos{grid-template-columns:1fr}
+  .rule{padding:16px 18px}
 }
 </style>
 
@@ -132,14 +146,37 @@ footer a{color:var(--accent-ink)}
 
 <header>
   <div class="eyebrow">Claude API &middot; growth surfaces</div>
-  <h1>Three ideas, sized by engineering cost</h1>
+  <h1>Three ideas for growing Claude API revenue</h1>
+  <p class="lede">
+    One tactical, one medium, one big bet. The surfaces a growth team would reach for
+    first are already built, so each idea removes a manual step between two products
+    instead: a subscriber finding the platform, a team proving a migration held, and a
+    developer promoting a project to a hosted agent. <b>Ship S first, then M, then L's
+    discovery test.</b>
+  </p>
 </header>
+
+<section class="rule">
+  <div class="eyebrow">Which surface carries the work</div>
+  <blockquote>
+    Work stays on the subscription while it is one person's: run interactively, or on
+    their own account. It moves to the platform when it runs unattended against
+    infrastructure a team owns, needs limits someone other than the operator sets, or
+    bills an organization rather than a person.
+  </blockquote>
+  <p>
+    <b>S</b> is the entry point a subscriber uses when they start building for others,
+    <b>L</b> is the moment a workload stops being watched and moves, and the
+    <b>bonus</b> is the guarantee that nothing moves silently. <b>M</b> is unaffected,
+    because the customer starts on the platform.
+  </p>
+</section>
 
 <section class="idea">
   <div class="size">S</div>
   <div>
     <h2>Developer platform entry point</h2>
-    <div class="meta"><span>Activation</span><span>&#8804; 2&ndash;3 days</span><span>Designed, working prototype</span></div>
+    <div class="meta"><span>Activation</span><span>2 to 3 days</span><span>Designed, working prototype</span></div>
     <p>
       claude.ai links to the Claude Platform twice. Both links sit behind a menu, and
       both land on the API keys page, which issues a credential rather than showing the
@@ -159,13 +196,13 @@ footer a{color:var(--accent-ink)}
   <div class="size">M</div>
   <div>
     <h2>OpenAI &#8594; Claude migration</h2>
-    <div class="meta"><span>Acquisition</span><span>~2 weeks</span><span>Designed, working prototype</span></div>
+    <div class="meta"><span>Acquisition</span><span>About 2 weeks</span><span>Designed, working prototype</span></div>
     <p>
       A team can translate their code in an afternoon. What they can't do is show their
       reviewer the translation didn't change behavior. A language migration gates on a
-      compiler, and no compiler tells you whether a prompt still works &mdash; so the
-      merge gates on the repository's own tests instead. <b>The gate is the part worth
-      building</b> &mdash; scanning and rewriting already work.
+      compiler, and no compiler tells you whether a prompt still works, so the merge
+      gates on the repository's own tests instead. Scanning and rewriting already ship,
+      and the parity gate is the part worth building.
     </p>
     <div class="links">
       <a class="lk live" href="migrations/"><b>Open the prototype</b> <span class="arw">&#8594;</span></a>
@@ -179,14 +216,14 @@ footer a{color:var(--accent-ink)}
   <div class="size">L</div>
   <div>
     <h2>Dev &#8594; production</h2>
-    <div class="meta"><span>Expansion</span><span>1&ndash;2 months</span><span>Case written, two working demos</span></div>
+    <div class="meta"><span>Expansion</span><span>1 to 2 months</span><span>Case written, prototype running, two drivable demos</span></div>
     <p>
       A workload a developer supervises is bounded by that attention. Running
       unattended, it is bounded only by the limits it was given, and Managed Agents is
       where those limits live. The gap is that Claude Code and the platform are two
-      tools that divide one account, collide on every word you would search &mdash;
-      <b>&ldquo;agents&rdquo; means background sessions on your laptop</b> &mdash; and,
-      on the account tested, resolve to two different organizations.
+      tools that divide one account. They collide on every word you would search, so
+      that <b>inside Claude Code, &ldquo;agents&rdquo; means background sessions on your
+      laptop</b>, and on the account tested they resolve to two different organizations.
     </p>
 
     <div class="demos">
@@ -200,8 +237,8 @@ footer a{color:var(--accent-ink)}
      <span class="n">&#8594;</span> <span class="d">mount ledger/ read-only</span></div>
         <div class="body">
           <h3>Promote from Claude Code</h3>
-          <p>A terminal you can type into. Translate the rules that cannot travel, set a
-             cap that can never be added later.</p>
+          <p>A terminal you can type into. Translate the rules that do not transfer, and
+             set a cap that can never be added later.</p>
           <div class="go">Type into it &#8594;</div>
         </div>
       </a>
@@ -240,12 +277,13 @@ footer a{color:var(--accent-ink)}
 <section class="idea">
   <div class="size bonus">BONUS</div>
   <div>
-    <h2>Billing attribution &amp; spend confidence</h2>
-    <div class="meta"><span>Outside the slate</span><span>Claude Code, not the API</span></div>
+    <h2>Billing attribution</h2>
+    <div class="meta"><span>Outside the slate</span><span>Claude Code, not the API</span><span>Defect reproduced, proposal written, drivable mock</span></div>
     <p>
       A defect reproduced on the current build, 26 public issues with $1,799.83 in
       self-reported losses, and a working prototype. Its revenue path runs the other
-      way: it moves spend off metered billing and onto a subscription already bought.
+      way: it moves spend off metered billing and onto a subscription already bought,
+      which is where the rule above keeps one person's interactive session.
     </p>
     <div class="links">
       <a class="lk live" href="who-is-paying.html"><b>Open the mock</b> <span class="arw">&#8594;</span></a>
@@ -258,7 +296,7 @@ footer a{color:var(--accent-ink)}
 <footer>
   Demos are proposals; nothing here ships. Navigation, objects and field names replicate
   the live product, and what each demo adds is marked. Every figure is printed by the
-  prototype behind it &mdash; the promotion demos read
+  prototype behind it. The promotion demos read
   <code>prototype/fixtures/ledger-reconcile</code> through
   <code>prototype/promote.py</code>, so the pages and the code cannot disagree.
   <a href="https://github.com/madpr/claude-growth-surfaces">Repository &#8599;</a>
