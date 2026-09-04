@@ -66,6 +66,8 @@ a{color:var(--link);text-decoration:none}
 .btn:hover{background:var(--sunk)}
 .btn-w{background:var(--ink);color:#fff;border-color:var(--ink);font-weight:550}
 .btn-w:disabled{opacity:.35;cursor:not-allowed}
+.why{max-width:1120px;text-align:right;font-size:12px;color:var(--accent-ink);margin-top:6px}
+.pill.ok{background:var(--ok-dim);color:var(--ok)}
 
 .sec{display:grid;grid-template-columns:230px minmax(0,1fr);gap:30px;padding:20px 0;border-bottom:1px solid var(--rule-soft);max-width:1120px}
 .sl h2{margin:0;font-size:14.5px;font-weight:600}
@@ -89,6 +91,7 @@ a{color:var(--link);text-decoration:none}
 .sw::after{content:"";position:absolute;top:2px;left:2px;width:15px;height:15px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.2);transition:transform .15s}
 .sw.on{background:var(--ok)}
 .sw.on::after{transform:translateX(13px)}
+.sw:disabled{cursor:default;opacity:.6}
 .rr.dead{background:var(--warn-dim)}
 .rr.dead .d{color:var(--warn)}
 .kind{
@@ -113,6 +116,8 @@ a{color:var(--link);text-decoration:none}
 .sum .l{display:flex;gap:12px;font-size:12.5px;padding:4px 0}
 .sum .l span{color:var(--ink-2);width:110px;flex:none}
 .sum .warnline{color:var(--warn);font-size:12.5px;margin-top:9px}
+.sum .l b.warn{color:var(--warn);font-weight:450}
+.sum .ni{display:inline-flex;width:auto;padding:2px 8px;margin:0 1px;vertical-align:baseline}
 
 .foot{margin-top:24px;padding-top:14px;border-top:1px solid var(--rule);font-size:11.5px;color:var(--ink-3);line-height:1.6;max-width:1120px}
 .foot b{color:var(--ink-2)}
@@ -143,7 +148,7 @@ a{color:var(--link);text-decoration:none}
       <div class="nl">Manage<span class="c">&#8250;</span></div>
     </nav>
     <div class="sfoot"><div class="row">Documentation</div>
-      <div class="row">Credits <span class="v">$11.28</span></div></div>
+      <div class="row">Credits <span class="v">····</span></div></div>
   </aside>
 
   <main class="main">
@@ -152,9 +157,9 @@ a{color:var(--link);text-decoration:none}
     <div class="arrive">
       <div class="t">
         Continuing from <a href="promote-cli.html">Claude Code</a> on
-        <b>~/ledger-reconcile</b>. You signed in to <b>your platform organization</b> to
-        get here &mdash; the CLI was signed in to a different one. Nothing is created
-        until you confirm.
+        <b>~/ledger-reconcile</b>, which is signed in to <b>example's Organization</b>.
+        You signed in to <b>example's Individual Org</b> to get here, and that is where
+        these resources are created. Nothing is created until you confirm.
       </div>
     </div>
 
@@ -166,6 +171,7 @@ a{color:var(--link);text-decoration:none}
         <button class="btn btn-w" id="go">Create 3 resources</button>
       </span>
     </div>
+    <div class="why" id="why">Add a one-line description to create</div>
 
     <section class="sec">
       <div class="sl"><h2>Agent</h2><p>Read from the project. Nothing to re-enter.</p></div>
@@ -204,19 +210,17 @@ a{color:var(--link);text-decoration:none}
       <div class="sl"><h2>Schedule</h2><p>And the ceiling every run inherits.</p></div>
       <div class="fl">
         <div><label>Runs</label>
-          <div class="i mono">0 2 * * * &middot; daily 02:00</div>
-          <div class="src">set in Claude Code</div></div>
-        <div><label>Spend cap per run</label>
-          <div class="i mono">$25.00</div>
-          <div class="src">create-only &middot; cannot be added later</div></div>
+          <div class="i mono" id="f-sched"></div>
+          <div class="src" id="f-sched-src"></div></div>
+        <div><label>Spend cap per run <span id="cap-need" style="color:var(--accent-ink)" hidden>&middot; needs you</span></label>
+          <input class="i mono" id="cap" inputmode="decimal" placeholder="Dollars per run">
+          <div class="src" id="cap-src"></div></div>
       </div>
     </section>
 
     <div class="sum">
-      <h3>On confirm</h3>
-      <div class="l"><span>Agent</span><b id="s-agent">ledger-reconcile</b></div>
-      <div class="l"><span>Sandbox</span><b id="s-env">Anthropic cloud &middot; 2 rules enforced</b></div>
-      <div class="l"><span>Schedule</span><b>daily 02:00, capped at $25.00</b></div>
+      <h3 id="s-h">On confirm</h3>
+      <div id="s-body"></div>
       <div class="sum warnline" id="s-warn"></div>
     </div>
 
@@ -233,8 +237,8 @@ a{color:var(--link);text-decoration:none}
 
 <script>
 var RULES=[
-  {kind:'deny',    r:'Write(ledger/**)', as:'ledger/ mounted read-only', on:true, dead:false},
-  {kind:'deny',    r:'Bash(rm *)', as:'sandbox discarded after every run', on:true, dead:false},
+  {id:'write-ledger', kind:'deny', r:'Write(ledger/**)', as:'ledger/ mounted read-only', on:true, dead:false},
+  {id:'rm',           kind:'deny', r:'Bash(rm *)', as:'sandbox discarded after every run', on:true, dead:false},
   {kind:'allow',   r:'Bash(python3 reconcile.py *)', on:false, dead:true,
    as:'this was the only pre-approved command. Everything else stopped for you. '+
       'Nothing stops for you at 02:00, and the sandbox runs any command.',
@@ -252,6 +256,42 @@ var REACH={
        ['Network','your VPC egress rules',0]]
 };
 
+/* What Claude Code chose, read from the link it opened. Every figure on this
+   screen is either typed there or absent here. With no parameters the page was
+   opened on its own, and the fields say so. */
+var Q=new URLSearchParams(location.search);
+var S={
+  cap:(function(){ var n=parseFloat(Q.get('cap')); return n>0?n:null; })(),
+  sched:(Q.get('sched')||'').trim()||null,
+  created:false
+};
+if(Q.has('rules')){
+  var accepted=Q.get('rules').split(',');
+  RULES.forEach(function(x){ if(!x.dead) x.on=accepted.indexOf(x.id)>=0; });
+}
+
+function money(n){ return '$'+n.toFixed(2); }
+function capValue(){
+  var n=parseFloat(document.getElementById('cap').value.replace(/^\$/,''));
+  return n>0?n:null;
+}
+/* A bare HH:MM becomes a daily cron line. Anything else is shown as typed. */
+function schedInfo(){
+  if(!S.sched) return null;
+  var m=/^(\d{1,2}):(\d{2})$/.exec(S.sched);
+  if(!m||+m[1]>23||+m[2]>59) return {cron:null, human:S.sched, h:null, m:null, t:null};
+  var h=+m[1], mm=+m[2], t=(h<10?'0':'')+h+':'+(mm<10?'0':'')+mm;
+  return {cron:mm+' '+h+' * * *', human:'daily '+t, h:h, m:mm, t:t};
+}
+function firstRun(){
+  var s=schedInfo();
+  if(!s) return 'none scheduled, runs only when you start it';
+  if(s.h===null) return 'per the schedule: '+s.human;
+  var now=new Date(),
+      later=s.h>now.getHours()||(s.h===now.getHours()&&s.m>now.getMinutes());
+  return (later?'today':(s.h<6?'tonight':'tomorrow'))+' at '+s.t;
+}
+
 function paintRules(){
   var h='';
   RULES.forEach(function(x,i){
@@ -260,7 +300,7 @@ function paintRules(){
        '<span><span class="kind">'+x.kind+'</span> <code>'+x.r.replace(/</g,'&lt;')+
        '</code><br><span class="d">'+x.as+'</span></span>'+
        (x.dead?'':'<span class="tg"><button class="sw'+(x.on?' on':'')+'" data-i="'+i+
-         '" aria-pressed="'+x.on+'" aria-label="enforce '+x.r+'"></button></span>')+
+         '" aria-pressed="'+x.on+'" aria-label="enforce '+x.r+'"'+(S.created?' disabled':'')+'></button></span>')+
        '</div>';
   });
   document.getElementById('rules').innerHTML=h;
@@ -280,14 +320,45 @@ function paintReach(){
     return '<div class="row"><span>'+r[0]+'</span><b'+(r[2]?' class="good"':'')+'>'+r[1]+'</b></div>';
   }).join('');
 }
+function paintSched(){
+  var s=schedInfo();
+  document.getElementById('f-sched').textContent=
+    s?(s.cron?s.cron+' \u00B7 '+s.human:s.human):'no schedule \u00B7 runs only when you start it';
+  document.getElementById('f-sched-src').textContent=s?'set in Claude Code':'not set in Claude Code';
+}
+function paintCap(){
+  var n=capValue();
+  document.getElementById('cap').classList.toggle('need',!n);
+  document.getElementById('cap-need').hidden=!!n;
+  document.getElementById('cap-src').textContent=
+    (n&&n===S.cap?'set in Claude Code \u00B7 ':'')+'create-only \u00B7 cannot be added later';
+}
+function paintButton(){
+  var go=document.getElementById('go'), why=document.getElementById('why');
+  if(S.created){ go.textContent='Created'; go.disabled=true; why.hidden=true; return; }
+  var ok=!!document.getElementById('desc').value.trim();
+  go.textContent='Create '+(S.sched?3:2)+' resources';
+  go.disabled=!ok; why.hidden=ok;
+}
+function line(k,v,cls){
+  return '<div class="l"><span>'+k+'</span><b'+(cls?' class="'+cls+'"':'')+'>'+v+'</b></div>';
+}
 function paintSummary(){
   var on=RULES.filter(function(x){return x.on}).length,
-      dead=RULES.filter(function(x){return x.dead}).length,
-      off=RULES.filter(function(x){return !x.on&&!x.dead}).length,
-      env=document.getElementById('env').value==='cloud'?'Anthropic cloud':'Self-hosted VPC';
-  document.getElementById('s-env').textContent=
-    env+' \u00B7 '+(on?on+' rule'+(on>1?'s':'')+' enforced':'nothing enforced');
-  var h='';
+      env=document.getElementById('env').value==='cloud'?'Anthropic cloud':'Self-hosted VPC',
+      cap=capValue(), s=schedInfo(), h='';
+  document.getElementById('s-h').textContent=S.created?'\u2713 Created':'On confirm';
+  h+=line('Agent','ledger-reconcile');
+  if(S.created){
+    h+=line('First run',firstRun());
+    h+=line('Result','one row per run in <button class="ni on" type="button">Sessions</button> under Managed Agents');
+  } else {
+    h+=line('Schedule',s?s.human:'no schedule, runs only when you start it');
+  }
+  h+=line('Sandbox',env+' \u00B7 '+(on?on+' rule'+(on>1?'s':'')+' enforced':'nothing enforced'));
+  h+=line('Spend cap',cap?money(cap)+' per run':'no cap set, cannot be added later',cap?'':'warn');
+  document.getElementById('s-body').innerHTML=h;
+  h='';
   RULES.filter(function(x){return x.dead}).forEach(function(x){
     h+='<div class="lost"><span class="w">Not carried</span><span><code>'+
        x.r.replace(/</g,'&lt;')+'</code> \u2014 '+x.lost+'</span></div>';
@@ -297,13 +368,18 @@ function paintSummary(){
        x.r.replace(/</g,'&lt;')+'</code> \u2014 you chose not to enforce this</span></div>';
   });
   document.getElementById('s-warn').innerHTML=h;
-  document.getElementById('go').disabled=!document.getElementById('desc').value.trim();
+  paintButton();
 }
 document.getElementById('env').addEventListener('change',function(){paintReach();paintSummary()});
 document.getElementById('desc').addEventListener('input',paintSummary);
+document.getElementById('cap').addEventListener('input',function(){paintCap();paintSummary()});
 document.getElementById('go').addEventListener('click',function(){
-  this.textContent='Created';this.disabled=true;
-  document.querySelector('.sum h3').textContent='Created';
+  if(this.disabled||S.created) return;
+  S.created=true;
+  ['desc','env','cap'].forEach(function(id){ document.getElementById(id).disabled=true; });
+  var pill=document.querySelector('.pill'); pill.textContent='Created'; pill.classList.add('ok');
+  paintRules();paintSummary();
 });
-paintRules();paintReach();paintSummary();
+if(S.cap) document.getElementById('cap').value=S.cap.toFixed(2);
+paintRules();paintReach();paintSched();paintCap();paintSummary();
 </script>
