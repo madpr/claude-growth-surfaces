@@ -6,8 +6,8 @@ they land on the API keys page, which issues a credential rather than showing th
 product. Neither link appears on the left rail, the one surface a subscriber sees every
 session. This proposes a sixth rail row, after **Customize**, pointing at the platform
 dashboard and shown to subscribers who declare engineering work. Both existing links already have
-tracking tags on them, so these clicks are counted today and a placement test starts
-with a number to beat rather than with no measurement at all.
+tracking tags on them, so these clicks are counted today and the test starts with a
+measured baseline rather than an assumed one.
 
 **Status:** designed, working prototype · **Engineering cost:** ≤ 2–3 days ·
 **Theme:** activation · **Revenue path:** direct
@@ -75,26 +75,38 @@ wins clicks and produces no first call has found a worse answer than the buried 
 
 Run the placement test on the rail row alone, against today's experience.
 
-At a 0.50% baseline and a 25% relative lift, at 5% significance and 80% power, the test
-needs **56,193 impressions per arm**, or 112,386 in total. Time to a decision depends on
-how many eligible sessions per day exist, which is not knowable from outside Anthropic,
-so the prototype sweeps it:
+This case states no revenue figure, and no click-through, conversion, or spend figure
+either. Those are what the experiment measures. Estimating them here would need numbers
+nobody outside Anthropic has, and a two-day test does not need a forecast to justify
+itself — it needs to be cheap and fast, which is a claim that can be checked.
 
-| Eligible sessions/day | Time to decision |
-|---|---|
-| 5,000 | 22.5 days |
-| 25,000 | 4.5 days |
-| 100,000 | 1.1 days |
-| 500,000 | 5.4 hours |
+So the prototype answers only that: how much traffic does a decision cost? Read the row
+matching the click-through the existing links already record.
 
-The 25% design point is deliberately conservative for a move from a buried menu to a
-persistent rail. If the effect is a doubling, the same test needs 4,673 impressions per
-arm and settles in hours at any of these traffic levels.
+**Impressions per arm**, at 5% significance and 80% power, by the smallest effect worth
+acting on:
 
-Once the row ships to everyone eligible, impressions recur every session. At 25,000
-eligible sessions per day and $100 per month of spend per converted caller, the
-prototype puts the incremental run rate at **$646,734 a year**; at 100,000 sessions per
-day, **$2,586,937**. Both axes are swept because both are unknown from outside.
+| Baseline click-through | 10% effect | 25% | 50% | 100% |
+|---|---|---|---|---|
+| 0.20% | 822,401 | 140,961 | 39,146 | 11,737 |
+| 0.50% | 327,922 | 56,193 | 15,599 | 4,673 |
+| 1.00% | 163,095 | 27,937 | 7,750 | 2,319 |
+| 2.00% | 80,682 | 13,809 | 3,826 | 1,141 |
+
+**Time to a decision** at a 25% effect, sweeping eligible daily sessions because that
+number is not knowable from outside:
+
+| Baseline | 5,000/day | 25,000/day | 100,000/day | 500,000/day |
+|---|---|---|---|---|
+| 0.20% | 56.4 days | 11.3 days | 2.8 days | 13.5 hours |
+| 0.50% | 22.5 days | 4.5 days | 1.1 days | 5.4 hours |
+| 1.00% | 11.2 days | 2.2 days | 13.4 hours | 2.7 hours |
+| 2.00% | 5.5 days | 1.1 days | 6.6 hours | 1.3 hours |
+
+The effect size is a decision, not a prediction: it is the smallest lift you would act
+on. Moving an entry point from a menu behind a chevron to a persistent rail is a large
+intervention, so the right-hand columns are the plausible ones, and those settle in
+hours to days at any traffic level in the table.
 
 ## Risks
 
