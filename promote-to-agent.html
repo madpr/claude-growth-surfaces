@@ -9,14 +9,15 @@
    Navigation, objects and field names replicate platform.claude.com >
    Managed Agents, read 2 September 2026. Coral marks the one addition. */
 :root{
-  --bg:#FAFAF8;--panel:#FFFFFF;--sunk:#F4F3EF;--field:#FFFFFF;
-  --ink:#191817;--ink-2:#5E5C55;--ink-3:#8E8B82;
-  --rule:#E6E4DC;--rule-soft:#F0EEE8;
-  --accent:#D97757;--accent-dim:#FBF0EA;--accent-ink:#A84E2C;
-  --ok:#2E7D5B;--ok-dim:#EAF4EF;
-  --warn:#8A6A1F;--warn-dim:#FAF3E2;
-  --link:#2C5FA8;
-  --shadow:0 1px 2px rgba(25,24,23,.04);
+  color-scheme:dark;
+  --bg:#141312;--panel:#1B1A18;--sunk:#201F1C;--field:#1F1E1B;
+  --ink:#EDEAE3;--ink-2:#B0ABA1;--ink-3:#837E74;
+  --rule:#2C2A26;--rule-soft:#232120;
+  --accent:#E08A66;--accent-dim:#2A211C;--accent-ink:#EFA98A;
+  --ok:#74AE8D;--ok-dim:#1C2A23;
+  --warn:#DCA646;--warn-dim:#2A2519;--warn-line:#5A4A22;
+  --link:#7FA8CE;
+  --shadow:0 1px 2px rgba(0,0,0,.4);
   --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
   --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
 }
@@ -64,7 +65,7 @@ a{color:var(--link);text-decoration:none}
 .h .r{margin-left:auto;display:flex;gap:8px;align-items:center}
 .btn{border:1px solid var(--rule);background:var(--panel);border-radius:7px;padding:6px 12px;font-size:13px;font-weight:500}
 .btn:hover{background:var(--sunk)}
-.btn-w{background:var(--ink);color:#fff;border-color:var(--ink);font-weight:550}
+.btn-w{background:var(--ink);color:var(--bg);border-color:var(--ink);font-weight:550}
 .btn-w:disabled{opacity:.35;cursor:not-allowed}
 .why{max-width:1120px;text-align:right;font-size:12px;color:var(--accent-ink);margin-top:6px}
 .pill.ok{background:var(--ok-dim);color:var(--ok)}
@@ -99,7 +100,7 @@ a{color:var(--link);text-decoration:none}
   text-transform:uppercase;color:var(--ink-3);border:1px solid var(--rule);
   border-radius:3px;padding:0 4px;margin-right:5px;vertical-align:1px;
 }
-.rr.dead .kind{border-color:#E4D3A8;color:var(--warn)}
+.rr.dead .kind{border-color:var(--warn-line);color:var(--warn)}
 .lost{display:flex;gap:10px;font-size:12.5px;padding:3px 0;color:var(--warn)}
 .lost code{font-family:var(--mono);font-size:11.5px}
 .lost .w{width:110px;flex:none;color:var(--ink-2)}
