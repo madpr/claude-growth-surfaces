@@ -1,10 +1,5 @@
 # Claude API — growth surfaces
 
-Three ideas for increasing Claude API revenue, sized by engineering cost and spanning
-three growth themes. Each was checked against what the platform already ships before it
-was written up. That checking is the load-bearing part: five surfaces were probed and
-found already built, and the ideas that depended on them were dropped.
-
 **North star:** increase Claude API revenue · **Sizing:** one tactical, one medium, one
 big bet · **Evidence:** primary sources and running prototypes only
 
@@ -12,8 +7,8 @@ big bet · **Evidence:** primary sources and running prototypes only
 
 The platform is mature wherever you would reach first. Billing, spend controls, prompt
 caching, key lifecycle, and rate limits are all built, and the control plane already has
-a recommended command line. Ideas aimed at those surfaces do not survive contact with
-the product.
+a recommended command line. An idea aimed at one of them proposes rebuilding something
+that already works.
 
 What is not built sits **between** products, where a customer does the work by hand:
 
@@ -129,7 +124,8 @@ ideas died with them.
 
 An earlier pass, before that checking, produced generic growth-playbook material:
 rate-limit upgrade prompts, live keys in documentation, efficiency-drives-volume, and
-pooled organization spend. None of it survived contact with the product.
+pooled organization spend. Every one of them described something the platform already
+does.
 
 Embedding the platform dashboard inside claude.ai was also tested and refused: the
 platform sets `frame-ancestors 'self'`, and its session cookies would not travel into a

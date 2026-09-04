@@ -4,7 +4,8 @@ Point Claude Code at a repository that uses the OpenAI SDK. It rewrites every ca
 site, then blocks the pull request until the repository's own tests still pass.
 
 The rewrite isn't what stops teams from switching, and neither is model quality. What
-stops them is that nobody can prove the switch is safe. The gate is the product.
+stops them is that nobody can prove the switch is safe, so the parity gate is the part
+worth building.
 
 **Status:** designed, working prototype.
 **Cost:** ~2 weeks.
@@ -76,7 +77,8 @@ A developer points the tool at their repository. It produces three things:
 3. **The gate.** The repository's own test suite already passes against OpenAI. That's
    the baseline. The pull request stays blocked until it passes against Claude too.
 
-The third is the product. The first two are how you get there.
+The gate is the part worth building. Scanning and rewriting already work; proving
+behavior held does not.
 
 This is why Anthropic's published migration kit doesn't apply unchanged. It assumes a
 new target language, a compiler, and a non-incremental rewrite. None of those hold here.
