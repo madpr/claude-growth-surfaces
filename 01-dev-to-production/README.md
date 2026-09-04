@@ -8,8 +8,8 @@ path, with the limits set before the first unattended run.
 **Status:** Case written, prototype running, two drivable demos · **Cost:** 1 to 2 months ·
 **Theme:** expansion
 
-Two drivable demos: [terminal](https://madpr.github.io/claude-growth-surfaces/promote-cli.html) and
-[browser](https://madpr.github.io/claude-growth-surfaces/promote-to-agent.html).
+[Terminal demo](https://madpr.github.io/claude-growth-surfaces/promote-cli.html) ·
+[Browser demo](https://madpr.github.io/claude-growth-surfaces/promote-to-agent.html)
 
 ## Problem
 

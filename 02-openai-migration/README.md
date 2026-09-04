@@ -6,7 +6,7 @@ until the repository's own tests pass against Claude.
 
 **Status:** Designed, working prototype · **Cost:** About 2 weeks · **Theme:** acquisition
 
-[Open the terminal demo](https://madpr.github.io/claude-growth-surfaces/migrate.html).
+[Terminal demo](https://madpr.github.io/claude-growth-surfaces/migrate.html)
 
 ## Problem
 
