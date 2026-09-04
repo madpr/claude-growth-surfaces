@@ -45,15 +45,16 @@ also be a platform customer has to go looking.
 - Changing the plan-limit experience, which already has an answer.
 - Changing pricing, packaging, or the platform dashboard itself.
 - Removing the existing entry points. They stay, as the control.
+- Embedding the dashboard inside claude.ai. The platform refuses third-party framing,
+  and a same-origin version is a different and much larger project than this one.
 
 ## Proposed experience
 
 - A sixth row in the left rail, directly after **Customize**, separated from the rows
   above it.
 - The label names the destination rather than the credential.
-- The row navigates in place, as every row above it does. Both existing entry points
-  open a new tab, which is part of what makes them read as exits rather than as part
-  of the product.
+- The row opens a new tab, matching both existing entry points, so a subscriber never
+  loses the conversation they were in.
 - The row carries the same tracking tags the two existing links already use, so the
   three placements are comparable.
 - Shown only to subscribers whose profile declares engineering work. Everyone else sees

@@ -55,6 +55,28 @@ This matches what the handoff records for Cowork: where Anthropic has shipped a 
 between subscription and platform for an existing audience, it has so far chosen the
 subscription. Two surfaces now show the same pattern.
 
+## The dashboard cannot be embedded in claude.ai
+
+Tested 3 September 2026, because an embedded panel would be a better experience than
+either a new tab or a full navigation. It is not available. Two independent blocks:
+
+| Block | Evidence |
+|---|---|
+| The platform refuses third-party framing | `content-security-policy: frame-ancestors 'self'`, and `x-frame-options: SAMEORIGIN` |
+| The session would not travel into a frame anyway | Session cookies are `SameSite=lax`, so a cross-site frame sends none of them and the visitor renders signed out |
+
+Reproduce the first by pointing an iframe at `platform.claude.com/dashboard` from any
+other origin. The browser renders its broken-frame placeholder rather than the page.
+
+`frame-ancestors 'self'` is the modern header and supersedes `x-frame-options`, so
+relaxing framing means changing a deliberate clickjacking defense on a page that carries
+billing controls and API keys. That is the right default and should not be traded for a
+placement test.
+
+Consequence for the design: the row opens the dashboard rather than embedding it. An
+embedded view is not a variant of this idea. It would mean claude.ai rendering platform
+data from its own origin, which is a different and much larger project.
+
 ## A developer signal is already collected
 
 Settings, Profile: **"What best describes your work?"** — a select, set to
