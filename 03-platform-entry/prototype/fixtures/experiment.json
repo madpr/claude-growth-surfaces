@@ -1,0 +1,26 @@
+{
+  "_provenance": "Seeded and synthetic. Reads no account, makes no API calls. Every rate here is an assumption to be replaced with measured data, and the report marks which ones an outsider cannot know.",
+  "test": {
+    "alpha": 0.05,
+    "power": 0.80,
+    "arms": 2,
+    "baseline_ctr_sweep": [0.002, 0.005, 0.010, 0.020],
+    "mde_relative_sweep": [0.10, 0.25, 0.50, 1.00],
+    "design_baseline_ctr": 0.005,
+    "design_mde_relative": 0.25
+  },
+  "eligible_traffic": {
+    "_note": "Daily sessions from subscribers who self-declare Engineering. Unknown outside Anthropic, so it is swept, not asserted.",
+    "daily_sessions_sweep": [5000, 25000, 100000, 500000]
+  },
+  "funnel": {
+    "_note": "Stage rates after the click. Unknown outside Anthropic.",
+    "click_to_org": 0.35,
+    "org_to_first_call": 0.45,
+    "first_call_to_day30": 0.30
+  },
+  "revenue": {
+    "_note": "Monthly spend of a subscriber who becomes an active platform caller.",
+    "monthly_arpu_usd_sweep": [5, 25, 100, 400]
+  }
+}

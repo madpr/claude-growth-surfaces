@@ -14,7 +14,7 @@ already built, killing five candidate ideas. What survives is what survived that
 
 | | Idea | Theme | Eng cost | Status |
 |---|---|---|---|---|
-| **S** | [Cache break-even](03-cache-breakeven/) | Monetization | ≤ 2–3 days | **Designed, working prototype** |
+| **S** | [Developer platform entry point](03-platform-entry/) | Activation | ≤ 2–3 days | **Designed, working prototype** |
 | **M** | [OpenAI → Claude migration](02-openai-migration/) | Acquisition | ~2 weeks | **Designed, working prototype** |
 | **L** | [Dev → production](01-dev-to-production/) | Expansion | 1–2 months | **Case written, working prototype** |
 
@@ -27,22 +27,23 @@ migration gates on a compiler, and no compiler tells you whether a prompt still 
 Verification cut the scope twice. Prompt rewriting, tool translation, and repo access
 all already ship, so the remaining work is narrower than it looked.
 
-[`03-cache-breakeven/`](03-cache-breakeven/) — [open the prototype →](https://claude.ai/code/artifact/2b514045-cf23-496e-a97f-0fd5ffbd13bc)
+[`03-platform-entry/`](03-platform-entry/) — drive the mock:
+[`page/platform-entry.html`](03-platform-entry/page/platform-entry.html)
 
-The Console's Caching page already charts write amortization — tokens read back per
-token written — and captions it "higher means better." There is an exact number where
-better becomes worse: **0.28× on the 5-minute TTL, 1.11× on the 1-hour**. Below it,
-caching bills more than switching it off. The chart's axis starts at 0.50×, so the
-whole 5-minute danger zone sits below the visible range.
+claude.ai links to the Claude Platform twice. Both links sit behind a menu, and both
+land on the API keys page, which issues a credential rather than showing the product.
+Neither reaches the left rail, the one surface a subscriber sees every session. Add a
+row there, point it at the dashboard, and show it to subscribers who declare
+engineering work.
 
-Draw the line. That is the change — a threshold on a chart that already exists.
-Checking the live Console cut this idea twice: detection and diagnosis are both built,
-and an earlier draft that proposed selling managed caching did not survive seeing the
-page.
-
-A response header naming the fields the compatibility layer drops was the other
-candidate for this slot. It is a clean two-day item, but it shares a hypothesis with
-the M and would strain the span-different-themes constraint.
+Probing the live product is what shaped this. Both existing links already carry
+campaign parameters, so the test measures lift against an instrumented control instead
+of standing up tracking, which is most of what keeps the idea inside two days. The
+obvious moment to sell the platform turned out to be taken: at the plan limit claude.ai
+offers usage credits, which keep metered spend on the subscription. Cowork and the
+referral reward do the same. **Three shipped surfaces route an existing user's value to
+the subscription rather than the platform**, so this case argues against a pattern, and
+says so under Risks rather than working around it.
 
 [`01-dev-to-production/`](01-dev-to-production/) — run the prototype:
 `cd 01-dev-to-production/prototype && ./promote.py map fixtures/ledger-reconcile`
