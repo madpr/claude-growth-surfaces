@@ -1,11 +1,13 @@
 # Developer platform entry point
 
-We propose a sixth rail row, after **Customize**, that opens the platform dashboard and
+We propose a sixth rail row, labeled Developer platform after Customize, that opens the platform dashboard and
 shows only to subscribers whose profile says they do engineering work. The dashboard
 shows what the platform is; the keys page hands you a secret.
 
 **Status:** Designed, working prototype · **Cost:** 2 to 3 days · **Theme:** activation ·
 **Revenue path:** direct
+
+[Open the mock](https://madpr.github.io/claude-growth-surfaces/platform-entry.html) 
 
 ## Problem
 
@@ -20,7 +22,7 @@ drive discovery and, in the longer run, API revenue.
 
 ## Proposed experience
 
-- A sixth rail row directly after **Customize**, with a separator above it.
+- A sixth rail row directly after Customize, with a separator above it.
 - Labeled **Developer platform**, the product's name. A second arm tests
   **Build with the API**.
 - The **New** pill the product already uses, expiring after the first click or after

@@ -8,6 +8,9 @@ path, with the limits set before the first unattended run.
 **Status:** Case written, prototype running, two drivable demos · **Cost:** 1 to 2 months ·
 **Theme:** expansion
 
+Two drivable demos: [terminal](https://madpr.github.io/claude-growth-surfaces/promote-cli.html) and
+[browser](https://madpr.github.io/claude-growth-surfaces/promote-to-agent.html).
+
 ## Problem
 
 The obvious words typed into Claude Code (`claude agents`, `environment`, `session`,
@@ -77,6 +80,3 @@ place of `map` prints the cost table.
 ./research/probe.sh
 ./prototype/promote.py map prototype/fixtures/ledger-reconcile
 ```
-
-Two drivable demos: [terminal](https://madpr.github.io/claude-growth-surfaces/promote-cli.html) and
-[browser](https://madpr.github.io/claude-growth-surfaces/promote-to-agent.html).
