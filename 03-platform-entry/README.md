@@ -5,9 +5,9 @@ way: they sit behind a menu that only a visitor who already wants them will open
 they land on the API keys page, which issues a credential rather than showing the
 product. Neither link appears on the left rail, the one surface a subscriber sees every
 session. This proposes a sixth rail row, after **Customize**, pointing at the platform
-dashboard and shown to subscribers who declare engineering work. Both existing links
-already carry campaign parameters, so the test measures lift against an instrumented
-control rather than starting from no measurement.
+dashboard and shown to subscribers who declare engineering work. Both existing links already have
+tracking tags on them, so these clicks are counted today and a placement test starts
+with a number to beat rather than with no measurement at all.
 
 **Status:** designed, working prototype · **Engineering cost:** ≤ 2–3 days ·
 **Theme:** activation · **Revenue path:** direct
@@ -54,7 +54,8 @@ also be a platform customer has to go looking.
 - The row navigates in place, as every row above it does. Both existing entry points
   open a new tab, which is part of what makes them read as exits rather than as part
   of the product.
-- The row carries campaign parameters in the same shape the two existing links use.
+- The row carries the same tracking tags the two existing links already use, so the
+  three placements are comparable.
 - Shown only to subscribers whose profile declares engineering work. Everyone else sees
   today's rail.
 
@@ -132,8 +133,8 @@ day, **$2,586,937**. Both axes are swept because both are unknown from outside.
   targets, the rail inventory, and the usage-page finding, observed on the live product
   on 3 September 2026.
 - [`research/entry-point-audit.js`](research/entry-point-audit.js) — reproduces the
-  entry-point table in a browser console. Prints paths and campaign parameter names, and
-  no values, so the finding reproduces without publishing an account.
+  entry-point table in a browser console. Prints link paths and the names of the tracking
+  tags, never their values, so the finding reproduces without publishing an account.
 - [`prototype/size_experiment.py`](prototype/size_experiment.py) — prints every figure
   on this page. Reads a seeded fixture, reads no account, makes no API calls.
 - [`prototype/test_size_experiment.py`](prototype/test_size_experiment.py) — 15

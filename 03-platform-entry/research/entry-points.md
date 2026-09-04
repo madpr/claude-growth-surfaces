@@ -10,14 +10,17 @@ Reproduce with `entry-point-audit.js`, which prints the same table and no identi
 | 1 | Account menu, below **Claude Academy** and **Learn more** | "Get API keys / on Claude Platform" | `platform.claude.com/settings/keys` | New tab |
 | 2 | Settings, in a section titled **Platform** | "API keys" | `platform.claude.com/settings/keys` | New tab |
 
-Both carry four UTM parameters: `utm_source`, `utm_medium`, `utm_campaign`, `utm_content`.
-Values are omitted here on purpose; the parameter names are the finding.
+Both links have tracking tags appended to the URL — the four standard UTM parameters,
+`utm_source`, `utm_medium`, `utm_campaign`, and `utm_content`. These tell the
+destination which link a visitor arrived from, which means these clicks are already
+being counted. Values are omitted here on purpose; the presence of the tags is the
+finding.
 
 Two consequences:
 
 - **A baseline exists.** Click-through on these links is already attributed, so a
-  placement test measures lift against an instrumented control instead of standing up
-  tracking first.
+  placement test starts with a number to beat instead of spending its first days
+  building measurement.
 - **Someone owns this funnel.** The idea is not "add a link." It is "move and retarget
   a link that is already measured."
 

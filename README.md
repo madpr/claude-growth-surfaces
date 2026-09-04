@@ -36,9 +36,10 @@ Neither reaches the left rail, the one surface a subscriber sees every session. 
 row there, point it at the dashboard, and show it to subscribers who declare
 engineering work.
 
-Probing the live product is what shaped this. Both existing links already carry
-campaign parameters, so the test measures lift against an instrumented control instead
-of standing up tracking, which is most of what keeps the idea inside two days. The
+Probing the live product is what shaped this. Both existing links already have tracking
+tags on them, so somebody is counting these clicks today. A placement test therefore
+starts with a number to beat instead of spending its first two days building
+measurement, which is most of what keeps the idea small. The
 obvious moment to sell the platform turned out to be taken: at the plan limit claude.ai
 offers usage credits, which keep metered spend on the subscription. Cowork and the
 referral reward do the same. **Three shipped surfaces route an existing user's value to
