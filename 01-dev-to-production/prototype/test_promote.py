@@ -7,6 +7,8 @@ are the ones that were holding the work on the laptop. Most of these assert that
 something is *refused*, not that something is produced.
 """
 
+import contextlib
+import io
 import json
 import re
 import os
@@ -170,6 +172,70 @@ check("a url containing a colon is quoted",
 check("list items nest under their key",
       "mcp_servers:" in y and "- type: url" in y)
 check("emitted yaml has no tab characters", "\t" not in y)
+
+# --- the size table -----------------------------------------------------
+# The table is an illustration at list price. What these pin is that the
+# figures the README quotes are the ones this code prints, that the price is
+# the fetched one, that both unknowable axes stay swept, and that nothing from
+# an account reaches the output.
+
+print("\nsize table")
+rep = p.size_report()
+cell = {c["input_tokens_per_run"]: c["per_month"] for c in rep["cells"]}
+check("one run a night at 200k input bills $18.00 a month",
+      abs(cell[200_000][1] - 18.00) < 1e-9, "got %r" % cell[200_000][1])
+check("three runs a night at 1M input bill $270.00 a month",
+      abs(cell[1_000_000][3] - 270.00) < 1e-9, "got %r" % cell[1_000_000][3])
+check("ten runs a night at 5M input bill $4,500.00 a month",
+      abs(cell[5_000_000][10] - 4500.00) < 1e-9,
+      "got %r" % cell[5_000_000][10])
+check("the price is the fetched figure with its retrieval date, not a guess",
+      rep["price"]["input_per_mtok"] == 2.00
+      and rep["price"]["output_per_mtok"] == 10.00
+      and rep["price"]["retrieved"] == "2026-09-03"
+      and rep["price"]["source"].startswith("https://"))
+check("both unknowable axes stay swept",
+      len(rep["input_sweep"]) >= 3 and len(rep["runs_sweep"]) >= 3)
+check("cost is linear in runs per night and in input per run",
+      abs(cell[1_000_000][1] * 3 - cell[1_000_000][3]) < 1e-9
+      and abs(cell[200_000][1] * 5 - cell[1_000_000][1]) < 1e-9)
+check("output is one third of every cell at these prices",
+      all(abs(p.cost_per_run(i) * 2 / 3
+              - i * p.PRICE["input_per_mtok"] / 1_000_000) < 1e-9
+          for i in rep["input_sweep"]))
+
+_buf = io.StringIO()
+with contextlib.redirect_stdout(_buf):
+    p.render_size(rep)
+table = _buf.getvalue()
+check("the printed table carries the pinned cells",
+      "$18.00" in table and "$270.00" in table and "$4,500.00" in table)
+check("the printed table names its price, source, and retrieval date",
+      "$2 / MTok input" in table and "$10 / MTok output" in table
+      and p.PRICE["source"] in table and "2026-09-03" in table)
+check("the printed table says runtime bills on top and is not priced",
+      "session-hour" in table and "not priced" in table)
+check("the printed table says the price is list and uncached",
+      "list price" in table and "uncached" in table)
+
+_auth_state = json.loads(_auth)
+_account_values = [
+    _auth_state[side][key]
+    for side in ("claude_code", "platform")
+    for key in ("organization_id", "organization_name")
+] + [_auth_state["platform"]["workspace_id"]]
+check("the size table carries no account data",
+      not re.search(r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
+                    table)
+      and "wrkspc_" not in table
+      and not re.search(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}", table)
+      and not any(v in table for v in _account_values))
+
+_buf = io.StringIO()
+with contextlib.redirect_stdout(_buf):
+    rc = p.main(["promote.py", "size"])
+check("size needs no project directory and exits 0",
+      rc == 0 and "$270.00" in _buf.getvalue())
 
 print()
 if FAIL:

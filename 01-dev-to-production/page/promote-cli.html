@@ -46,6 +46,8 @@ body{
 .hide{display:none}
 #out a{color:var(--new);text-decoration:underline;text-underline-offset:3px}
 #out a:hover{color:#fff}
+#out a.go{font-weight:700}
+#typed.q{color:var(--faint)}
 /* Real focusable input, visually absent. Keeps a mobile keyboard available and
    catches text inserted without per-character keydown events. */
 #kb{
@@ -82,8 +84,8 @@ var buf='', hist=[], hp=-1, mode='shell', menu=null, onValue=null;
 /* The project. Values match prototype/fixtures/ledger-reconcile, and the rule
    list is what promote.py reports as unable to cross. */
 var RULES=[
-  {k:'deny ', r:'Write(ledger/**)', fix:'mount ledger/ read-only', set:false},
-  {k:'deny ', r:'Bash(rm *)',       fix:'nothing to protect &mdash; the sandbox is discarded after every run', set:false},
+  {id:'write-ledger', k:'deny ', r:'Write(ledger/**)', fix:'mount ledger/ read-only', set:false},
+  {id:'rm',           k:'deny ', r:'Bash(rm *)',       fix:'nothing to protect &mdash; the sandbox is discarded after every run', set:false},
   {k:'allow', r:'Bash(python3 reconcile.py *)', fix:null,
    why:'the only pre-approved command &mdash; everything else stopped for you.\n'
       +'              Nothing stops for you at 02:00, and the sandbox runs anything.',
@@ -93,6 +95,12 @@ var RULES=[
    lost:'republish it as an endpoint, or drop it'}
 ];
 var cap=null, sched=null;
+/* The two organizations. Names and sign-in methods match
+   prototype/fixtures/auth-state.json; the ids stay in the fixture. */
+var HERE ={org:"example's Organization",   via:'claude.ai'};
+var THERE={org:"example's Individual Org", via:'platform oauth'};
+/* Keys typed while a step animation runs. Replayed when it ends. */
+var pending=[];
 /* Agents created in this session. `claude agents` reads this, so the command
    that exists to reveal hosted agents actually reveals the one you just made. */
 var HOSTED=[];
@@ -109,6 +117,13 @@ function complete(p){
   return '';
 }
 function draw(){
+  if(mode==='run'){
+    typedEl.className='q';
+    typedEl.textContent=pending.filter(function(k){return k.length===1}).join('');
+    ghostEl.textContent='';
+    return;
+  }
+  typedEl.className='';
   typedEl.textContent=buf;
   ghostEl.textContent = mode==='shell' ? complete(buf) : '';
 }
@@ -208,15 +223,36 @@ function residue(){
 
 /* ---- cap, schedule, org ------------------------------------------------ */
 
-function askCap(){
-  w('  <span class="new">Spend cap</span> <span class="dim">per run, in dollars.</span>');
-  w('  <span class="dim">A run started without a cap can be killed, but never capped.</span>');
-  w('  <span class="dim">This is the only time it can be set.</span>');
+function askCap(again){
+  if(!again){
+    w('  <span class="new">Spend cap</span> <span class="dim">per run, in dollars. This is the only time it can be set.</span>');
+    w('  <span class="dim">Type</span> none <span class="dim">to skip it.</span>');
+  }
   value('$ ', function(v){
+    v=v.replace(/^\$/,'');
+    if(!v){
+      w('  <span class="warn">A run started without a cap can be killed, but never capped. Enter an amount, or type none to skip.</span>');
+      return askCap(true);
+    }
+    if(v.toLowerCase()==='none'){
+      ask('Skip the cap? It can never be added later.',
+          ['No, set a cap','Yes, run uncapped'],
+          function(i){
+            if(i===0) return askCap(true);
+            cap=null;
+            w('  <span class="warn">&#9675;</span> <span class="warn">no cap, this run can never be capped later</span>');
+            w('');
+            askSched();
+          });
+      return;
+    }
     var n=parseFloat(v);
-    if(!v){ cap=null; w('  <span class="warn">&#9675;</span> <span class="warn">no cap &mdash; this run can never be capped later</span>'); }
-    else if(isNaN(n)||n<=0){ w('  <span class="stop">Not a number. Enter a dollar amount, or press Enter to skip.</span>'); return askCap(); }
-    else { cap=n.toFixed(2); w('  <span class="ok">&#10003;</span> <span class="dim">$'+cap+' per run</span>'); }
+    if(isNaN(n)||n<=0){
+      w('  <span class="stop">Not a number. Enter a dollar amount, or type none to skip.</span>');
+      return askCap(true);
+    }
+    cap=n.toFixed(2);
+    w('  <span class="ok">&#10003;</span> <span class="dim">$'+cap+' per run</span>');
     w('');
     askSched();
   });
@@ -231,27 +267,47 @@ function askSched(){
         : '  <span class="warn">&#9675;</span> <span class="warn">no schedule &mdash; it will only run when you start it</span>');
     w('');
     org();
-  });
+  }, '(skipped)');
 }
 
 function org(){
-  w('  <span class="warn">This creates an agent, a sandbox and a schedule in your platform</span>');
-  w('  <span class="warn">organization &mdash; not the account signed in here.</span>');
+  w('  <span class="warn">This creates an agent, a sandbox, and a schedule in a different</span>');
+  w('  <span class="warn">organization from the one signed in here.</span>');
+  w('');
+  w('  <span class="dim">'+pad('signed in here',18)+'</span><span class="b">'+pad(esc(HERE.org),28)+'</span><span class="dim">'+HERE.via+'</span>');
+  w('  <span class="dim">'+pad('creates in',18)+'</span><span class="b">'+pad(esc(THERE.org),28)+'</span><span class="dim">'+THERE.via+'</span>');
   w('');
   ask('Sign in there and create?',['Open browser','Cancel'],function(i){
     if(i===1){ w(''); w('  <span class="dim">Canceled. Nothing was created.</span>'); w(''); return done(); }
     w('');
     step('opening browser',function(){
-    step('signing in to platform organization',function(){
+    step('signing in to '+esc(THERE.org),function(){
       w('');
-      w('  <span class="new">&#8594;</span> <a href="promote-to-agent.html">confirm in the browser</a>'
-        +' <span class="faint">&mdash; the other half of this flow</span>');
+      w('  <span class="new">&#10095;</span> <a class="go" href="'+esc(handoff())+'">Confirm in the browser</a>');
+      w('    <span class="dim">the link carries '+carried()+'</span>');
       w('');
       step('waiting for confirmation',function(){
       step('creating agent',function(){
       step('creating sandbox',function(){
-      step('creating schedule',function(){ created(); });});});});});});
+        if(!sched) return created();
+        step('creating schedule',function(){ created(); });
+      });});});});});
   });
+}
+
+/* What the browser half reads. Only what was answered here goes across. */
+function handoff(){
+  var p=new URLSearchParams();
+  if(cap) p.set('cap',cap);
+  if(sched) p.set('sched',sched);
+  p.set('rules',RULES.filter(function(r){return r.fix&&r.set}).map(function(r){return r.id}).join(','));
+  return 'promote-to-agent.html?'+p.toString();
+}
+function carried(){
+  var n=RULES.filter(function(r){return r.fix&&r.set}).length,
+      of=RULES.filter(function(r){return r.fix}).length;
+  return (cap?'$'+cap+' per run':'no cap')+' &middot; '+(sched?esc(sched):'no schedule')
+    +' &middot; '+n+' of '+of+' rules accepted';
 }
 
 function step(label,next){
@@ -291,6 +347,7 @@ function done(){
     +'<span class="faint"> again to try different answers</span>');
   w('');
   mode='shell';
+  replay();
 }
 
 /* ---- prompts ----------------------------------------------------------- */
@@ -317,8 +374,9 @@ function chooseMenu(){
   m.cb(m.i);
 }
 
-function value(label,cb){
-  mode='value'; onValue=cb; setBuf('');
+var valueLabel='', valueEmpty='';
+function value(label,cb,emptyLabel){
+  mode='value'; onValue=cb; valueLabel=label||''; valueEmpty=emptyLabel||'(empty)'; setBuf('');
   document.querySelector('#prompt .ps').textContent=label||'>';
   promptEl.classList.remove('hide');
   draw();
@@ -327,7 +385,7 @@ function submitValue(){
   var v=buf.trim(); setBuf('');
   document.querySelector('#prompt .ps').textContent='>';
   var cb=onValue; onValue=null; mode='run';
-  w('  <span class="dim">'+(v?esc(v):'(skipped)')+'</span>');
+  w('  <span class="dim">'+esc(valueLabel)+(v?esc(v):'<span class="faint">'+valueEmpty+'</span>')+'</span>');
   cb(v);
 }
 
@@ -352,13 +410,34 @@ function setBuf(v){ buf=v; kb.value=v; draw(); }
 
 /* Text arrives through the input, so pasted and inserted text work too. */
 kb.addEventListener('input',function(){
-  if(mode==='menu'||mode==='run'){ kb.value=''; return; }
+  if(mode==='menu'){ kb.value=''; return; }
+  if(mode==='run'){
+    kb.value.split('').forEach(function(c){ pending.push(c); });
+    kb.value=''; draw(); return;
+  }
   buf=kb.value; draw();
 });
 
+/* Keys pressed while a step chain runs are queued, shown faint at the prompt,
+   and replayed when the chain ends, so nothing typed is lost. */
+function replay(){
+  while(pending.length&&mode!=='run'){
+    var k=pending.shift();
+    if(mode==='shell'||mode==='value'){
+      if(k.length===1){ setBuf(buf+k); continue; }
+      if(k==='Backspace'){ setBuf(buf.slice(0,-1)); continue; }
+    }
+    handleKey({key:k,preventDefault:function(){}});
+  }
+  draw();
+}
+
 kb.addEventListener('keydown',function(e){
   if(e.metaKey||e.ctrlKey||e.altKey) return;
+  handleKey(e);
+});
 
+function handleKey(e){
   if(mode==='menu'){
     e.preventDefault();
     if(e.key==='ArrowUp'){ menu.i=(menu.i+menu.opts.length-1)%menu.opts.length; paintMenu(); }
@@ -367,7 +446,15 @@ kb.addEventListener('keydown',function(e){
     else if(/^[1-9]$/.test(e.key)){ var n=+e.key-1; if(n<menu.opts.length){ menu.i=n; chooseMenu(); } }
     return;
   }
-  if(mode==='run'){ e.preventDefault(); return; }
+  if(mode==='run'){
+    e.preventDefault();
+    var k=e.key;
+    if(k==='Backspace'){
+      if(pending.length&&pending[pending.length-1].length===1) pending.pop(); else pending.push(k);
+    }
+    else if(k.length===1||k==='Enter'||k==='Tab'||k==='ArrowUp'||k==='ArrowDown') pending.push(k);
+    draw(); return;
+  }
 
   if(e.key==='Enter'){
     e.preventDefault();
@@ -380,7 +467,7 @@ kb.addEventListener('keydown',function(e){
     e.preventDefault();
     if(hp<hist.length-1){ hp++; setBuf(hist[hp]); } else { hp=hist.length; setBuf(''); }
   }
-});
+}
 
 screenEl.addEventListener('mousedown',function(e){
   if(window.getSelection().toString()) return;   /* let people copy text */

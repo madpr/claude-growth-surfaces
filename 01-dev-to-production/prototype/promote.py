@@ -20,9 +20,13 @@ This is the missing verb, run locally against a project directory.
     ./promote.py map  fixtures/ledger-reconcile
     ./promote.py emit fixtures/ledger-reconcile
     ./promote.py emit fixtures/ledger-reconcile --json
+    ./promote.py size
 
 `map` reports what each Managed Agents field resolves to, and why the ones that
-do not, do not. `emit` writes the YAML bodies `ant` accepts on stdin.
+do not, do not. `emit` writes the YAML bodies `ant` accepts on stdin. `size`
+prints what one promoted workload bills per month at list price, tokens only,
+swept over the two inputs nobody outside Anthropic can know. It reads nothing.
+It is an illustration, not a forecast.
 
 The point of the exercise is the honesty of the mapping, not the volume of it.
 Six of the seven meaningful `ant beta:agents create` fields have a direct source
@@ -369,6 +373,115 @@ def _scalar(v):
 
 
 # ---------------------------------------------------------------------------
+# What one promoted workload is worth. This is the arithmetic the first
+# milestone exists to replace, not a forecast.
+# ---------------------------------------------------------------------------
+
+# List price for the model the fixture pins (settings.json model=sonnet
+# resolves to claude-sonnet-5). Fetched 2026-09-03 from
+#   https://platform.claude.com/docs/en/about-claude/pricing
+# which is the redirect target of
+#   https://docs.claude.com/en/docs/about-claude/pricing
+# The model table on that page reads, for Claude Sonnet 5: base input tokens
+# $2 / MTok, output tokens $10 / MTok. A note on the same page says the $2/$10
+# introductory price is now the standard price. The same page bills Managed
+# Agents session runtime at $0.08 per session-hour on top of tokens; run
+# duration is a third unknown, so runtime is named below and not priced.
+PRICE = {
+    "model": "Claude Sonnet 5",
+    "model_id": "claude-sonnet-5",
+    "input_per_mtok": 2.00,
+    "output_per_mtok": 10.00,
+    "runtime_per_session_hour": 0.08,
+    "source": "https://platform.claude.com/docs/en/about-claude/pricing",
+    "retrieved": "2026-09-03",
+}
+
+# Neither axis is knowable from outside Anthropic, so both are swept. Runs per
+# night is swept because a schedule can fan out.
+INPUT_TOKENS_PER_RUN_SWEEP = [200_000, 1_000_000, 5_000_000]
+RUNS_PER_NIGHT_SWEEP = [1, 3, 10]
+NIGHTS_PER_MONTH = 30
+
+# Output is fixed rather than swept, at one tenth of input per run. At the
+# prices above that puts output at one third of every cell. Input and output
+# are both priced uncached; no cache hit rate is assumed.
+OUTPUT_SHARE_OF_INPUT = 0.1
+
+
+def cost_per_run(input_tokens, price=PRICE, output_share=OUTPUT_SHARE_OF_INPUT):
+    """Token cost of one run at list price, uncached input and output."""
+    output_tokens = input_tokens * output_share
+    return (input_tokens * price["input_per_mtok"]
+            + output_tokens * price["output_per_mtok"]) / 1_000_000
+
+
+def size_report(price=PRICE, inputs=INPUT_TOKENS_PER_RUN_SWEEP,
+                runs=RUNS_PER_NIGHT_SWEEP, nights=NIGHTS_PER_MONTH,
+                output_share=OUTPUT_SHARE_OF_INPUT):
+    """Monthly token cost of one agent, swept over both unknowable axes.
+
+    Reads nothing: no project, no fixture, no account.
+    """
+    cells = [
+        {"input_tokens_per_run": i,
+         "per_month": {r: cost_per_run(i, price, output_share) * r * nights
+                       for r in runs}}
+        for i in inputs
+    ]
+    return {"price": dict(price), "nights_per_month": nights,
+            "output_share_of_input": output_share,
+            "input_sweep": list(inputs), "runs_sweep": list(runs),
+            "cells": cells}
+
+
+def _usd(x):
+    return "${:,.2f}".format(x)
+
+
+def _rate(x):
+    return "${:g}".format(x)
+
+
+def render_size(rep):
+    p = rep["price"]
+    runs = rep["runs_sweep"]
+    print()
+    print("  One promoted workload, per month, tokens only")
+    print("  Illustration. No account read, no API calls, nothing predicted.")
+    print()
+    print("  === %s at list price, uncached ===" % p["model"])
+    print("  %s / MTok input, %s / MTok output"
+          % (_rate(p["input_per_mtok"]), _rate(p["output_per_mtok"])))
+    print("  %s, retrieved %s" % (p["source"], p["retrieved"]))
+    print("  The model is the one the fixture pins: settings model=sonnet")
+    print("  resolves to %s." % p["model_id"])
+    print()
+    print("  === One agent, by input tokens per run and runs per night ===")
+    print("  Neither axis is knowable from outside Anthropic, so both are swept.")
+    print()
+    head = "".join("%15s" % ("%d run%s/night" % (r, "" if r == 1 else "s"))
+                   for r in runs)
+    print("  %-12s%s" % ("input/run", head))
+    for row in rep["cells"]:
+        print("  %-12s%s" % ("{:,}".format(row["input_tokens_per_run"]),
+                             "".join("%15s" % _usd(row["per_month"][r])
+                                     for r in runs)))
+    print()
+    print("  %d nights per month. Output is fixed at one tenth of input per run,"
+          % rep["nights_per_month"])
+    print("  not swept; at these prices that is one third of every cell.")
+    print("  Session runtime bills on top at %s per session-hour, from the"
+          % _rate(p["runtime_per_session_hour"]))
+    print("  same page, and is not priced here: run duration is a third unknown.")
+    print()
+    print("  What this tool will not tell you: whether any workload moves, or")
+    print("  how many. Those are what the first milestone measures. Predicting")
+    print("  them here would substitute arithmetic for that measurement.")
+    print()
+
+
+# ---------------------------------------------------------------------------
 # Rendering
 # ---------------------------------------------------------------------------
 
@@ -466,13 +579,21 @@ def main(argv):
     args = [a for a in argv[1:] if not a.startswith("--")]
     flags = {a for a in argv[1:] if a.startswith("--")}
 
-    if not args or args[0] not in ("map", "emit"):
+    if not args or args[0] not in ("map", "emit", "size"):
         print(__doc__.strip().split("\n\n")[0], file=sys.stderr)
-        print("\nusage: promote.py {map|emit} <project-dir> [--json]",
-              file=sys.stderr)
+        print("\nusage: promote.py {map|emit} <project-dir> [--json]\n"
+              "       promote.py size [--json]", file=sys.stderr)
         return 2
 
     mode = args[0]
+    if mode == "size":
+        rep = size_report()
+        if "--json" in flags:
+            print(json.dumps(rep, indent=2))
+        else:
+            render_size(rep)
+        return 0
+
     root = args[1] if len(args) > 1 else "."
     if not os.path.isdir(root):
         print("error: %s is not a directory" % root, file=sys.stderr)

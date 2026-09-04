@@ -1,42 +1,35 @@
 # Move unattended work to Managed Agents
 
-Claude Code runs agents that you supervise. Managed Agents runs agents that you don't.
-The unattended workload is worth far more per customer, and almost nobody crosses from
-one to the other.
+Claude Code runs agents a developer supervises. Managed Agents runs agents nobody
+watches, inside spend caps, quality rubrics, and credentials the agent never sees. No
+command moves a project from one to the other, and on the account tested a daily Claude
+Code user had zero hosted agents. This proposal adds that path: a working project
+becomes a hosted agent on a schedule, inside limits set before it runs.
 
-This proposal connects them: a working Claude Code project becomes a hosted agent that
-runs on a schedule, inside limits you set before it runs.
-
-**Status:** case written, prototype running, design unfinished.
-**Cost:** 1–2 months.
+**Status:** Case written, prototype running, two drivable demos.
+**Cost:** 1 to 2 months.
 **Theme:** expansion.
 
 ## Problem
 
-A workload a developer supervises runs only while someone is watching it, and what
-bounds its spend is that attention. The same workload running unattended runs on a
-schedule, and nothing bounds its spend except the limits it was given. Managed Agents is
-where those limits live: spend caps, quality rubrics, and credentials the agent never
-sees.
+A supervised workload is bounded by the attention of whoever watches it. Unattended, it
+is bounded only by the limits it was given, and Managed Agents is where those limits
+live.
 
-How much larger unattended spend is on any real account is not established here. The
-shift that matters is what does the bounding, not a multiple.
-
-Three things stop developers from getting there:
-
-- **They can't find it.** Anthropic ships two command-line tools that split one account.
-  `claude` is where developers work. `ant` owns the hosted-agent surface, and the
-  platform docs recommend it. The two collide on every word someone would search.
-- **Neither tool points at the other.** `claude import` reads configuration from
-  *competing* agents. It has no outbound equivalent, and the platform tool has no
-  awareness of Claude Code at all.
-- **They're different accounts.** Claude Code signs in against a subscription. The
-  platform signs in against a developer organization. On the account tested, those were
-  two different organizations for one email address.
+- **Promotion is an identity problem, not a tooling gap.** Claude Code signs in against
+  a subscription; the platform signs in against a developer organization. On the
+  account tested, those were two different organizations for one email address, so
+  whatever transfers lands in an organization the developer is not signed in to.
+- **That boundary is the revenue event.** Subscription work is flat-fee. Hosted agents
+  bill usage plus runtime. Promoting a workload converts it.
+- **It sets the timeline.** Renaming a command takes days. Reconciling two identities
+  does not, and that is why this costs 1 to 2 months.
 
 ### The vocabulary collision
 
-Search for the hosted product from inside Claude Code and every term answers locally:
+Anthropic ships two command-line tools that split one account: Claude Code, where
+developers work, and the platform tool, which owns the hosted-agent surface. Neither
+points at the other, and they collide on every word someone would search:
 
 | A developer types | They get | The hosted product means |
 | --- | --- | --- |
@@ -46,17 +39,9 @@ Search for the hosted product from inside Claude Code and every term answers loc
 | `budget` | A flag that works in one mode | An enforced spend cap |
 | `auth` | Sign in to Claude Code | Sign in to the platform |
 
-Four of the five return a plausible local answer. Nothing signals a larger surface
-exists, so the search ends.
-
-### Why the account split matters
-
-- Promotion crosses an identity boundary, not a tooling gap. Whatever transfers lands
-  in an organization the developer isn't signed in to.
-- That boundary is the revenue event. Subscription work is flat-fee. Hosted agents bill
-  usage plus runtime. Moving a workload across converts it.
-- It explains the timeline. Renaming a command takes days. Reconciling two identities
-  doesn't, and that's the honest reason this costs 1–2 months.
+Four of the five return a plausible local answer, so nothing signals a larger surface
+exists and the search ends. Claude Code imports configuration from competing agents and
+exports nothing; the platform tool has no awareness of Claude Code.
 
 ## Goals
 
@@ -74,27 +59,63 @@ exists, so the search ends.
 
 ## Proposed experience
 
-From a working project, one command creates the hosted agent, the sandbox it runs in,
-and the schedule it runs on.
-
-Most of what the agent needs already exists on disk — the model, the instructions, the
-tools, the skills, the connected services. The developer doesn't re-enter any of it.
+One command turns a working project into the hosted agent, the sandbox it runs in, and
+the schedule it runs on. The model, instructions, tools, skills, and connected services
+already exist on disk; the developer re-enters none of them.
 
 Measured against a real project, three fields transfer intact, three arrive degraded,
-and two kinds of working configuration have no hosted equivalent at all. The last two
-shape the product:
+and two kinds of working configuration have no hosted equivalent. The last two shape
+the product:
 
-- **The limits don't transfer.** The rules a developer set locally have no hosted
-  equivalent. The flow has to make them set those limits again on the sandbox, and
-  that's the moment worth designing well: it's the last point before the agent runs
-  without anyone watching.
-- **The sandbox can't be inferred.** A laptop has no container image, network policy,
+- **The limits do not transfer.** Local permission rules have no hosted equivalent, so
+  the flow makes the developer set limits again on the sandbox. That is the last point
+  before the agent runs with nobody watching, and the step worth designing well.
+- **The sandbox cannot be inferred.** A laptop has no container image, network policy,
   or credential store to hand over. Creating one is a required step, not a default.
+
+## First cheap milestone
+
+Test discovery before building the promotion path:
+
+1. Disambiguate the agents command in Claude Code so it names the hosted product.
+2. Name Managed Agents in Claude Code, where someone searching would look.
+3. Watch hosted-agent creation for 30 days.
+
+This takes days, and creation over those 30 days reads whether discovery is the gate.
+
+What one promoted workload bills is the arithmetic the test replaces. The prototype
+prints it at list price, tokens only, for the model the fixture pins, Claude Sonnet 5:
+$2 per million input tokens and $10 per million output tokens, uncached, from the
+platform pricing page retrieved September 3, 2026. Input tokens per run and runs per
+night both vary by workload, so both are swept.
+
+| Input tokens per run | 1 run/night | 3 runs/night | 10 runs/night |
+| --- | --- | --- | --- |
+| 200,000 | $18.00 | $54.00 | $180.00 |
+| 1,000,000 | $90.00 | $270.00 | $900.00 |
+| 5,000,000 | $450.00 | $1,350.00 | $4,500.00 |
+
+30 nights per month. Output is fixed at one tenth of input per run, one third of every
+cell at these prices. Session runtime bills on top at $0.08 per session-hour and is not
+priced here. The table is an illustration at list price, not a forecast. A subscription
+seat bills the same flat fee whether the workload runs once a night or ten times; the
+platform bills every run, and that difference is what promotion converts.
+
+## What the first test settles
+
+- **Whether discovery is the gate:** hosted-agent creation over the 30 days after the
+  pointer ships.
+- **Whether the organization split generalizes beyond consumer subscriptions:** a
+  second sign-in on a Console plan account, with the identity probe in the research
+  directory, which reports agreement without printing identifiers.
+- **Whether unattended workloads exist at scale on the platform today:** scheduled and
+  hosted-session traffic, which the leading indicators under Success metrics already
+  read.
 
 ## Why hosted rather than self-built
 
-Hosted agents are the same model with an orchestrator above it. The limits belong to
-that orchestrator:
+Hosted agents are the same model with an orchestrator above it, and the limits belong
+to that orchestrator:
 
 | Limit | Building it yourself | Hosted |
 | --- | --- | --- |
@@ -102,107 +123,47 @@ that orchestrator:
 | Quality | Call a second model against a rubric | A required rubric, graded in a separate context |
 | Authority | A container with scoped credentials | A per-session sandbox where secrets are substituted at egress and never visible inside |
 
-A competent team can build the first two. The third is different in kind: the secret
-never enters the sandbox, so the agent never holds the credential material.
-
-That answers the sharpest report in the corpus. An agent hit a permissions error,
-searched for a way through, found an admin secret in a sibling project, and minted
-itself a token. Scoping the credential wouldn't have stopped it. Not holding it would.
+A competent team can build the first two; the third is different in kind, because the
+secret never enters the sandbox. That answers the sharpest report in the corpus, an
+agent that hit a permissions error, found an admin secret in a sibling project, and
+minted itself a token: scoping the credential would not have stopped it, and not
+holding it would.
 
 ## Where else this applies
 
-Cowork is this argument already shipped, for people who never open a terminal. It runs
-"the same agentic architecture that powers Claude Code" inside Claude Desktop, takes
-multi-step work autonomously, and schedules tasks that run unattended in an isolated
-cloud environment on Anthropic's servers.
-
-Three things follow.
-
-**The direction is not speculative.** Anthropic has already built the path from local
-supervised work to scheduled unattended hosted work, once, for the audience that needed
-it first. This proposal is that same path for the surface where it is missing.
-
-**The portability gap is documented, not inferred.** The Cowork documentation states
-that it loads connectors, skills, and plugins from your claude.ai account and "doesn't
-read the Claude Code CLI's `~/.claude` directory on your machine. To use a skill or
-plugin that exists only in `~/.claude`, add it in Customize." A developer who configured
-Claude Code and then opens Cowork re-enters the work by hand. That is the same finding
-as the CLI-to-platform split, on a third surface, in Anthropic's own words.
-
-**It puts a question to the revenue claim above.** Cowork keeps unattended work on the
-subscription: it ships on all paid plans and reads the claude.ai account. This proposal
-converts flat-fee subscription work into metered platform usage. Anthropic's shipped
-answer for non-developers went the other way. Which model Claude Code's unattended path
-should follow is a live decision, and it changes who owns this work and how it is
-measured. Settle it before building.
-
-The same shape applies to claude.ai. A Project carries instructions, files, and
-connectors that already describe a repeatable job, and nothing turns one into something
-that runs on a schedule.
+Cowork is this argument already shipped, for people who never open a terminal: it runs
+"the same agentic architecture that powers Claude Code" inside Claude Desktop and
+schedules tasks that run unattended on Anthropic's servers. Its documentation states
+that it "doesn't read the Claude Code CLI's `~/.claude` directory", so a developer who
+configured Claude Code re-enters that work by hand, the same portability gap on a third
+surface. Cowork ships on all paid plans, reads the claude.ai account, and keeps
+unattended work on the subscription. Under [the decision rule this repo
+states](../README.md), work stays on the subscription while it is one person's, run
+interactively or on their own account, and moves to the platform when it runs
+unattended against infrastructure a team owns, needs limits someone other than the
+operator sets, or bills an organization rather than a person. Cowork's scheduled tasks
+are one person's, on their own account, and stay on the subscription. This proposal
+covers team-owned unattended work, which the rule places on the platform.
 
 ## Success metrics
 
-| Metric | What it tests |
+Read the leading indicators first; spend lags them by a quarter and confirms them.
+
+| Metric | What it reads |
 | --- | --- |
-| Workloads that move to unattended operation, against their own supervised baseline | The core claim |
-| Spend 90 days after the move | The revenue claim. It lags. |
-| Share of runs that set a spend cap and a rubric | Whether limits were the reason people came |
+| Traffic that runs on a schedule | Leading. Unattended work is growing |
+| Hosted-agent sessions | Leading. That work runs on the platform |
+| Share of runs that set a spend cap and a rubric | Leading. Limits are the reason people came |
+| Workloads that move to unattended operation, against their supervised baseline | The core claim |
+| Spend 90 days after the move | Lagging. The revenue claim |
 
-**Guardrail:** incidents on unattended runs. If promotion moves the failure instead of
-containing it, this proposal is wrong.
-
-**Leading indicators**, all watchable today: growth in traffic that runs on a schedule,
-growth in hosted-agent sessions, and the share of those that set a cap or a rubric.
-
-## Ship the pointer first
-
-Test discovery before building the promotion path:
-
-1. Disambiguate `claude agents`.
-2. Name Managed Agents in the CLI, where someone searching would look.
-3. Watch hosted-agent creation for 30 days.
-
-This takes days. If creation doesn't move, discovery isn't the gate and this proposal
-is wrong.
-
-## Risks
-
-- **Timing.** If unattended fleets are three years out rather than one, this is a
-  correct proposal built two years early. The same risk runs per-customer: a team that
-  has already built its own metering and containment gains only credential isolation,
-  and pays a migration to get it.
-- **Teams keep the risky work in-house.** The workloads with the largest blast radius
-  are the ones touching their own infrastructure, and those are the ones least likely
-  to move to a hosted sandbox.
-- **The quality gate is Claude judging Claude.** Rubrics grade artifact work well —
-  reports, models, pipelines. They grade open-ended codebase maintenance badly, which
-  is where the evidence came from.
-
-## Open questions
-
-Two shape the cost estimate. The first can be settled from outside:
-
-- **Does the account split generalize?** The finding rests on one consumer
-  subscription. If Console organizations resolve to a single organization, that section
-  describes a segment, not the platform. Signing in on a second account settles it, and
-  `probe.sh --identity` reports the answer without printing anyone's identifiers.
-- **Is the split incidental or deliberate?** If subscriptions and metered billing are
-  separate by design, unifying them is a policy argument rather than a growth feature,
-  and the 1–2 month estimate is wrong. Nothing public answers this.
-
-Four more decide whether to build at all, and all of them are internal:
-
-- What fraction of API organizations run anything unattended.
-- How many have a single-day spend spike over five times their trailing average.
-- What share of Claude Code users have ever created a hosted agent, and what share of
-  hosted agents were created by someone who already had Claude Code installed.
-- What share of Claude Code sessions delegate work to a non-Anthropic model.
+**Guardrail:** incidents on unattended runs, against the supervised baseline.
 
 ## Evidence
 
-**User reports.** Fourteen issues in `anthropics/claude-code`, each opened and read
-([`research/issues.tsv`](research/issues.tsv)). Eleven show the agent acting outside its
-mandate rather than producing bad work.
+**User reports.** Fourteen issues in the Claude Code issue tracker, each opened and read
+([`research/issues.tsv`](research/issues.tsv)). Eleven show the agent acting outside
+its mandate rather than producing bad work.
 
 | Issue | What the agent did |
 | --- | --- |
@@ -212,52 +173,28 @@ mandate rather than producing bad work.
 | [#81035](https://github.com/anthropics/claude-code/issues/81035) | Spawned a live process from a failed fork that merged pull requests with admin bypass |
 | [#79103](https://github.com/anthropics/claude-code/issues/79103) | Asked for a preflight checkpoint before unattended runs |
 
-Issue #82063 states the problem in a user's own words: "no harm done, but it makes me
-very worried." Nothing broke, and they filed anyway. These are Claude Code issues, not
-API issues. They show the behavior at laptop scale. They don't prove it happens against
-shared infrastructure.
+Issue #82063 states it in a user's own words: "no harm done, but it makes me very
+worried." Nothing broke, and they filed anyway.
 
 **Competitive pressure.**
 [`antigravity-for-claude-code`](https://github.com/yuting0624/antigravity-for-claude-code)
-is an unaffiliated Claude Code plugin with 305 stars, as of September 3, 2026, that
-routes token-heavy work out of
-Claude Code to Gemini. It installs a hook that makes offloading the default.
+is an unaffiliated Claude Code plugin, observed September 3, 2026, that routes
+token-heavy work out of Claude Code to Gemini through a hook that makes offloading the
+default. It names a failure mode the rest of the slate misses, within-session spend
+routing: the seat, the organization, and the subscription all persist, only per-session
+volume falls, and retention dashboards read it as healthy.
 
-Routing to a competitor needs no identity work: different vendor, separate credentials,
-nobody expects one account. Routing to Anthropic's own hosted product needs it precisely
-because it's the same company. The exit is cheaper to build than the entrance.
-
-This proposal doesn't cite the plugin's cost benchmark, which rests on one task, a
-three-case quality evaluation, and estimated rates the author tells you to replace. The
-citable fact is that the plugin exists and what it claims.
-
-It also names a failure mode the rest of the slate misses: **within-session spend
-routing**. The customer never churns. The seat, the organization, and the subscription
-all persist. Only per-session volume falls, so retention dashboards read it as healthy.
-
-**Reproduce it.** Run these from this directory. Neither reads an account or calls an
-API:
+**Reproduce it.** Neither command reads an account or calls an API; `size` in place of
+`map` prints the cost table.
 
 ```
 ./research/probe.sh
 ./prototype/promote.py map prototype/fixtures/ledger-reconcile
 ```
 
-One command needs credentials. It reports only whether the two organizations agree, and
-prints no identifier, workspace, email, or name:
-
-```
-./research/probe.sh --identity
-```
-
-Cowork behavior is quoted from `claude.com/docs/cowork/overview` and
-`claude.com/product/cowork`, retrieved September 3, 2026. What limits a scheduled Cowork
-task can carry — a spend cap, a rubric, an approval gate — is not established here.
-
-Platform behavior was captured September 2–3, 2026, from Claude Code 2.1.259 and the
-platform CLI 1.29.0. Every count in this document is printed by the prototype, so the
-case and the code can't disagree. No spend figure appears anywhere in this case,
-because none can be sourced without account data. One documented behavior doesn't reproduce: the docs
-warn that signing in to the platform tool triggers a credential conflict with Claude
-Code. It doesn't. The two never contend, because they resolve to different
-organizations.
+Cowork quotes: claude.com/docs/cowork/overview and claude.com/product/cowork, retrieved
+September 3, 2026. Platform behavior: Claude Code 2.1.259 and the platform CLI 1.29.0,
+captured September 2 and 3, 2026. Every figure here is printed by the prototype and
+pinned by its tests. Two drivable demos:
+[terminal](https://madpr.github.io/claude-growth-surfaces/promote-cli.html) and
+[browser](https://madpr.github.io/claude-growth-surfaces/promote-to-agent.html).
