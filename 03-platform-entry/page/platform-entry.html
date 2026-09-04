@@ -2,11 +2,14 @@
 
 <style>
 /* claude.ai, replicated from the live product on 3 September 2026: rail order,
-   account row, composer controls and header control are as observed. The one
-   addition is the Developer platform row, which carries the New pill the product
-   already uses for new navigation. It opens a new tab, as the two existing entry
-   points do. Embedding the dashboard was tested and the platform refuses it:
-   frame-ancestors 'self'. See research/entry-points.md.
+   account row, composer controls and header control are as observed. Two additions:
+   the Developer platform row, which carries the New pill the product already uses
+   for new navigation, and the landing panel it opens, which replicates the platform
+   dashboard's card names with values left blank. The live row opens a new tab, as
+   the two existing entry points do; the mock intercepts the click so the landing
+   stays in view, and keeps the tagged target on the "Open the live dashboard" link.
+   Embedding the dashboard was tested and the platform refuses it: frame-ancestors
+   'self'. See research/entry-points.md.
    Account name, chats and projects are synthetic. */
 :root{
   --rail:#1B1B19; --main:#232321; --panel:#2A2926; --raise:#302F2B;
@@ -103,15 +106,37 @@ svg{display:block;flex:none}
 }
 .note b{color:#6E6A62;font-weight:600}
 
+/* ---------------- landing: the platform dashboard the row opens ---------------- */
+.landing{position:relative;height:100%;display:flex;flex-direction:column;background:var(--main)}
+.lhead{display:flex;align-items:center;gap:14px;padding:11px 18px;background:var(--rail);border-bottom:1px solid var(--edge-soft)}
+.lhead .back{display:inline-flex;align-items:center;gap:6px;padding:5px 8px;border-radius:7px;color:var(--dim);font-size:13px}
+.lhead .back:hover{background:var(--raise);color:var(--txt)}
+.lhead .origin{color:var(--faint);font-size:12px}
+.lhead .live{margin-left:auto;display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border:1px solid var(--edge);border-radius:7px;color:var(--dim);font-size:12.5px}
+.lhead .live:hover{background:var(--raise);color:var(--txt)}
+.lbody{flex:1;min-height:0;overflow-y:auto;padding:30px 36px 60px}
+.lwrap{max-width:960px;margin:0 auto}
+.ltitle{font-family:var(--serif);font-size:28px;font-weight:400;letter-spacing:-.01em;margin:0 0 4px;color:var(--txt)}
+.lcap{margin:0 0 22px;color:var(--faint);font-size:12.5px}
+.cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.card{background:var(--panel);border:1px solid var(--edge);border-radius:12px;padding:14px 16px 16px;min-height:98px}
+.card.wide{grid-column:1/-1}
+.card .ct{font-size:12.5px;color:var(--dim)}
+.card .ph{height:22px;width:44%;border-radius:6px;background:var(--raise);margin-top:14px}
+.card.wide .ph{width:22%}
+
 @media(max-width:820px){
   .app{grid-template-columns:1fr}
   .rail{display:none}
   .hi{font-size:26px}
   .note{position:static;text-align:center;max-width:none;padding:0 20px 14px}
+  .lhead{flex-wrap:wrap}
+  .lbody{padding:22px 18px 40px}
+  .cards{grid-template-columns:1fr}
 }
 </style>
 
-<div class="app">
+<div class="app" id="app">
   <nav class="rail">
     <div class="rhead">
       <span class="mark">Claude</span>
@@ -143,7 +168,7 @@ svg{display:block;flex:none}
         <span class="lbl">Customize</span>
       </button>
 
-      <!-- the one addition -->
+      <!-- addition 1: the row -->
       <a class="ni" id="platformRow"
          href="https://platform.claude.com/dashboard?utm_source=claude_ai&amp;utm_medium=rail&amp;utm_campaign=platform_entry&amp;utm_content=rail_row"
          target="_blank" rel="noopener">
@@ -211,11 +236,51 @@ svg{display:block;flex:none}
     </div>
 
     <p class="note">
-      <b>One addition:</b> the Developer platform row, linking to the platform dashboard.
-      Everything else replicates claude.ai, 3 September 2026. Account and chats are synthetic.
+      <b>Two additions:</b> the Developer platform row, and the landing panel it opens, which
+      replicates the platform dashboard's cards with values left blank. Everything else
+      replicates claude.ai, 3 September 2026. Account and chats are synthetic.
     </p>
   </main>
 </div>
+
+<!-- addition 2: the landing, shown in place of a new tab so the mock stays drivable -->
+<section class="landing" id="landing" hidden aria-labelledby="landingTitle">
+  <div class="lhead">
+    <a class="back" id="backLink" href="#">
+      <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M10 3.5 5.5 8l4.5 4.5"/></svg>
+      Back to claude.ai
+    </a>
+    <span class="origin">platform.claude.com, opened in a new tab</span>
+    <a class="live"
+       href="https://platform.claude.com/dashboard?utm_source=claude_ai&amp;utm_medium=rail&amp;utm_campaign=platform_entry&amp;utm_content=rail_row"
+       target="_blank" rel="noopener">
+      Open the live dashboard
+      <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h7v7M13 3 4 12"/></svg>
+    </a>
+  </div>
+
+  <div class="lbody">
+    <div class="lwrap">
+      <h1 class="ltitle" id="landingTitle">Dashboard</h1>
+      <p class="lcap">Card names as observed on 3 September 2026. Values left blank.</p>
+      <div class="cards">
+        <div class="card"><div class="ct">Credits</div><div class="ph"></div></div>
+        <div class="card"><div class="ct">Spend against the monthly limit</div><div class="ph"></div></div>
+        <div class="card"><div class="ct">Prompt caching hit rate</div><div class="ph"></div></div>
+        <div class="card"><div class="ct">Token volume</div><div class="ph"></div></div>
+        <div class="card"><div class="ct">Model lineup</div><div class="ph"></div></div>
+        <div class="card"><div class="ct">Managed Agents</div><div class="ph"></div></div>
+        <div class="card wide"><div class="ct">Claude Code usage</div><div class="ph"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <p class="note">
+    <b>Two additions:</b> the Developer platform row, and the landing panel it opens, which
+    replicates the platform dashboard's cards with values left blank. Everything else
+    replicates claude.ai, 3 September 2026. Account and chats are synthetic.
+  </p>
+</section>
 
 <script>
 (function () {
@@ -230,6 +295,30 @@ svg{display:block;flex:none}
       document.querySelectorAll('.tabs button').forEach(function (o) { o.classList.remove('on'); });
       b.classList.add('on');
     });
+  });
+
+  // On the live product the row opens the dashboard in a new tab. The mock intercepts
+  // the click and shows the landing in place, so the flow stays drivable. The tagged
+  // target stays on the row's href and on the "Open the live dashboard" link.
+  var app = document.getElementById('app');
+  var landing = document.getElementById('landing');
+  var row = document.getElementById('platformRow');
+  var back = document.getElementById('backLink');
+
+  function showLanding() {
+    app.hidden = true;
+    landing.hidden = false;
+    back.focus({ preventScroll: true });
+  }
+  function showApp() {
+    landing.hidden = true;
+    app.hidden = false;
+    row.focus({ preventScroll: true });
+  }
+  row.addEventListener('click', function (e) { e.preventDefault(); showLanding(); });
+  back.addEventListener('click', function (e) { e.preventDefault(); showApp(); });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && !landing.hidden) showApp();
   });
 })();
 </script>
