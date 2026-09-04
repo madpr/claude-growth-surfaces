@@ -2,23 +2,27 @@
    trendlines; semantic color is a separate scale so it never competes. */
 
 :root {
-  --bg:        #FAFAF8;
-  --panel:     #FFFFFF;
-  --sunk:      #F4F3EF;
-  --ink:       #191817;
-  --ink-2:     #5E5C55;
-  --ink-3:     #8E8B82;
-  --rule:      #E6E4DC;
-  --rule-soft: #F0EEE8;
-  --accent:    #D97757;
-  --accent-dim:#FBF0EA;
-  --ok:        #2E7D5B;
-  --ok-dim:    #EAF4EF;
-  --warn:      #A87613;
-  --warn-dim:  #FAF2E1;
-  --crit:      #B4432F;
-  --crit-dim:  #FAEBE7;
-  --shadow:    0 1px 2px rgba(25,24,23,.04);
+  color-scheme: dark;
+  --bg:        #141312;
+  --panel:     #1B1A18;
+  --sunk:      #201F1C;
+  --ink:       #EDEAE3;
+  --ink-2:     #B0ABA1;
+  --ink-3:     #837E74;
+  --rule:      #2C2A26;
+  --rule-soft: #232120;
+  --accent:    #E08A66;
+  --accent-dim:#2A211C;
+  --accent-ink:#EFA98A;
+  --ok:        #74AE8D;
+  --ok-dim:    #1C2A23;
+  --ok-line:   #2C4A3A;
+  --warn:      #DCA646;
+  --warn-dim:  #2A2519;
+  --warn-line: #5A4A22;
+  --crit:      #E27C6A;
+  --crit-dim:  #2E1F1C;
+  --shadow:    0 1px 2px rgba(0,0,0,.4);
   --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
 }
@@ -109,7 +113,7 @@ a { color: inherit; }
 .side-foot .row .val { margin-left: auto; font-family: var(--mono); font-size: 11.5px; color: var(--ink-3); }
 .avatar {
   width: 22px; height: 22px; border-radius: 6px; background: var(--ink);
-  color: #fff; display: grid; place-items: center; font-size: 11px; font-weight: 600; flex: none;
+  color: var(--bg); display: grid; place-items: center; font-size: 11px; font-weight: 600; flex: none;
 }
 .who { font-size: 12.5px; font-weight: 550; line-height: 1.25; }
 .who span { display: block; font-weight: 400; font-size: 11px; color: var(--ink-3); }
@@ -168,8 +172,8 @@ section h2 .count {
 
 /* one card per decision -- fixed field labels, data values */
 .decision { padding: 16px 20px 18px; display: flex; flex-direction: column; gap: 12px; }
-.decision.done { background: var(--ok-dim); border-color: #CCE3D7; }
-.decision.warn { background: var(--warn-dim); border-color: #EBD9A8; }
+.decision.done { background: var(--ok-dim); border-color: var(--ok-line); }
+.decision.warn { background: var(--warn-dim); border-color: var(--warn-line); }
 .d-head { display: flex; align-items: center; gap: 10px; }
 .d-construct { font-family: var(--mono); font-size: 14px; font-weight: 600; color: var(--ink); }
 .d-head .chip { margin-left: auto; flex: none; }
@@ -187,9 +191,9 @@ section h2 .count {
   transition: border-color .12s ease, background .12s ease;
 }
 .opt:hover { border-color: var(--ink-3); }
-.opt.on { border-color: var(--ink); background: var(--ink); color: #fff; }
+.opt.on { border-color: var(--ink); background: var(--ink); color: var(--bg); }
 .opt-n { font-size: 11.5px; font-weight: 400; color: var(--ink-3); }
-.opt.on .opt-n { color: rgba(255,255,255,.65); }
+.opt.on .opt-n { color: rgba(20,19,18,.65); }
 
 /* the proof */
 .proof { padding: 4px 20px; }
@@ -234,13 +238,13 @@ td.num { font-variant-numeric: tabular-nums; text-align: right; white-space: now
 .chip-crit { background: var(--crit-dim); color: var(--crit); }
 .chip-warn { background: var(--warn-dim); color: var(--warn); }
 .chip-mute { background: var(--sunk); color: var(--ink-2); }
-.chip-acc { background: var(--accent-dim); color: #A84E2C; }
+.chip-acc { background: var(--accent-dim); color: var(--accent-ink); }
 
 .btn {
   white-space: nowrap; border: 1px solid var(--rule); background: var(--panel);
   color: var(--ink); border-radius: 7px; padding: 8px 15px; font-size: 13.5px; font-weight: 550;
 }
-.btn-primary { background: var(--ink); color: #fff; border-color: var(--ink); }
+.btn-primary { background: var(--ink); color: var(--bg); border-color: var(--ink); }
 .btn-primary:disabled { background: var(--rule); color: var(--ink-3); border-color: var(--rule); cursor: not-allowed; }
 
 /* the state of the migration, always visible */
