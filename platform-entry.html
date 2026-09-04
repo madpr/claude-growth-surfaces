@@ -7,9 +7,9 @@
 /* claude.ai, replicated from the live product on 3 September 2026: rail order,
    account row, composer controls and header control are as observed. The one
    addition is the Developer platform row, which carries the New pill the product
-   already uses for new navigation. It navigates in place, as the rows above it do;
-   the two existing entry points open a new tab, which is what makes them read as
-   exits rather than as part of the product.
+   already uses for new navigation. It opens a new tab, as the two existing entry
+   points do. Embedding the dashboard was tested and the platform refuses it:
+   frame-ancestors 'self'. See research/entry-points.md.
    Account name, chats and projects are synthetic. */
 :root{
   --rail:#1B1B19; --main:#232321; --panel:#2A2926; --raise:#302F2B;
@@ -148,7 +148,8 @@ svg{display:block;flex:none}
 
       <!-- the one addition -->
       <a class="ni" id="platformRow"
-         href="https://platform.claude.com/dashboard?utm_source=claude_ai&amp;utm_medium=rail&amp;utm_campaign=platform_entry&amp;utm_content=rail_row">
+         href="https://platform.claude.com/dashboard?utm_source=claude_ai&amp;utm_medium=rail&amp;utm_campaign=platform_entry&amp;utm_content=rail_row"
+         target="_blank" rel="noopener">
         <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"><path d="M8.7 1.9 3.4 9.1h3.5l-.6 5 5.3-7.2H8.1z"/></svg>
         <span class="lbl">Developer platform</span>
         <span class="pill">New</span>
