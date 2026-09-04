@@ -35,12 +35,22 @@ wrap bonus-billing-attribution/page/who-is-paying.html who-is-paying.html
 if [ "$BUILD_APP" = "--app" ]; then
   ( cd "$ROOT/02-openai-migration/app" && npm ci --silent && npm run build --silent )
 fi
-if [ -d "$ROOT/02-openai-migration/app/dist" ]; then
+APP="$ROOT/02-openai-migration/app"
+if [ -d "$APP/dist" ]; then
+  # A dist older than the sources it was built from will publish silently and look
+  # fine. Refuse it rather than ship it.
+  if [ -n "$(find "$APP/src" "$APP/index.html" "$APP/package.json" \
+               -newer "$APP/dist/index.html" -print -quit 2>/dev/null)" ]; then
+    echo "  migrations/              STALE: dist is older than the app sources." >&2
+    echo "                           Re-run with --app to rebuild it." >&2
+    exit 1
+  fi
   rm -rf "$OUT/migrations"
-  cp -R "$ROOT/02-openai-migration/app/dist" "$OUT/migrations"
+  cp -R "$APP/dist" "$OUT/migrations"
   echo "  migrations/              <- 02-openai-migration/app/dist"
 else
-  echo "  migrations/              SKIPPED (no dist; pass --app to build it)"
+  echo "  migrations/              SKIPPED (no dist; pass --app to build it)" >&2
+  exit 1
 fi
 
 echo
