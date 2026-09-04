@@ -29,6 +29,15 @@ wrap 03-platform-entry/page/platform-entry.html       platform-entry.html
 wrap bonus-billing-attribution/page/who-is-paying.html who-is-paying.html
 wrap 02-openai-migration/page/migrate-cli.html       migrate.html
 
+# The cases are markdown in the repository. Render them to pages so "Read the case"
+# stays on the site. Needs python-markdown (python3 -m pip install --user markdown).
+render() { python3 "$ROOT/scripts/render-case.py" "$ROOT/$1" "$OUT/$2" "$3"; }
+render 03-platform-entry/README.md                          s.html        03-platform-entry
+render 02-openai-migration/README.md                        m.html        02-openai-migration
+render 01-dev-to-production/README.md                       l.html        01-dev-to-production
+render bonus-billing-attribution/README.md                  bonus.html    bonus-billing-attribution
+render bonus-billing-attribution/proposal-credential-precedence.md proposal.html bonus-billing-attribution
+
 # The migration demo used to live at /migrations/. Keep that path as a redirect so
 # old links land on the terminal.
 mkdir -p "$OUT/migrations"
