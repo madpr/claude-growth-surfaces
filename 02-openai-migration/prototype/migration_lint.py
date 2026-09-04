@@ -47,9 +47,14 @@ Stdlib only. Reads a payload as a file argument or on stdin.
     cat payload.json | ./migration_lint.py --json
     ./migration_lint.py payload.json --translate
     ./migration_lint.py payload.json --target=claude-sonnet-4-6
+    ./migration_lint.py scan    # the seeded repository scan the demo shows (--json for a page)
+    ./migration_lint.py cost    # the cost illustration on the seeded workload (--json)
 """
 
+import itertools
 import json
+import os
+import re
 import sys
 
 # --------------------------------------------------------------------------
@@ -533,6 +538,320 @@ def _wrap(text, width):
     return lines
 
 
+# --------------------------------------------------------------------------
+# The seeded repository scenario behind the terminal demo and the case.
+# `scan` prints the scan summary and `cost` the cost illustration, both from
+# fixtures/support-triage-repo.json. Nothing here reads a repository or an
+# account. The loader refuses a fixture whose parts disagree with each other,
+# so a figure cannot drift in one place and stay put in another.
+
+SCENARIO_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                             "fixtures", "support-triage-repo.json")
+
+_UUID = re.compile(r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}", re.I)
+_EMAIL = re.compile(r"[\w.+-]+@[\w-]+\.[\w.-]+")
+_ABS_PATH = re.compile(r"^(/|~/|[A-Za-z]:\\)|/(Users|home)/")
+_ACCOUNT_ID = re.compile(r"\b(org|wrkspc|acct|sk-ant)[-_][A-Za-z0-9]{6,}")
+_ACCOUNT_KEYS = {"uuid", "workspace", "workspaceid", "org", "orgid", "organization",
+                 "organizationid", "account", "accountid", "email", "apikey",
+                 "user", "userid"}
+
+
+def _account_data(node, path="$"):
+    """Yield (path, why) for anything that looks like it came from a real account."""
+    if isinstance(node, dict):
+        for key, value in node.items():
+            if re.sub(r"[\s_-]", "", str(key)).lower() in _ACCOUNT_KEYS:
+                yield f"{path}.{key}", f"key {key!r} names account data"
+            yield from _account_data(value, f"{path}.{key}")
+    elif isinstance(node, list):
+        for i, value in enumerate(node):
+            yield from _account_data(value, f"{path}[{i}]")
+    elif isinstance(node, str):
+        if _UUID.search(node):
+            yield path, "looks like a uuid"
+        if _EMAIL.search(node):
+            yield path, "looks like an email address"
+        if _ABS_PATH.search(node):
+            yield path, "looks like an absolute path"
+        if _ACCOUNT_ID.search(node):
+            yield path, "looks like an organization, workspace, or key id"
+
+
+def check_scenario(s):
+    """Refuse a fixture whose parts disagree. Raises ValueError naming each problem.
+
+    The automatic groups must account for every call site owned by auto, each
+    decision must own exactly the sites it claims, the three must add up to the
+    call-site list, the call sites must name exactly the project's file count,
+    the decisions' failing tests must match the tests block, and nothing may
+    look like account data.
+    """
+    problems = []
+    sites = s.get("callSites") or []
+    by_owner = {}
+    for c in sites:
+        by_owner.setdefault(c.get("owner"), []).append(c)
+    auto_sites = by_owner.get("auto", [])
+
+    groups = s.get("automatic") or []
+    claimed = sum(g["sites"] for g in groups)
+    if claimed != len(auto_sites):
+        problems.append(f"automatic groups claim {claimed} sites; "
+                        f"{len(auto_sites)} call sites are owned by auto")
+    grouped = {}
+    for g in groups:
+        n = sum(1 for c in auto_sites if c["construct"] in g["constructs"])
+        if n != g["sites"]:
+            problems.append(f"group {g['what']!r} claims {g['sites']} sites; "
+                            f"{n} auto call sites use its constructs")
+        for k in g["constructs"]:
+            if k in grouped:
+                problems.append(f"construct {k!r} appears in two automatic groups")
+            grouped[k] = g["what"]
+    stray = sorted({c["construct"] for c in auto_sites} - set(grouped))
+    if stray:
+        problems.append(f"auto call sites with no automatic group: {stray}")
+
+    decisions = s.get("decisions") or []
+    held = 0
+    for d in decisions:
+        mine = by_owner.get(d["id"], [])
+        held += d["sites"]
+        if len(mine) != d["sites"]:
+            problems.append(f"{d['id']} claims {d['sites']} sites; "
+                            f"{len(mine)} call sites are owned by {d['id']}")
+        if any(c["construct"] != d["construct"] for c in mine):
+            problems.append(f"{d['id']} call sites do not all use {d['construct']!r}")
+        for o in d["options"]:
+            if o["recovers"] > len(d["failingTests"]):
+                problems.append(f"{d['id']} option {o['label']!r} recovers {o['recovers']} "
+                                f"of {len(d['failingTests'])} failing tests")
+    unknown = sorted(set(by_owner) - {"auto"} - {d["id"] for d in decisions})
+    if unknown:
+        problems.append(f"call sites owned by nobody in the fixture: {unknown}")
+    if claimed + held != len(sites):
+        problems.append(f"{claimed} automatic + {held} held = {claimed + held}, "
+                        f"but the fixture lists {len(sites)} call sites")
+
+    files = {c["file"] for c in sites}
+    if len(files) != s["project"]["files"]:
+        problems.append(f"project says {s['project']['files']} files; "
+                        f"the call sites name {len(files)}")
+
+    tests = s.get("tests") or {}
+    regressed = sum(len(d.get("failingTests") or []) for d in decisions)
+    if regressed != tests.get("regressed"):
+        problems.append(f"tests.regressed is {tests.get('regressed')}; "
+                        f"the decisions list {regressed} failing tests")
+
+    for path, why in _account_data(s):
+        problems.append(f"{path}: {why}")
+
+    if problems:
+        raise ValueError("fixture is inconsistent:\n  " + "\n  ".join(problems))
+    return s
+
+
+def load_scenario(path=SCENARIO_PATH):
+    with open(path) as fh:
+        return check_scenario(json.load(fh))
+
+
+def gate_line(blocked_by):
+    """The pull request check as the demo prints it: parity means no test
+    that passed on the source fails on the target."""
+    if blocked_by:
+        return "parity failed · merge blocked by " + " · ".join(blocked_by)
+    return "parity passed · merge unblocked"
+
+
+def scan_report(s):
+    """Every figure the scan prints, as one dict (`scan --json`).
+
+    Test counts: baseline - regressed + recovered is the count on the target
+    before any decision. A decision option adds the tests it recovers. Only
+    decisions with an option that recovers a test change the count, so the
+    outcomes enumerate the choices of those decisions alone.
+    """
+    tests = s["tests"]
+    before = tests["baseline"] - tests["regressed"] + tests["recovered"]
+    deciding = [d["id"] for d in s["decisions"]
+                if any(o["recovers"] for o in d["options"])]
+
+    outcomes = []
+    live = [d for d in s["decisions"] if d["id"] in deciding]
+    for combo in itertools.product(*[d["options"] for d in live]):
+        blocked = [t for d, o in zip(live, combo) for t in d["failingTests"][o["recovers"]:]]
+        passing = before + sum(o["recovers"] for o in combo)
+        outcomes.append({
+            "choices": [{"decision": d["id"], "option": o["label"]}
+                        for d, o in zip(live, combo)],
+            "passing": passing, "total": tests["total"],
+            "gate": gate_line(blocked), "blockedBy": blocked})
+
+    decisions = []
+    for d in s["decisions"]:
+        options = [dict(o, total=tests["total"],
+                        passing=before + o["recovers"] if d["id"] in deciding else None)
+                   for o in d["options"]]
+        decisions.append(dict(d, options=options))
+
+    return {
+        "project": s["project"],
+        "places": len(s["callSites"]),
+        "automatic": {"sites": sum(g["sites"] for g in s["automatic"]),
+                      "groups": s["automatic"]},
+        "held": sum(d["sites"] for d in s["decisions"]),
+        "decisions": decisions,
+        "tests": dict(tests, onSource=tests["baseline"], onTargetBeforeDecisions=before,
+                      regressedTests=[t for d in s["decisions"] for t in d["failingTests"]],
+                      unchangedBy=[d["id"] for d in s["decisions"] if d["id"] not in deciding]),
+        "outcomes": outcomes,
+        "pullRequest": s["pullRequest"],
+        "callSites": s["callSites"],
+    }
+
+
+def _rule(title):
+    return f"  ── {title} " + "─" * max(0, 58 - len(title))
+
+
+def render_scan(s):
+    r = scan_report(s)
+    p, t = r["project"], r["tests"]
+    print()
+    print(f"  {p['repo']}  ->  {p['target']}")
+    print(f"  {p['files']} files · {r['places']} places call OpenAI · "
+          f"scanned {p['scannedAt']} · {p['source']}")
+    print()
+    print(f"  {r['automatic']['sites']} rewritten without asking · "
+          f"{r['held']} held for a decision · pull request #{r['pullRequest']}")
+    print()
+
+    print(_rule("REWRITTEN WITHOUT ASKING"))
+    for g in r["automatic"]["groups"]:
+        print(f"  {g['sites']:>2}  {g['what']}")
+    print()
+
+    print(_rule("DECISIONS"))
+    for d in r["decisions"]:
+        print(f"  {d['id']}  {d['construct']} · {d['sites']} sites")
+        print(f"      Held because: {d['reason']}")
+        if d["offending"]:
+            print(f"      Offending: {' · '.join(d['offending'])}")
+        if d["failingTests"]:
+            print(f"      Failing on {p['target']}: {' · '.join(d['failingTests'])}")
+        else:
+            print("      No failing tests.")
+        width = max(len(o["label"]) for o in d["options"])
+        for o in d["options"]:
+            count = (f"{o['passing']}/{o['total']}" if o["passing"] is not None
+                     else "count unchanged")
+            print(f"      → {o['label']:<{width}}   {o['effect']} · {count}")
+        print()
+
+    print(_rule("TESTS"))
+    print(f"  {t['onSource']:>2}/{t['total']} pass on OpenAI today")
+    print(f"  {t['onTargetBeforeDecisions']:>2}/{t['total']} pass on {p['target']} before decisions")
+    print(f"      {t['regressed']} regressed: {' · '.join(t['regressedTests'])} · "
+          f"{t['recovered']} recovered")
+    print()
+
+    print(_rule(f"GATE · pull request #{r['pullRequest']}"))
+    labels = [" + ".join(c["option"] for c in o["choices"]) for o in r["outcomes"]]
+    width = max(len(x) for x in labels)
+    for label, o in zip(labels, r["outcomes"]):
+        print(f"  {label:<{width}}   {o['passing']:>2}/{o['total']}   {o['gate']}")
+    if t["unchangedBy"]:
+        print(f"  Either {' or '.join(t['unchangedBy'])} option leaves the count unchanged.")
+    print()
+
+
+def cost_illustration(s):
+    """The cost figures from the fixture's price list (`cost --json`).
+
+    Per request: source = (stable + variable) * input + output * output price.
+    On the target a cache hit reads the stable prefix at the cached price and a
+    miss writes it at the cache write price; the two are blended at the hit
+    rate. A month is requests per day * days. Monthly totals round to whole
+    dollars and the delta to a whole percent, which is how the demo and the
+    case display them. Everything is an illustration on a seeded workload.
+    """
+    c = s["cost"]
+    tok, src, tgt = c["tokensPerRequest"], c["source"], c["target"]
+    stable, variable, output = tok["stableInput"], tok["variableInput"], tok["output"]
+    requests = c["requestsPerDay"] * c["daysPerMonth"]
+    rate = tgt["cacheHitRate"]
+
+    source = ((stable + variable) * src["inputPerMillion"]
+              + output * src["outputPerMillion"]) / 1e6
+    hit = (stable * tgt["cachedInputPerMillion"] + variable * tgt["inputPerMillion"]
+           + output * tgt["outputPerMillion"]) / 1e6
+    miss = (stable * tgt["cacheWritePerMillion"] + variable * tgt["inputPerMillion"]
+            + output * tgt["outputPerMillion"]) / 1e6
+    target = hit * rate + miss * (1 - rate)
+    uncached = ((stable + variable) * tgt["inputPerMillion"]
+                + output * tgt["outputPerMillion"]) / 1e6
+
+    def pct(a, b):
+        return round((a - b) / b * 100)
+
+    return {
+        "illustration": True,
+        "measured": False,
+        "pricesAsOf": c["pricesAsOf"],
+        "provenance": c["priceProvenance"],
+        "requestsPerDay": c["requestsPerDay"],
+        "daysPerMonth": c["daysPerMonth"],
+        "requestsPerMonth": requests,
+        "tokensPerRequest": tok,
+        "prices": {"source": src, "target": tgt},
+        "perRequest": {"source": round(source, 7), "hit": round(hit, 7),
+                       "miss": round(miss, 7), "target": round(target, 7),
+                       "uncached": round(uncached, 7)},
+        "perMonth": {"source": round(source * requests),
+                     "target": round(target * requests),
+                     "uncached": round(uncached * requests)},
+        "deltaPercent": pct(target * requests, source * requests),
+        "uncachedDeltaPercent": pct(uncached * requests, source * requests),
+    }
+
+
+def render_cost(s):
+    r = cost_illustration(s)
+    src, tgt, tok = r["prices"]["source"], r["prices"]["target"], r["tokensPerRequest"]
+    pr, pm = r["perRequest"], r["perMonth"]
+    print()
+    print("  Cost illustration on the seeded workload. Not a measurement.")
+    print(f"  {r['provenance']}")
+    print()
+    print(f"  {r['requestsPerDay']:,} requests a day · {r['daysPerMonth']} days a month")
+    print(f"  per request  {tok['stableInput']:,} stable input · "
+          f"{tok['variableInput']:,} variable input · {tok['output']:,} output tokens")
+    print()
+    print(f"  source   ${src['inputPerMillion']:.2f}/M input · "
+          f"${src['outputPerMillion']:.2f}/M output")
+    print(f"  target   ${tgt['inputPerMillion']:.2f}/M input · "
+          f"${tgt['cacheWritePerMillion']:.2f}/M cache write · "
+          f"${tgt['cachedInputPerMillion']:.2f}/M cache read · "
+          f"${tgt['outputPerMillion']:.2f}/M output · "
+          f"{tgt['cacheHitRate']:.0%} cache hit rate")
+    print()
+    print(f"  per request   source ${pr['source']:.6f}   target ${pr['target']:.6f}   "
+          f"(cache hit ${pr['hit']:.6f} · miss ${pr['miss']:.6f})")
+    print(f"  per month     source ${pm['source']:,}      target ${pm['target']:,}      "
+          f"delta {r['deltaPercent']:+d}%")
+    print(f"  without caching the target is ${pm['uncached']:,} a month "
+          f"({r['uncachedDeltaPercent']:+d}%); caching supplies the rest of the saving.")
+    print()
+    print("  Illustration only: the workload is seeded and the prices are carried from")
+    print("  the public list. Nothing here was measured.")
+    print()
+
+
+# --------------------------------------------------------------------------
+
 def main(argv):
     args = [a for a in argv[1:] if not a.startswith("--")]
     flags = {a for a in argv[1:] if a.startswith("--")}
@@ -541,6 +860,20 @@ def main(argv):
         if f.startswith("--target="):
             target = f.split("=", 1)[1]
             flags.discard(f)
+
+    if args and args[0] in ("scan", "cost"):
+        try:
+            scenario = load_scenario()
+        except ValueError as e:
+            print(f"error: {e}", file=sys.stderr)
+            return 2
+        report = scan_report if args[0] == "scan" else cost_illustration
+        render_fn = render_scan if args[0] == "scan" else render_cost
+        if "--json" in flags:
+            print(json.dumps(report(scenario), indent=2, ensure_ascii=False))
+        else:
+            render_fn(scenario)
+        return 0
 
     raw = open(args[0]).read() if args else sys.stdin.read()
     try:

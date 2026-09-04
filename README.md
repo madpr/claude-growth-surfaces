@@ -93,7 +93,7 @@ Two findings set the size and the scope:
 ### M — OpenAI → Claude migration
 
 [Read the case](02-openai-migration/) ·
-[Open the prototype](https://madpr.github.io/claude-growth-surfaces/migrations/)
+[Terminal demo](https://madpr.github.io/claude-growth-surfaces/migrate.html)
 
 Scans a repository for OpenAI SDK call sites, applies a rulebook, and blocks the pull
 request until the repository's own tests pass against Claude. A language migration

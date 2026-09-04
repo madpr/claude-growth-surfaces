@@ -11,10 +11,10 @@ worth building.
 **Cost:** About 2 weeks.
 **Theme:** acquisition.
 
-[Open the prototype](https://madpr.github.io/claude-growth-surfaces/migrations/). One
-screen: 33 call sites rewritten, two decisions covering five call sites that only a
-person can make, and whether the tests still pass. Settle both decisions and the merge
-unblocks.
+[Open the terminal demo](https://madpr.github.io/claude-growth-surfaces/migrate.html).
+One session: the skill scans the repository, rewrites 33 call sites, asks the two
+decisions only a person can make, runs the repository's own tests against Claude, and
+ends on the pull request check that decides whether the merge is blocked.
 
 ## Problem
 
@@ -81,6 +81,12 @@ A developer points the tool at their repository. It produces three things:
 3. **The gate.** The repository's own test suite already passes against OpenAI. That's
    the baseline. The pull request stays blocked until it passes against Claude too.
 
+Each of the three happens where it belongs. The rewrite and the decisions happen in
+Claude Code, where the code is, and land in the pull request as diffs. The gate runs
+in the repository's own continuous integration on every push and posts a status check
+the merge button reads. The Console only reads: which decisions were made, in which
+pull request, and whether the check passed.
+
 The gate is the part worth building. Scanning and rewriting already work; proving
 behavior held does not.
 
@@ -106,9 +112,8 @@ new target language, a compiler, and a non-incremental rewrite. None of those ho
 
 Milestone 1 runs locally, needs no account, and is a complete product on its own.
 Milestone 2 adds measurement: the success metrics above are collected there. The
-published prototype shows the milestone 2 screen because that is where the gate state
-and the funnel metrics become visible; milestone 1 prints the same three sections as a
-static report.
+published demo shows the developer's session, and the check it ends on is the
+milestone 2 behavior seen from the developer's seat.
 
 ## What the first milestone settles
 
@@ -132,12 +137,16 @@ static report.
 - **The linter:** [`prototype/migration_lint.py`](prototype/migration_lint.py)
   classifies every field the compatibility layer ignores. On the seeded payload it
   prints 7 breaks contract, 2 native rejects, 4 changes result, 3 inert. The seven
-  contract breaks are structured output and strict tool schemas. Tests pin the counts.
-- **The 46%:** computed in the published prototype from public list prices as of
-  September 1, 2026, on a seeded workload of 12,400 requests a day at a 71% cache hit
-  rate. An illustration of what the compatibility layer hides, not a measurement.
-- Both prototypes run on seeded data, read no repository, and run no inference.
+  contract breaks are structured output and strict tool schemas. Its `scan` subcommand
+  prints every figure the demo shows: 38 call sites, 33 rewritten, two decisions, and
+  the test count and check result for each choice. Tests pin all of them.
+- **The 46%:** printed by the same prototype's `cost` subcommand from public list
+  prices as of September 1, 2026, on a seeded workload of 12,400 requests a day at a
+  71% cache hit rate. An illustration of what the compatibility layer hides, not a
+  measurement.
+- The prototype and the demo run on seeded data, read no repository, and run no
+  inference.
 
 ```
-cd prototype && python3 migration_lint.py fixtures/support-triage.json && python3 test_migration_lint.py
+cd prototype && python3 migration_lint.py fixtures/support-triage.json && python3 migration_lint.py scan && python3 migration_lint.py cost && python3 test_migration_lint.py
 ```

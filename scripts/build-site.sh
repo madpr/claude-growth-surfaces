@@ -2,8 +2,7 @@
 # Build the deployable site into a directory. One command, so the wrap rule lives
 # here rather than in someone's memory.
 #
-#   sh scripts/build-site.sh out/          # pages only
-#   sh scripts/build-site.sh out/ --app    # also rebuild the migrations app (needs npm)
+#   sh scripts/build-site.sh out/
 #
 # Page sources under */page/ are artifact-style fragments with no doctype or charset.
 # A static host needs both, or the page renders in quirks mode with mojibake. This
@@ -11,8 +10,7 @@
 
 set -eu
 
-OUT="${1:?usage: build-site.sh <outdir> [--app]}"
-BUILD_APP="${2:-}"
+OUT="${1:?usage: build-site.sh <outdir>}"
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 
 mkdir -p "$OUT"
@@ -29,29 +27,13 @@ wrap 01-dev-to-production/page/promote-cli.html       promote-cli.html
 wrap 01-dev-to-production/page/promote-to-agent.html  promote-to-agent.html
 wrap 03-platform-entry/page/platform-entry.html       platform-entry.html
 wrap bonus-billing-attribution/page/who-is-paying.html who-is-paying.html
+wrap 02-openai-migration/page/migrate-cli.html       migrate.html
 
-# The M prototype is a Vite build. Its asset paths are relative, which is why it
-# survives living under a path.
-if [ "$BUILD_APP" = "--app" ]; then
-  ( cd "$ROOT/02-openai-migration/app" && npm ci --silent && npm run build --silent )
-fi
-APP="$ROOT/02-openai-migration/app"
-if [ -d "$APP/dist" ]; then
-  # A dist older than the sources it was built from will publish silently and look
-  # fine. Refuse it rather than ship it.
-  if [ -n "$(find "$APP/src" "$APP/index.html" "$APP/package.json" \
-               -newer "$APP/dist/index.html" -print -quit 2>/dev/null)" ]; then
-    echo "  migrations/              STALE: dist is older than the app sources." >&2
-    echo "                           Re-run with --app to rebuild it." >&2
-    exit 1
-  fi
-  rm -rf "$OUT/migrations"
-  cp -R "$APP/dist" "$OUT/migrations"
-  echo "  migrations/              <- 02-openai-migration/app/dist"
-else
-  echo "  migrations/              SKIPPED (no dist; pass --app to build it)" >&2
-  exit 1
-fi
+# The migration demo used to live at /migrations/. Keep that path as a redirect so
+# old links land on the terminal.
+mkdir -p "$OUT/migrations"
+printf '<!doctype html>\n<meta charset="utf-8">\n<meta http-equiv="refresh" content="0; url=../migrate.html">\n<title>Migrate from OpenAI</title>\n<a href="../migrate.html">The migration demo moved to /migrate.html</a>\n' > "$OUT/migrations/index.html"
+printf '  %-24s -> %s\n' migrations/index.html migrate.html
 
 echo
 echo "built into $OUT"
