@@ -1,8 +1,15 @@
 #!/usr/bin/env python3
-"""Invariants for migration_lint. Run: python3 test_migration_lint.py"""
+"""Invariants for migration_lint. Run: python3 test_migration_lint.py
+
+Runs from any working directory: fixtures resolve against this file, not the shell.
+"""
 
 import json
+import pathlib
+
 import migration_lint as ml
+
+HERE = pathlib.Path(__file__).parent
 
 FAIL = []
 
@@ -134,7 +141,7 @@ check("audio content block reported as dropped input",
       sev(ml.lint(audio), "messages[0].content[0]") == ml.DROPS_INPUT)
 
 order = [ml.ORDER.index(x["severity"]) for x in ml.lint(json.load(
-    open("fixtures/support-triage.json")))]
+    open(HERE / "fixtures" / "support-triage.json")))]
 check("findings sorted by severity", order == sorted(order))
 
 print()
