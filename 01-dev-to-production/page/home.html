@@ -148,10 +148,11 @@ footer a{color:var(--accent-ink)}
   <div class="eyebrow">Claude API &middot; growth surfaces</div>
   <h1>Three ideas for growing Claude API revenue</h1>
   <p class="lede">
-    One tactical, one medium, one big bet. The surfaces a growth team would reach for
-    first are already built, so each idea removes a manual step between two products
-    instead: a subscriber finding the platform, a team proving a migration held, and a
-    developer promoting a project to a hosted agent.
+    Three product ideas for growing Claude API revenue, one small, one medium, one big.
+    I started by checking the places a growth team would look first and found every one
+    of them already built, so none of these adds a feature inside a product. Each takes
+    a step a customer does by hand today, somewhere between two Anthropic products, and
+    removes it.
   </p>
 </header>
 
@@ -164,10 +165,10 @@ footer a{color:var(--accent-ink)}
     bills an organization rather than a person.
   </blockquote>
   <p>
-    <b>S</b> is the entry point a subscriber uses when they start building for others,
-    <b>L</b> is the moment a workload stops being watched and moves, and the
-    <b>bonus</b> is the guarantee that nothing moves silently. <b>M</b> is unaffected,
-    because the customer starts on the platform.
+    <b>S</b> is the entry point a subscriber uses when they start building for others.
+    <b>M</b> never meets the rule, since that customer is on the platform from day one.
+    <b>L</b> is the point where a workload stops being watched and moves. The
+    <b>bonus</b> is the guarantee that nothing moves silently.
   </p>
 </section>
 
@@ -177,11 +178,12 @@ footer a{color:var(--accent-ink)}
     <h2>Developer platform entry point</h2>
     <div class="meta"><span>Activation</span><span>2 to 3 days</span><span>Designed, working prototype</span></div>
     <p>
-      claude.ai links to the Claude Platform twice. Both links sit behind a menu, and
-      both land on the API keys page, which issues a credential rather than showing the
-      product. Neither reaches the left rail, the one surface a subscriber sees every
-      session. <b>Both existing links are already tracked</b>, so the clicks are being
-      counted today and a placement test has a number to beat on day one.
+      I went looking for how a claude.ai subscriber gets to the platform and found two
+      links, both behind a menu, both opening the API keys page. Neither is in the left
+      rail, the one part of the product every subscriber sees every session. The idea is
+      a row there, pointing at the dashboard, shown to subscribers who say they do
+      engineering work. Both existing links already carry tracking tags, so a placement
+      test starts with a number to beat.
     </p>
     <div class="links">
       <a class="lk live" href="platform-entry.html"><b>Open the mock</b> <span class="arw">&#8594;</span></a>
@@ -197,11 +199,11 @@ footer a{color:var(--accent-ink)}
     <h2>OpenAI &#8594; Claude migration</h2>
     <div class="meta"><span>Acquisition</span><span>About 2 weeks</span><span>Designed, working prototype</span></div>
     <p>
-      A team can translate their code in an afternoon. What they can't do is show their
-      reviewer the translation didn't change behavior. A language migration gates on a
-      compiler, and no compiler tells you whether a prompt still works, so the merge
-      gates on the repository's own tests instead. Scanning and rewriting already ship,
-      and the parity gate is the part worth building.
+      Point Claude Code at a repository that uses the OpenAI SDK. It rewrites what it
+      can, asks the two questions only a person can answer, and blocks the pull request
+      until the repository's own tests pass against Claude. Most of the migration already
+      ships. What nothing does is tell you what broke, and the parity gate is the piece
+      left to build.
     </p>
     <div class="links">
       <a class="lk live" href="migrate.html"><b>Type into it</b> <span class="arw">&#8594;</span></a>
@@ -217,12 +219,12 @@ footer a{color:var(--accent-ink)}
     <h2>Dev &#8594; production</h2>
     <div class="meta"><span>Expansion</span><span>1 to 2 months</span><span>Case written, prototype running, two drivable demos</span></div>
     <p>
-      A workload a developer supervises is bounded by that attention. Running
-      unattended, it is bounded only by the limits it was given, and Managed Agents is
-      where those limits live. The gap is that Claude Code and the platform are two
-      tools that divide one account. They collide on every word you would search, so
-      that <b>inside Claude Code, &ldquo;agents&rdquo; means background sessions on your
-      laptop</b>, and on the account tested they resolve to two different organizations.
+      While I'm watching an agent, my attention is the limit on what it can spend or
+      break. Run it on a schedule and the only limits are the ones somebody set up front,
+      and Managed Agents is the only place those live. Nothing takes a Claude Code project
+      there. When I signed into both tools with the same email, they reported two
+      different organization IDs. The prototype maps a real project across and names what
+      doesn't survive.
     </p>
 
     <div class="demos">
@@ -279,10 +281,12 @@ footer a{color:var(--accent-ink)}
     <h2>Billing attribution</h2>
     <div class="meta"><span>Outside the slate</span><span>Claude Code, not the API</span><span>Defect reproduced, proposal written, drivable mock</span></div>
     <p>
-      A defect reproduced on the current build, 26 public issues with $1,799.83 in
-      self-reported losses, and a working prototype. Its revenue path runs the other
-      way: it moves spend off metered billing and onto a subscription already bought,
-      which is where the rule above keeps one person's interactive session.
+      Leave an API key in your shell for some other application, start Claude Code while
+      signed into a subscription, and the session quietly bills your Console account. The
+      diagnostic reports the same answer in both states. I reproduced it on the current
+      build, found 26 public issues describing it with $1,799.83 in self-reported losses,
+      and built the warning. It's outside the slate because it's a Claude Code item and
+      its revenue runs the other way.
     </p>
     <div class="links">
       <a class="lk live" href="who-is-paying.html"><b>Open the mock</b> <span class="arw">&#8594;</span></a>

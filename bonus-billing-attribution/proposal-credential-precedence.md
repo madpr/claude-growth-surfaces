@@ -4,8 +4,9 @@
 
 Claude Code reads `ANTHROPIC_API_KEY` and bills the associated Claude Console
 account, even when you have an active Pro, Max, Team, or Enterprise
-subscription. In most environments, `ANTHROPIC_API_KEY` is set for an
-application that you're building, not to choose how your editor is billed.
+subscription. In most environments you set `ANTHROPIC_API_KEY` for an
+application you're building, and the variable says nothing about how you want
+your editor billed.
 
 This proposal adds a `CLAUDE_CODE_API_KEY` environment variable that states your
 billing intent explicitly, and moves `ANTHROPIC_API_KEY` below your subscription
@@ -26,7 +27,7 @@ seven-level precedence order:
 | 6 | Anthropic profile and federation credentials |
 | 7 | Subscription OAuth credentials from `/login` |
 
-Your subscription ranks last. Every environment credential outranks it.
+Your subscription ranks last, below every environment credential.
 
 Claude Code prompts you to approve `ANTHROPIC_API_KEY` the first time it appears
 in an interactive session, and remembers your answer. In non-interactive mode
@@ -36,37 +37,37 @@ in an interactive session, and remembers your answer. In non-interactive mode
 
 Three properties combine to produce charges that you don't intend and can't see.
 
-**The variable is ambiguous.** `ANTHROPIC_API_KEY` is the credential that the
-Anthropic SDKs read. When you export it in `~/.zshrc`, commit it to a project
-`.env` file, or set it in a container image, you're configuring an application.
-Claude Code interprets the same variable as an instruction about billing.
+The variable is ambiguous. `ANTHROPIC_API_KEY` is the credential the Anthropic
+SDKs read, so when you export it in `~/.zshrc`, commit it to a project `.env`
+file, or set it in a container image, you're configuring an application. Claude
+Code interprets the same variable as an instruction about billing.
 
-**Consent doesn't cover the unattended case.** The approval prompt appears once,
-in interactive mode, and your answer persists to every later session. Scheduled
-runs, cron jobs, continuous integration, and Routines never prompt. These are the
-sessions you don't watch, so an unintended charge accrues until you check the
-Console.
+Consent doesn't cover the unattended case. The approval prompt appears once, in
+interactive mode, and your answer persists to every later session, including
+the scheduled runs, cron jobs, continuous integration, and Routines that never
+prompt at all. Those are the sessions you don't watch, so an unintended charge
+accrues until you check the Console.
 
-**The active credential isn't reported accurately.** Setting `ANTHROPIC_API_KEY`
-displaces your subscription, but `claude auth status --json` continues to report
-`"authMethod": "claude.ai"` and `"apiProvider": "firstParty"`. Only
-`subscriptionType` changes, from your plan name to `null`. If you check which
-credential is paying, the answer looks unchanged.
+The active credential isn't reported accurately, so checking won't tell you.
+Setting `ANTHROPIC_API_KEY` displaces your subscription, but
+`claude auth status --json` continues to report `"authMethod": "claude.ai"` and
+`"apiProvider": "firstParty"`. Only `subscriptionType` changes, from your plan
+name to `null`.
 
 For the reproduction, the 26 public issues in this class, and the $1,799.83 that
 four users report losing to it, see [README.md](README.md).
 
 ## Precedent
 
-Claude Code already implements this proposal on another surface. From the
+Claude Code already does this on the web. From the
 [authentication documentation](https://code.claude.com/docs/en/authentication):
 
 > Claude Code on the Web always uses your subscription credentials. If you set
 > `ANTHROPIC_API_KEY` or `ANTHROPIC_AUTH_TOKEN` in the sandbox environment, it
 > doesn't override your subscription credentials.
 
-The web surface treats an environment API key as unrelated to how Claude Code is
-billed. The command-line interface doesn't. This proposal makes the two
+On the web, an environment API key has no bearing on how Claude Code is billed.
+On the command line it decides the billing. This proposal makes the two
 consistent.
 
 The naming is also established. Claude Code namespaces its own configuration
@@ -101,8 +102,8 @@ SDK how to reach the API.
 
 Adding the variable without moving `ANTHROPIC_API_KEY` doesn't solve the problem.
 The unintended charges happen through `ANTHROPIC_API_KEY`, so the demotion is the
-change that matters. The new variable is what makes the demotion safe, because it
-gives you a way to keep API billing deliberately.
+change that matters, and the new variable is what makes the demotion safe,
+because it gives you a way to keep API billing deliberately.
 
 ### Scope
 
@@ -114,8 +115,8 @@ and `apiKeyHelper` where they are:
   is also deliberate and usually environment-wide by design.
 
 `ANTHROPIC_API_KEY` is the only credential in the list that developers commonly
-set for a purpose unrelated to Claude Code. Limiting the change to that variable
-keeps the proposal narrow enough to evaluate.
+set for a purpose unrelated to Claude Code, and limiting the change to that one
+variable keeps the proposal small enough to evaluate on its own.
 
 ## Effect on existing configurations
 
@@ -131,9 +132,8 @@ Only one row changes behavior without action: a machine that has both a
 subscription and an ambient `ANTHROPIC_API_KEY`. That's the population reporting
 unintended charges.
 
-**Note:** Most continuous integration environments have no subscription
-credential on the machine, so the demotion is a no-op for them. The change
-reaches only environments where a subscription is already signed in.
+**Note:** The demotion is a no-op wherever no subscription is signed in, which
+covers most continuous integration environments.
 
 ## Migration
 
@@ -144,7 +144,7 @@ variable:
 export CLAUDE_CODE_API_KEY="$ANTHROPIC_API_KEY"
 ```
 
-Roll the change out in three stages:
+The rollout has three stages.
 
 1. **Announce.** Add `CLAUDE_CODE_API_KEY` at level 3 and document it. Keep
    `ANTHROPIC_API_KEY` at level 3 as well, with `CLAUDE_CODE_API_KEY` winning
@@ -154,22 +154,22 @@ Roll the change out in three stages:
    including `claude -p`. Name the variable, name the displaced subscription, and
    give the one-line migration command. The same status line that names the
    credential also reports remaining subscription headroom, so a developer who
-   moves onto subscription billing sees the rate-limit ceiling at the moment it
+   moves onto subscription billing sees the rate-limit ceiling as soon as it
    applies. Sessions with no subscription present produce no warning, because
    their billing is already correct.
 3. **Switch.** Move `ANTHROPIC_API_KEY` to level 8. The switch ships after the
    stage 2 warning has been live for a full release window, so a developer who
    wants API billing has seen the message and set `CLAUDE_CODE_API_KEY`.
 
-**Caution:** Don't skip stage 2. Unattended sessions are where the cost of this
-behavior lands, and they're also where a silent change of billing source is
+**Caution:** Don't skip stage 2. Unattended sessions are where this behavior
+costs money, and they're also where a silent change of billing source is
 hardest to notice in either direction.
 
 The status line in [prototype/statusline-billing.sh](prototype/statusline-billing.sh)
-implements the stage 2 signal. It detects displacement rather than reading the
-reported auth method, by probing `claude auth status` twice, once as the
-environment stands and once with the credential variables stripped, and
-comparing the results.
+implements the stage 2 warning. Because the reported auth method is the same in
+both states, it probes `claude auth status` twice, once as the environment
+stands and once with the credential variables stripped, and compares the
+results.
 
 ### The rebill key
 
@@ -201,7 +201,8 @@ one is at the terminal to press it.
 **Warn but don't change precedence.** Keeps every existing configuration working
 and needs no migration. Rejected as insufficient on its own: a warning that
 appears in every session becomes background noise, and the problem persists for
-anyone who dismisses it. This is stage 2 of the migration, not the end state.
+anyone who dismisses it. That is why warning is stage 2 of the migration and
+the switch is stage 3.
 
 **Prompt in non-interactive mode.** A prompt requires someone to answer it.
 Scheduled runs and continuous integration have no one at the terminal, so the
@@ -213,8 +214,8 @@ affected by the problem. The demotion achieves the same outcome for the affected
 population and leaves everyone else working.
 
 **Report the active credential accurately and stop there.** Fixes the diagnostic
-gap described in [Problem](#problem) but not the default. You'd still have to
-check, and unattended sessions still have no one checking.
+gap described in [Problem](#problem) and leaves the default alone. You'd still
+have to check, and unattended sessions still have no one checking.
 
 ## Success metrics
 
