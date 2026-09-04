@@ -105,11 +105,10 @@ Outside the slate because it is scoped to Claude Code rather than the API produc
 because its revenue path runs the other way: it moves spend off metered billing and onto
 a subscription the customer has already bought. What that protects is subscription
 retention, where a $1,200–$2,400 annual plan outweighs the few hundred dollars of
-one-off metered spend at stake. Its own README argues that trade rather than hiding it.
+one-off metered spend at stake. Its own README argues that trade.
 
-It is included because it set the evidence bar the rest of the repo is held to: a defect
-reproduced on the current build, 26 public issues carrying $1,799.83 in self-reported
-losses, and a working prototype.
+Behind it: a defect reproduced on the current build, 26 public issues carrying
+$1,799.83 in self-reported losses, and a working prototype.
 
 The mock is that prototype made drivable. Export the API key most machines already
 carry, start a session, and watch a subscription stop paying without saying so. Two
@@ -140,9 +139,9 @@ work behind these three.
   no deep-research numbers, and no third-party benchmarks at face value.
 - Every issue in a corpus is opened and read, not matched on title.
 - Prototypes run on seeded fixtures. They read no account and make no API calls.
-- Every figure in a case is printed by the prototype behind it, so a case and its code
-  cannot disagree. Twice this has forced a written claim to be corrected rather than a
-  number to be rounded.
+- Every figure in a case is printed by the prototype behind it. This checks provenance,
+  not worth: a figure computed from invented inputs passes it, so cases state no number
+  that would need data an outsider does not have.
 - Findings that cannot be reproduced without exposing an account ship as scripts that
   print the finding and none of the values.
 
