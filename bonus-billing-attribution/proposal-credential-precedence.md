@@ -4,13 +4,12 @@
 
 Claude Code reads `ANTHROPIC_API_KEY` and bills the associated Claude Console
 account, even when you have an active Pro, Max, Team, or Enterprise
-subscription. In most environments you set `ANTHROPIC_API_KEY` for an
-application you're building, and the variable says nothing about how you want
-your editor billed.
+subscription. The variable is usually set for an application you're building
+and says nothing about how your editor should be billed.
 
-This proposal adds a `CLAUDE_CODE_API_KEY` environment variable that states your
-billing intent explicitly, and moves `ANTHROPIC_API_KEY` below your subscription
-in the credential precedence order.
+This proposal adds `CLAUDE_CODE_API_KEY`, which states billing intent
+explicitly, and moves `ANTHROPIC_API_KEY` below your subscription in the
+credential precedence order.
 
 ## Background
 
@@ -27,31 +26,26 @@ seven-level precedence order:
 | 6 | Anthropic profile and federation credentials |
 | 7 | Subscription OAuth credentials from `/login` |
 
-Your subscription ranks last, below every environment credential.
-
-Claude Code prompts you to approve `ANTHROPIC_API_KEY` the first time it appears
-in an interactive session, and remembers your answer. In non-interactive mode
-(`claude -p`), Claude Code uses the key whenever it's present and doesn't prompt.
+Your subscription ranks last. Claude Code asks you to approve
+`ANTHROPIC_API_KEY` the first time it appears in an interactive session and
+remembers the answer; in non-interactive mode (`claude -p`) it uses the key
+without asking.
 
 ## Problem
 
-Three properties combine to produce charges that you don't intend and can't see.
+`ANTHROPIC_API_KEY` is the credential the Anthropic SDKs read. Exporting it in
+`~/.zshrc`, committing it to a project `.env` file, or baking it into a
+container image configures an application; Claude Code reads the same variable
+as a billing instruction.
 
-The variable is ambiguous. `ANTHROPIC_API_KEY` is the credential the Anthropic
-SDKs read, so when you export it in `~/.zshrc`, commit it to a project `.env`
-file, or set it in a container image, you're configuring an application. Claude
-Code interprets the same variable as an instruction about billing.
+The approval prompt appears once, in interactive mode, and the answer persists
+to scheduled runs, cron jobs, continuous integration, and Routines, which never
+prompt and which nobody watches, so an unintended charge accrues until someone
+checks the Console.
 
-Consent doesn't cover the unattended case. The approval prompt appears once, in
-interactive mode, and your answer persists to every later session, including
-the scheduled runs, cron jobs, continuous integration, and Routines that never
-prompt at all. Those are the sessions you don't watch, so an unintended charge
-accrues until you check the Console.
-
-The active credential isn't reported accurately, so checking won't tell you.
-Setting `ANTHROPIC_API_KEY` displaces your subscription, but
-`claude auth status --json` continues to report `"authMethod": "claude.ai"` and
-`"apiProvider": "firstParty"`. Only `subscriptionType` changes, from your plan
+Checking won't tell you either. With `ANTHROPIC_API_KEY` set,
+`claude auth status --json` still reports `"authMethod": "claude.ai"` and
+`"apiProvider": "firstParty"`; only `subscriptionType` changes, from your plan
 name to `null`.
 
 For the reproduction, the 26 public issues in this class, and the $1,799.83 that
@@ -66,16 +60,10 @@ Claude Code already does this on the web. From the
 > `ANTHROPIC_API_KEY` or `ANTHROPIC_AUTH_TOKEN` in the sandbox environment, it
 > doesn't override your subscription credentials.
 
-On the web, an environment API key has no bearing on how Claude Code is billed.
-On the command line it decides the billing. This proposal makes the two
-consistent.
-
 The naming is also established. Claude Code namespaces its own configuration
-under `CLAUDE_CODE_*`, including `CLAUDE_CODE_USE_BEDROCK`,
-`CLAUDE_CODE_API_KEY_HELPER_TTL_MS`, and `CLAUDE_CODE_OAUTH_TOKEN`. The last of
-these is the direct parallel: it's how you hand Claude Code a *subscription*
-credential in an environment where browser login isn't available. No namespaced
-equivalent exists for an API credential.
+under `CLAUDE_CODE_*`, and `CLAUDE_CODE_OAUTH_TOKEN` is the direct parallel:
+the way to hand Claude Code a *subscription* credential where browser login
+isn't available. There is no namespaced equivalent for an API credential.
 
 ## Proposal
 
@@ -95,28 +83,21 @@ Make two changes to the precedence order.
 | 7 | Subscription (`/login`) | Subscription (`/login`) |
 | 8 | — | **`ANTHROPIC_API_KEY`** |
 
-`CLAUDE_CODE_API_KEY` accepts the same value as `ANTHROPIC_API_KEY` and is sent
-the same way, as the `X-Api-Key` header. The only difference is what setting it
-means: you're telling Claude Code how to bill this tool, rather than telling an
-SDK how to reach the API.
+`CLAUDE_CODE_API_KEY` takes the same value as `ANTHROPIC_API_KEY` and is sent
+the same way, as the `X-Api-Key` header; setting it tells Claude Code how to
+bill this tool rather than telling an SDK how to reach the API.
 
-Adding the variable without moving `ANTHROPIC_API_KEY` doesn't solve the problem.
-The unintended charges happen through `ANTHROPIC_API_KEY`, so the demotion is the
-change that matters, and the new variable is what makes the demotion safe,
-because it gives you a way to keep API billing deliberately.
+The unintended charges come through `ANTHROPIC_API_KEY`, so the demotion is the
+change that matters; the new variable makes it safe by giving you a way to keep
+API billing deliberately.
 
 ### Scope
 
-Change the precedence of `ANTHROPIC_API_KEY` only. Leave `ANTHROPIC_AUTH_TOKEN`
-and `apiKeyHelper` where they are:
-
-* You configure `apiKeyHelper` in a settings file, which is a deliberate act.
-* You set `ANTHROPIC_AUTH_TOKEN` to route through an LLM gateway or proxy, which
-  is also deliberate and usually environment-wide by design.
-
+Change the precedence of `ANTHROPIC_API_KEY` only. `apiKeyHelper` lives in a
+settings file, a deliberate act, and `ANTHROPIC_AUTH_TOKEN` routes through an
+LLM gateway or proxy, also deliberate and usually environment-wide by design.
 `ANTHROPIC_API_KEY` is the only credential in the list that developers commonly
-set for a purpose unrelated to Claude Code, and limiting the change to that one
-variable keeps the proposal small enough to evaluate on its own.
+set for reasons unrelated to Claude Code.
 
 ## Effect on existing configurations
 
@@ -128,17 +109,12 @@ variable keeps the proposal small enough to evaluate on its own.
 | Bedrock, Vertex, Foundry, or a gateway | Provider credential | Provider credential, unchanged |
 | `apiKeyHelper` configured | Helper output | Helper output, unchanged |
 
-Only one row changes behavior without action: a machine that has both a
-subscription and an ambient `ANTHROPIC_API_KEY`. That's the population reporting
-unintended charges.
-
-**Note:** The demotion is a no-op wherever no subscription is signed in, which
-covers most continuous integration environments.
+Only the second row changes behavior without action, and that is the population
+reporting unintended charges.
 
 ## Migration
 
-To preserve API billing on a machine that has a subscription, set the new
-variable:
+To keep API billing on a machine with a subscription:
 
 ```bash
 export CLAUDE_CODE_API_KEY="$ANTHROPIC_API_KEY"
@@ -146,55 +122,47 @@ export CLAUDE_CODE_API_KEY="$ANTHROPIC_API_KEY"
 
 The rollout has three stages.
 
-1. **Announce.** Add `CLAUDE_CODE_API_KEY` at level 3 and document it. Keep
-   `ANTHROPIC_API_KEY` at level 3 as well, with `CLAUDE_CODE_API_KEY` winning
+1. **Announce.** Add `CLAUDE_CODE_API_KEY` at level 3 and document it.
+   `ANTHROPIC_API_KEY` stays at level 3 too, with `CLAUDE_CODE_API_KEY` winning
    when both are set. No existing configuration changes behavior.
-2. **Warn.** When `ANTHROPIC_API_KEY` selects API billing on a machine that has
-   an active subscription, report it at session start, in every session type
-   including `claude -p`. Name the variable, name the displaced subscription, and
-   give the one-line migration command. The same status line that names the
-   credential also reports remaining subscription headroom, so a developer who
-   moves onto subscription billing sees the rate-limit ceiling as soon as it
-   applies. Sessions with no subscription present produce no warning, because
-   their billing is already correct.
-3. **Switch.** Move `ANTHROPIC_API_KEY` to level 8. The switch ships after the
-   stage 2 warning has been live for a full release window, so a developer who
-   wants API billing has seen the message and set `CLAUDE_CODE_API_KEY`.
+2. **Warn.** When `ANTHROPIC_API_KEY` selects API billing on a machine with an
+   active subscription, say so at session start, in every session type
+   including `claude -p`: name the variable, name the displaced subscription,
+   and give the one-line migration command. Sessions with no subscription
+   present produce no warning.
+3. **Switch.** Move `ANTHROPIC_API_KEY` to level 8, after the warning has been
+   live for a full release window.
 
-**Caution:** Don't skip stage 2. Unattended sessions are where this behavior
-costs money, and they're also where a silent change of billing source is
-hardest to notice in either direction.
+**Caution:** Don't skip stage 2. Unattended sessions are where this costs money
+and where a silent change of billing source is hardest to notice.
 
-The status line in [prototype/statusline-billing.sh](prototype/statusline-billing.sh)
-implements the stage 2 warning. Because the reported auth method is the same in
-both states, it probes `claude auth status` twice, once as the environment
-stands and once with the credential variables stripped, and compares the
-results.
+[prototype/statusline-billing.sh](prototype/statusline-billing.sh) implements
+the stage 2 warning by probing `claude auth status` with and without the
+credential variables and comparing, since the reported auth method is the same
+in both states.
 
 ### The rebill key
 
-Stage 2 also adds one key to interactive sessions. When the warning fires, a
-single keystroke switches billing for the rest of that session to your
-subscription. The prototype binds it to Option+B and appends the hint to the
-warning:
+When the warning fires in an interactive session, one keystroke switches
+billing for the rest of that session to your subscription. The prototype binds
+it to Option+B and appends the hint to the warning:
 
 ```
 ANTHROPIC_API_KEY displaced your pro subscription
   ↳ press ⌥B to bill the subscription instead
 ```
 
-Pressing it prints what changed and the one-line permanent fix, and the status
-line reports the subscription as the paying credential from that point on:
+Pressing it prints what changed and the permanent fix, and the status line then
+reports the subscription as paying:
 
 ```
 Billing switched to your pro subscription for this session.
 To make it permanent: unset ANTHROPIC_API_KEY
 ```
 
-The key changes billing for the current session only. Your environment is
-unchanged, so the next session starts on `ANTHROPIC_API_KEY` again until you
-apply the fix. Non-interactive sessions get the warning and no key, because no
-one is at the terminal to press it.
+The change lasts for the current session only; the next session starts on
+`ANTHROPIC_API_KEY` again until you apply the fix. Non-interactive sessions get
+the warning and no key.
 
 ## Alternatives considered
 

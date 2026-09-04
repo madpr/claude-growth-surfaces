@@ -149,15 +149,13 @@ footer a{color:var(--accent-ink)}
   <h1>Three ideas for growing Claude API revenue</h1>
   <p class="lede">
     Three product ideas for growing Claude API revenue, one small, one medium, one big.
-    I started by checking the places a growth team would look first and found every one
-    of them already built, so none of these adds a feature inside a product. Each takes
-    a step a customer does by hand today, somewhere between two Anthropic products, and
-    removes it.
+    Each takes a step a customer does by hand today, somewhere between two Anthropic
+    products, and removes it.
   </p>
 </header>
 
 <section class="rule">
-  <div class="eyebrow">Which surface carries the work</div>
+  <div class="eyebrow">Principle</div>
   <blockquote>
     Work stays on the subscription while it is one person's: run interactively, or on
     their own account. It moves to the platform when it runs unattended against
@@ -166,9 +164,9 @@ footer a{color:var(--accent-ink)}
   </blockquote>
   <p>
     <b>S</b> is the entry point a subscriber uses when they start building for others.
-    <b>M</b> never meets the rule, since that customer is on the platform from day one.
     <b>L</b> is the point where a workload stops being watched and moves. The
-    <b>bonus</b> is the guarantee that nothing moves silently.
+    <b>bonus</b> is the guarantee that nothing moves silently. <b>M</b> starts on the
+    platform and never meets the rule.
   </p>
 </section>
 
@@ -178,12 +176,10 @@ footer a{color:var(--accent-ink)}
     <h2>Developer platform entry point</h2>
     <div class="meta"><span>Activation</span><span>2 to 3 days</span><span>Designed, working prototype</span></div>
     <p>
-      I went looking for how a claude.ai subscriber gets to the platform and found two
-      links, both behind a menu, both opening the API keys page. Neither is in the left
-      rail, the one part of the product every subscriber sees every session. The idea is
-      a row there, pointing at the dashboard, shown to subscribers who say they do
-      engineering work. Both existing links already carry tracking tags, so a placement
-      test starts with a number to beat.
+      Puts the developer platform in claude.ai's left rail, where a subscriber who wants
+      to build will actually see it. Today the platform is linked twice, both behind a
+      menu, both landing on the API keys page. Both links already carry tracking tags,
+      so a placement test starts with a number to beat.
     </p>
     <div class="links">
       <a class="lk live" href="platform-entry.html"><b>Open the mock</b> <span class="arw">&#8594;</span></a>
@@ -199,11 +195,10 @@ footer a{color:var(--accent-ink)}
     <h2>OpenAI &#8594; Claude migration</h2>
     <div class="meta"><span>Acquisition</span><span>About 2 weeks</span><span>Designed, working prototype</span></div>
     <p>
-      Point Claude Code at a repository that uses the OpenAI SDK. It rewrites what it
-      can, asks the two questions only a person can answer, and blocks the pull request
-      until the repository's own tests pass against Claude. Most of the migration already
-      ships. What nothing does is tell you what broke, and the parity gate is the piece
-      left to build.
+      Gives a team moving code off the OpenAI SDK a merge gate that proves the migration
+      held. Claude Code rewrites what it can, asks the two questions only a person can
+      answer, and blocks the pull request until the repository's own tests pass against
+      Claude.
     </p>
     <div class="links">
       <a class="lk live" href="migrate.html"><b>Type into it</b> <span class="arw">&#8594;</span></a>
@@ -219,12 +214,9 @@ footer a{color:var(--accent-ink)}
     <h2>Dev &#8594; production</h2>
     <div class="meta"><span>Expansion</span><span>1 to 2 months</span><span>Case written, prototype running, two drivable demos</span></div>
     <p>
-      While I'm watching an agent, my attention is the limit on what it can spend or
-      break. Run it on a schedule and the only limits are the ones somebody set up front,
-      and Managed Agents is the only place those live. Nothing takes a Claude Code project
-      there. When I signed into both tools with the same email, they reported two
-      different organization IDs. The prototype maps a real project across and names what
-      doesn't survive.
+      Takes a Claude Code project that ought to be running unattended and promotes it to
+      a hosted agent, with the limits set before the first run. One email, two
+      organization IDs, and no command that moves a project from one to the other.
     </p>
 
     <div class="demos">
@@ -281,12 +273,10 @@ footer a{color:var(--accent-ink)}
     <h2>Billing attribution</h2>
     <div class="meta"><span>Outside the slate</span><span>Claude Code, not the API</span><span>Defect reproduced, proposal written, drivable mock</span></div>
     <p>
-      Leave an API key in your shell for some other application, start Claude Code while
-      signed into a subscription, and the session quietly bills your Console account. The
-      diagnostic reports the same answer in both states. I reproduced it on the current
-      build, found 26 public issues describing it with $1,799.83 in self-reported losses,
-      and built the warning. It's outside the slate because it's a Claude Code item and
-      its revenue runs the other way.
+      An API key left in your shell for another application makes Claude Code bill your
+      Console account instead of your subscription, and the diagnostic says nothing
+      changed. 26 public issues, $1,799.83 in self-reported losses. Outside the slate
+      because it's a Claude Code item and its revenue runs the other way.
     </p>
     <div class="links">
       <a class="lk live" href="who-is-paying.html"><b>Open the mock</b> <span class="arw">&#8594;</span></a>
