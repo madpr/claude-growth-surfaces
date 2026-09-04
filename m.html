@@ -1,0 +1,100 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Move OpenAI workloads to Claude</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap">
+<style>
+:root{
+  --bg:#141312; --panel:#1B1A18; --sunk:#201F1C;
+  --ink:#EDEAE3; --ink-2:#B0ABA1; --ink-3:#837E74;
+  --rule:#2C2A26; --rule-soft:#232120;
+  --accent:#E08A66; --accent-dim:#2A211C; --accent-ink:#EFA98A;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box}
+html{color-scheme:dark}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:16.5px;line-height:1.6;-webkit-font-smoothing:antialiased}
+.wrap{max-width:820px;margin:0 auto;padding:44px 28px 80px}
+.top{display:flex;justify-content:space-between;align-items:baseline;gap:16px;margin-bottom:28px}
+.eyebrow{font-family:var(--mono);font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
+.top a{color:var(--ink-2);text-decoration:none;font-size:14px}
+.top a:hover{color:var(--ink)}
+h1{font-size:32px;line-height:1.15;letter-spacing:-.01em;margin:0 0 18px;text-wrap:balance}
+h2{font-size:21px;margin:38px 0 10px;letter-spacing:-.005em}
+h3{font-size:17px;margin:26px 0 8px}
+p{margin:0 0 14px}
+ul,ol{padding-left:22px;margin:0 0 14px}
+li{margin:4px 0}
+a{color:var(--accent-ink)}
+strong{color:var(--ink);font-weight:600}
+code{font-family:var(--mono);font-size:.88em;background:var(--sunk);padding:1px 5px;border-radius:4px}
+pre{background:var(--panel);border:1px solid var(--rule);border-radius:8px;padding:14px 16px;overflow-x:auto;margin:0 0 16px}
+pre code{background:none;padding:0;font-size:13px}
+blockquote{margin:0 0 16px;padding:12px 16px;border-left:3px solid var(--accent);background:var(--panel);border-radius:0 8px 8px 0}
+blockquote p:last-child{margin:0}
+.tbl{overflow-x:auto;margin:0 0 18px}
+table{border-collapse:collapse;width:100%;font-size:14.5px}
+th,td{border:1px solid var(--rule);padding:7px 10px;text-align:left;vertical-align:top}
+th{background:var(--sunk);font-weight:600}
+hr{border:0;border-top:1px solid var(--rule);margin:32px 0}
+footer{margin-top:48px;padding-top:18px;border-top:1px solid var(--rule);font-size:13.5px;color:var(--ink-3)}
+footer a{color:var(--ink-2)}
+</style>
+
+<div class="wrap">
+  <div class="top">
+    <span class="eyebrow">Claude API &middot; growth surfaces</span>
+    <a href="index.html">&larr; All ideas</a>
+  </div>
+
+  <main>
+<h1>Move OpenAI workloads to Claude</h1>
+<p>Point Claude Code at a repository that uses the OpenAI SDK. It rewrites every call
+site it can, stops to ask about the ones it can't, and then blocks the pull request
+until the repository's own tests pass against Claude.</p>
+<p><strong>Status:</strong> Designed, working prototype · <strong>Cost:</strong> About 2 weeks · <strong>Theme:</strong> acquisition</p>
+<p><a href="https://madpr.github.io/claude-growth-surfaces/migrate.html">Terminal demo</a></p>
+<h2>Problem</h2>
+<p>The OpenAI SDK compatibility layer is an endpoint on Anthropic's API. You point the
+OpenAI SDK at it with a Claude key and a Claude model name, and requests are
+translated on the server, tools included. The documentation describes it as a way
+"to test and compare model capabilities" and says it is
+"not considered a long-term or production-ready solution".</p>
+<p>Nothing tells you what broke. The compatibility layer silently ignores most fields it
+doesn't support, including the structured-output format and strict tool schemas, so a
+team evaluating through it gets free-form text where it asked for JSON and no warning.</p>
+<p>Prompt caching isn't supported through the layer either, so the 46% saving the
+prototype prints on the seeded workload, most of it from caching, is invisible there.</p>
+<h2>Proposed experience</h2>
+<p>Clean translations, prompts that look tuned for OpenAI, and fields whose behavior
+changes on Claude all arrive in the pull request as ordinary diffs the team can review.</p>
+<h2>Success metrics</h2>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th>Metric</th>
+<th>What it tests</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Merged migrations per quarter</td>
+<td>Whether workloads actually move</td>
+</tr>
+<tr>
+<td>Metered spend 90 days after merge, against the account's pre-migration baseline</td>
+<td>The revenue claim</td>
+</tr>
+</tbody>
+</table></div>
+<p>Guardrail: production regressions after a passing gate. The target is zero.</p>
+<h2>Evidence</h2>
+<pre><code>cd prototype &amp;&amp; python3 migration_lint.py fixtures/support-triage.json &amp;&amp; python3 migration_lint.py scan &amp;&amp; python3 migration_lint.py cost &amp;&amp; python3 test_migration_lint.py
+</code></pre>
+  </main>
+
+  <footer>
+    Rendered from <a href="https://github.com/madpr/claude-growth-surfaces/blob/master/02-openai-migration/README.md">02-openai-migration/README.md</a> in the repository.
+  </footer>
+</div>

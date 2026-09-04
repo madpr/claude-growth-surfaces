@@ -1,0 +1,220 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Billing attribution</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap">
+<style>
+:root{
+  --bg:#141312; --panel:#1B1A18; --sunk:#201F1C;
+  --ink:#EDEAE3; --ink-2:#B0ABA1; --ink-3:#837E74;
+  --rule:#2C2A26; --rule-soft:#232120;
+  --accent:#E08A66; --accent-dim:#2A211C; --accent-ink:#EFA98A;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box}
+html{color-scheme:dark}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:16.5px;line-height:1.6;-webkit-font-smoothing:antialiased}
+.wrap{max-width:820px;margin:0 auto;padding:44px 28px 80px}
+.top{display:flex;justify-content:space-between;align-items:baseline;gap:16px;margin-bottom:28px}
+.eyebrow{font-family:var(--mono);font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
+.top a{color:var(--ink-2);text-decoration:none;font-size:14px}
+.top a:hover{color:var(--ink)}
+h1{font-size:32px;line-height:1.15;letter-spacing:-.01em;margin:0 0 18px;text-wrap:balance}
+h2{font-size:21px;margin:38px 0 10px;letter-spacing:-.005em}
+h3{font-size:17px;margin:26px 0 8px}
+p{margin:0 0 14px}
+ul,ol{padding-left:22px;margin:0 0 14px}
+li{margin:4px 0}
+a{color:var(--accent-ink)}
+strong{color:var(--ink);font-weight:600}
+code{font-family:var(--mono);font-size:.88em;background:var(--sunk);padding:1px 5px;border-radius:4px}
+pre{background:var(--panel);border:1px solid var(--rule);border-radius:8px;padding:14px 16px;overflow-x:auto;margin:0 0 16px}
+pre code{background:none;padding:0;font-size:13px}
+blockquote{margin:0 0 16px;padding:12px 16px;border-left:3px solid var(--accent);background:var(--panel);border-radius:0 8px 8px 0}
+blockquote p:last-child{margin:0}
+.tbl{overflow-x:auto;margin:0 0 18px}
+table{border-collapse:collapse;width:100%;font-size:14.5px}
+th,td{border:1px solid var(--rule);padding:7px 10px;text-align:left;vertical-align:top}
+th{background:var(--sunk);font-weight:600}
+hr{border:0;border-top:1px solid var(--rule);margin:32px 0}
+footer{margin-top:48px;padding-top:18px;border-top:1px solid var(--rule);font-size:13.5px;color:var(--ink-3)}
+footer a{color:var(--ink-2)}
+</style>
+
+<div class="wrap">
+  <div class="top">
+    <span class="eyebrow">Claude API &middot; growth surfaces</span>
+    <a href="index.html">&larr; All ideas</a>
+  </div>
+
+  <main>
+<h1>Billing attribution</h1>
+<p>I set an API key in my shell for an unrelated project and Claude Code quietly
+started billing my Console account instead of the subscription I pay for, and
+the diagnostic said nothing had changed. There are 26 public issues describing
+the same misattribution, and the four that put a dollar figure on it add up to
+$1,799.83.</p>
+<p><strong>Status:</strong> Defect reproduced, proposal written, drivable mock ·
+<strong>Cost:</strong> three releases (announce, warn, switch) · <strong>Theme:</strong> retention</p>
+<h2>Why this is outside the slate</h2>
+<p>Under the decision rule the top README states (work stays on the subscription
+while it is one person's, and moves to the platform when it bills an
+organization rather than a person), this item is the guarantee that one
+person's interactive session is never billed to an organization without saying
+so.</p>
+<h2>Findings</h2>
+<p>I first saw this on Claude Code v2.1.252 on 31 August 2026 and reproduced it
+on v2.1.260 on 3 September 2026.</p>
+<pre><code>$ claude auth status --json | jq -c '{authMethod,apiProvider,subscriptionType}'
+{&quot;authMethod&quot;:&quot;claude.ai&quot;,&quot;apiProvider&quot;:&quot;firstParty&quot;,&quot;subscriptionType&quot;:&quot;pro&quot;}
+
+$ ANTHROPIC_API_KEY=sk-ant-… claude auth status --json | jq -c '…'
+{&quot;authMethod&quot;:&quot;claude.ai&quot;,&quot;apiProvider&quot;:&quot;firstParty&quot;,&quot;subscriptionType&quot;:null}
+</code></pre>
+<p>Reproduced 3/3. Only <code>subscriptionType</code> moves, from <code>"pro"</code> to null.
+<code>ANTHROPIC_AUTH_TOKEN</code> at least relabels itself to <code>oauth_token</code>, and an
+empty-string key is ignored; <code>ANTHROPIC_API_KEY</code> alone displaces the
+subscription and says nothing. This is documented behavior. The default is
+wrong.</p>
+<h2>Evidence</h2>
+<p>There are 26 public issues on silent billing misattribution, September 2025
+to August 2026, 20 still open, and the filing rate was one or two a month
+through spring, then 5, 8, and 6 across June, July, and August.</p>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th>Issue</th>
+<th>Filed</th>
+<th>Self-reported</th>
+<th>Mechanism</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="https://github.com/anthropics/claude-code/issues/86723">#86723</a></td>
+<td>2026-08</td>
+<td>$1,122.83</td>
+<td>env var in Routines cloud environment</td>
+</tr>
+<tr>
+<td><a href="https://github.com/anthropics/claude-code/issues/62338">#62338</a></td>
+<td>2026-05</td>
+<td>$447.00</td>
+<td>billed to API instead of Max</td>
+</tr>
+<tr>
+<td><a href="https://github.com/anthropics/claude-code/issues/39903">#39903</a></td>
+<td>2026-03</td>
+<td>$152.00</td>
+<td>subagent dispatch used the API key</td>
+</tr>
+<tr>
+<td><a href="https://github.com/anthropics/claude-code/issues/78491">#78491</a></td>
+<td>2026-07</td>
+<td>$78.00</td>
+<td>shell profile export, 17 days unnoticed</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td><strong>$1,799.83</strong></td>
+<td>four issues; twenty-two carry no figure</td>
+</tr>
+</tbody>
+</table></div>
+<p><a href="https://github.com/anthropics/claude-code/issues/78491">#78491</a> asks for this
+exact fix in its title: <em>"request louder consent + persistent indicator."</em></p>
+<p>The existing diagnostics can also be wrong:
+<a href="https://github.com/anthropics/claude-code/issues/74217">#74217</a> reports <code>/status</code>
+showing one account while billing another, and
+<a href="https://github.com/anthropics/claude-code/issues/84015">#84015</a> a Max session
+labeled "Claude API account."</p>
+<h2>Proposed fix</h2>
+<p>Full design: <strong><a href="proposal.html">proposal-credential-precedence.md</a></strong></p>
+<p>Add <code>CLAUDE_CODE_API_KEY</code> for stated billing intent and demote
+<code>ANTHROPIC_API_KEY</code> below the subscription.</p>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th>Level</th>
+<th>Current</th>
+<th>Proposed</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>3</td>
+<td><code>ANTHROPIC_API_KEY</code></td>
+<td><strong><code>CLAUDE_CODE_API_KEY</code></strong></td>
+</tr>
+<tr>
+<td>7</td>
+<td>Subscription (<code>/login</code>)</td>
+<td>Subscription (<code>/login</code>)</td>
+</tr>
+<tr>
+<td>8</td>
+<td>—</td>
+<td><strong><code>ANTHROPIC_API_KEY</code></strong></td>
+</tr>
+</tbody>
+</table></div>
+<p>The demotion is the change that matters; the new variable makes it safe. On
+the web, environment API keys already "don't override your subscription
+credentials," per the docs, and this brings the CLI in line. Three releases:
+announce the variable, warn when the key
+displaces a subscription (plus a rebill key for interactive sessions), then
+switch the order. A machine with no subscription falls through to level 8
+unchanged; behavior changes only for people with both a subscription and an
+ambient <code>ANTHROPIC_API_KEY</code>, the people filing the issues.</p>
+<h2>Prototype</h2>
+<p><code>prototype/statusline-billing.sh</code> is the stage 2 warning. Since <code>authMethod</code>
+is the same in both states, it probes <code>claude auth status</code> twice, with and
+without the credential variables, and compares:</p>
+<pre><code class="language-bash">resolved=$(claude auth status --json)
+latent=$(env -u ANTHROPIC_API_KEY -u ANTHROPIC_AUTH_TOKEN claude auth status --json)
+[ -z &quot;$resolved_sub&quot; ] &amp;&amp; [ -n &quot;$latent_sub&quot; ] &amp;&amp; state=CONFLICT
+</code></pre>
+<p>Three states; a key with no subscription behind it is correct billing and gets
+no warning:</p>
+<pre><code>◆ PRO SUB · Opus                       subscription pays
+████░░░░░░ 41% · 5h 62% · caps in ~23min
+
+▲ API KEY ····4f2a · Opus              displaced an entitlement
+ANTHROPIC_API_KEY displaced your pro subscription
+  ↳ press ⌥B to bill the subscription instead
+
+◇ API KEY ····test · Opus              correct, and silent
+████░░░░░░ 41% · $2.14
+</code></pre>
+<p><code>caps in ~23min</code> is arithmetic on <code>rate_limits.five_hour</code> from the payload.</p>
+<h3>Run it</h3>
+<pre><code class="language-bash"># against the captured session fixture
+./prototype/statusline-billing.sh &lt; prototype/mock-session.json
+
+# force the displaced state
+ANTHROPIC_API_KEY=sk-ant-test0000000000000000000000004f2a \
+  ./prototype/statusline-billing.sh &lt; prototype/mock-session.json
+</code></pre>
+<p>The capture's window has since reset, so a raw replay prints <code>finishes</code>;
+re-clock it for the projection above:</p>
+<pre><code class="language-bash">jq '.rate_limits.five_hour.resets_at = (now + 2100 | floor)' \
+  prototype/mock-session.json | ./prototype/statusline-billing.sh
+</code></pre>
+<p>As a status line command, the auth probe costs ~210 ms and is cached for 30 s,
+keyed on a fingerprint of the credential env vars; render is 68 ms.</p>
+<h2>Mock</h2>
+<p><code>page/who-is-paying.html</code>: drive the precedence order at
+<a href="https://madpr.github.io/claude-growth-surfaces/who-is-paying.html">https://madpr.github.io/claude-growth-surfaces/who-is-paying.html</a></p>
+<p>A terminal you type into: export the key, start a session, and watch which
+credential pays, on a laptop with a subscription or a build box without one,
+under either precedence order. The dialog, auth status fields, and <code>/cost</code>
+layout are copied from Claude Code v2.1.260; the proposal's additions are
+marked in the transcript.</p>
+  </main>
+
+  <footer>
+    Rendered from <a href="https://github.com/madpr/claude-growth-surfaces/blob/master/bonus-billing-attribution/README.md">bonus-billing-attribution/README.md</a> in the repository.
+  </footer>
+</div>
