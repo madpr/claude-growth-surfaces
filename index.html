@@ -151,9 +151,8 @@ footer a{color:var(--accent-ink)}
   <div class="eyebrow">Claude API &middot; growth surfaces</div>
   <h1>Three ideas for growing Claude API revenue</h1>
   <p class="lede">
-    Three product ideas for growing Claude API revenue, one small, one medium, one big.
-    Each takes a step a customer does by hand today, somewhere between two Anthropic
-    products, and removes it.
+    One small, one medium, one big. Each takes a step a customer does by hand today,
+    somewhere between two Anthropic products, and removes it.
   </p>
 </header>
 
@@ -164,25 +163,15 @@ footer a{color:var(--accent-ink)}
     their own account. It moves to the platform when it runs unattended against
     infrastructure a team owns, needs limits someone other than the operator sets, or
     bills an organization rather than a person.
-  </blockquote>
-  <p>
-    <b>S</b> is the entry point a subscriber uses when they start building for others.
-    <b>L</b> is the point where a workload stops being watched and moves. The
-    <b>bonus</b> is the guarantee that nothing moves silently. <b>M</b> starts on the
-    platform and never meets the rule.
-  </p>
-</section>
+  </blockquote>\n</section>
 
 <section class="idea">
   <div class="size">S</div>
   <div>
-    <h2>Developer platform entry point</h2>
-    <div class="meta"><span>Activation</span><span>2 to 3 days</span><span>Designed, working prototype</span></div>
-    <p>
+    \1<p>
       Puts the developer platform in claude.ai's left rail, where a subscriber who wants
-      to build will actually see it. Today the platform is linked twice, both behind a
-      menu, both landing on the API keys page. Both links already carry tracking tags,
-      so a placement test starts with a number to beat.
+      to build will actually see it. Both existing links land on the API keys page and
+      already carry tracking tags.
     </p>
     <div class="links">
       <a class="lk live" href="platform-entry.html"><b>Open the mock</b> <span class="arw">&#8594;</span></a>
@@ -195,16 +184,13 @@ footer a{color:var(--accent-ink)}
 <section class="idea">
   <div class="size">M</div>
   <div>
-    <h2>OpenAI &#8594; Claude migration</h2>
-    <div class="meta"><span>Acquisition</span><span>About 2 weeks</span><span>Designed, working prototype</span></div>
-    <p>
+    \1<p>
       Gives a team moving code off the OpenAI SDK a merge gate that proves the migration
-      held. Claude Code rewrites what it can, asks the two questions only a person can
-      answer, and blocks the pull request until the repository's own tests pass against
-      Claude.
+      held. Claude Code rewrites what it can, asks about what it can't, and blocks the
+      pull request until the repository's own tests pass against Claude.
     </p>
     <div class="links">
-      <a class="lk live" href="migrate.html"><b>Type into it</b> <span class="arw">&#8594;</span></a>
+      <a class="lk live" href="migrate.html"><b>Terminal demo</b> <span class="arw">&#8594;</span></a>
       <a class="lk" href="https://github.com/madpr/claude-growth-surfaces/tree/master/02-openai-migration">
         Read the case <span class="arw">&#8599;</span></a>
     </div>
@@ -235,7 +221,7 @@ footer a{color:var(--accent-ink)}
           <h3>Promote from Claude Code</h3>
           <p>A terminal you can type into. Translate the rules that do not transfer, and
              set a cap that can never be added later.</p>
-          <div class="go">Type into it &#8594;</div>
+          <div class="go">Terminal demo &#8594;</div>
         </div>
       </a>
 
@@ -252,7 +238,7 @@ footer a{color:var(--accent-ink)}
           <h3>Confirm hosted agent</h3>
           <p>The browser screen the terminal hands off to, in the organization the CLI
              was not signed in to.</p>
-          <div class="go">Open the screen &#8594;</div>
+          <div class="go">Browser demo &#8594;</div>
         </div>
       </a>
     </div>
@@ -260,7 +246,7 @@ footer a{color:var(--accent-ink)}
     <div class="flow">
       <b>claude promote</b> <span>&#8594;</span> <span>account boundary</span>
       <span>&#8594;</span> <b>confirm in browser</b>
-      <span>&mdash; the demos link to each other</span>
+      <span>&middot; the demos link to each other</span>
     </div>
 
     <div class="links">
@@ -273,16 +259,14 @@ footer a{color:var(--accent-ink)}
 <section class="idea">
   <div class="size bonus">BONUS</div>
   <div>
-    <h2>Billing attribution</h2>
-    <div class="meta"><span>Outside the slate</span><span>Claude Code, not the API</span><span>Defect reproduced, proposal written, drivable mock</span></div>
-    <p>
+    \1<p>
       An API key left in your shell for another application makes Claude Code bill your
       Console account instead of your subscription, and the diagnostic says nothing
-      changed. 26 public issues, $1,799.83 in self-reported losses. Outside the slate
-      because it's a Claude Code item and its revenue runs the other way.
+      changed. 26 public issues, $1,799.83 in self-reported losses. Its revenue runs the
+      other way, so it sits outside the slate.
     </p>
     <div class="links">
-      <a class="lk live" href="who-is-paying.html"><b>Open the mock</b> <span class="arw">&#8594;</span></a>
+      <a class="lk live" href="who-is-paying.html"><b>Drive the mock</b> <span class="arw">&#8594;</span></a>
       <a class="lk" href="https://github.com/madpr/claude-growth-surfaces/tree/master/bonus-billing-attribution">
         Read the case <span class="arw">&#8599;</span></a>
     </div>
@@ -290,11 +274,9 @@ footer a{color:var(--accent-ink)}
 </section>
 
 <footer>
-  Demos are proposals; nothing here ships. Navigation, objects and field names replicate
+  Demos are proposals; nothing here ships. Navigation, objects, and field names replicate
   the live product, and what each demo adds is marked. Every figure is printed by the
-  prototype behind it. The promotion demos read
-  <code>prototype/fixtures/ledger-reconcile</code> through
-  <code>prototype/promote.py</code>, so the pages and the code cannot disagree.
+  prototype behind it.
   <a href="https://github.com/madpr/claude-growth-surfaces">Repository &#8599;</a>
 </footer>
 
