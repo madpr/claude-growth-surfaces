@@ -6,19 +6,18 @@ Anthropic products, and removes it.
 
 The small one puts the developer platform in claude.ai's left rail, where a subscriber
 who wants to build will actually see it. The medium one gives a team moving code off
-the OpenAI SDK a merge gate that proves the migration held. The big one takes a Claude
+the OpenAI SDK a merge gate that proves the migration is safe. The big one takes a Claude
 Code project that ought to be running unattended and promotes it to a hosted agent,
 with the limits set before the first run.
 
 **North star:** increase Claude API revenue · **Sizing:** one tactical, one medium, one
-big bet · **Evidence:** primary sources and running prototypes only
+big bet · **Evidence:** primary sources; every demo runs on a seeded scenario and reads no account
 
 ## Principle
 
-> Work stays on the subscription while it is one person's: run interactively, or on
-> their own account. It moves to the platform when it runs unattended against
-> infrastructure a team owns, needs limits someone other than the operator sets, or
-> bills an organization rather than a person.
+> Two kinds of work: (1) subscription, where it's one person's and runs interactively;
+> (2) platform, where it runs unattended against infrastructure the team owns and bills
+> an organization rather than a person.
 
 ## Goals
 
@@ -28,9 +27,9 @@ big bet · **Evidence:** primary sources and running prototypes only
 
 | | Idea | Demo | Theme | Engineering cost | Status |
 |---|---|---|---|---|---|
-| **S** | [Developer platform entry point](03-platform-entry/) | [Open the mock](https://madpr.github.io/claude-growth-surfaces/platform-entry.html) | Activation | 2 to 3 days | Designed, working prototype |
-| **M** | [OpenAI → Claude migration](02-openai-migration/) | [Terminal demo](https://madpr.github.io/claude-growth-surfaces/migrate.html) | Acquisition | About 2 weeks | Designed, working prototype |
-| **L** | [Dev → production](01-dev-to-production/) | [Terminal demo](https://madpr.github.io/claude-growth-surfaces/promote-cli.html) · [Browser demo](https://madpr.github.io/claude-growth-surfaces/promote-to-agent.html) | Expansion | 1 to 2 months | Case written, prototype running, two drivable demos |
+| **S** | [Developer platform entry point](03-platform-entry/) | [Open the mock](https://madpr.github.io/claude-growth-surfaces/platform-entry.html) | Activation | 2 to 3 days | Designed |
+| **M** | [OpenAI → Claude migration](02-openai-migration/) | [Terminal demo](https://madpr.github.io/claude-growth-surfaces/migrate.html) | Acquisition | About 2 weeks | Designed |
+| **L** | [Dev → production](01-dev-to-production/) | [Terminal demo](https://madpr.github.io/claude-growth-surfaces/promote-cli.html) · [Browser demo](https://madpr.github.io/claude-growth-surfaces/promote-to-agent.html) | Expansion | 1 to 2 months | Case written, two drivable demos |
 
 ### Bonus
 
@@ -43,7 +42,6 @@ big bet · **Evidence:** primary sources and running prototypes only
 <nn>-<slug>/       the three ideas, S is 03
 bonus-<slug>/      supporting work, outside the slate
   README.md        the written case
-  prototype/       working code, runnable, with tests
   page/            source for the published page
   research/        collected evidence, raw
 ```

@@ -136,15 +136,14 @@ The rollout has three stages.
 **Caution:** Don't skip stage 2. Unattended sessions are where this costs money
 and where a silent change of billing source is hardest to notice.
 
-[prototype/statusline-billing.sh](prototype/statusline-billing.sh) implements
-the stage 2 warning by probing `claude auth status` with and without the
+The stage 2 warning works by probing `claude auth status` with and without the
 credential variables and comparing, since the reported auth method is the same
 in both states.
 
 ### The rebill key
 
 When the warning fires in an interactive session, one keystroke switches
-billing for the rest of that session to your subscription. The prototype binds
+billing for the rest of that session to your subscription. The proposal binds
 it to Option+B and appends the hint to the warning:
 
 ```

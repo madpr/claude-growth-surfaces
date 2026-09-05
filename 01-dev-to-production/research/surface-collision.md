@@ -157,10 +157,10 @@ working Claude Code configuration:
 | `--name` | `--name`, or the repo name |
 | `--description` | *no local source — human-supplied* |
 
-### The prototype corrects this count
+### The mapping, counted
 
-`prototype/promote.py` performs the mapping against a fixture project. Its own
-output is less flattering than the table above, and it is the number to quote:
+Working the mapping through against an example project gives a less flattering
+count than the table above, and it is the number to quote:
 
 ```
 resolved 3   lossy 3   human 1   blocked 2   underivable 1

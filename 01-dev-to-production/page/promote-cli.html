@@ -81,8 +81,7 @@ var out=document.getElementById('out'), screenEl=document.getElementById('screen
 
 var buf='', hist=[], hp=-1, mode='shell', menu=null, onValue=null;
 
-/* The project. Values match prototype/fixtures/ledger-reconcile, and the rule
-   list is what promote.py reports as unable to cross. */
+/* The seeded project, and the rules that cannot cross to a hosted agent. */
 var RULES=[
   {id:'write-ledger', k:'deny ', r:'Write(ledger/**)', fix:'mount ledger/ read-only', set:false},
   {id:'rm',           k:'deny ', r:'Bash(rm *)',       fix:'nothing to protect &mdash; the sandbox is discarded after every run', set:false},
@@ -95,8 +94,7 @@ var RULES=[
    lost:'republish it as an endpoint, or drop it'}
 ];
 var cap=null, sched=null;
-/* The two organizations. Names and sign-in methods match
-   prototype/fixtures/auth-state.json; the ids stay in the fixture. */
+/* The two organizations. Names and sign-in methods are synthetic. */
 var HERE ={org:"example's Organization",   via:'claude.ai'};
 var THERE={org:"example's Individual Org", via:'platform oauth'};
 /* Keys typed while a step animation runs. Replayed when it ends. */

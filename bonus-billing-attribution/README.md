@@ -81,11 +81,11 @@ switch the order. A machine with no subscription falls through to level 8
 unchanged; behavior changes only for people with both a subscription and an
 ambient `ANTHROPIC_API_KEY`, the people filing the issues.
 
-## Prototype
+## The stage 2 warning
 
-`prototype/statusline-billing.sh` is the stage 2 warning. Since `authMethod`
-is the same in both states, it probes `claude auth status` twice, with and
-without the credential variables, and compares:
+Since `authMethod` is the same in both states, the warning probes
+`claude auth status` twice, with and without the credential variables, and
+compares:
 
 ```bash
 resolved=$(claude auth status --json)
@@ -108,29 +108,7 @@ ANTHROPIC_API_KEY displaced your pro subscription
 ████░░░░░░ 41% · $2.14
 ```
 
-`caps in ~23min` is arithmetic on `rate_limits.five_hour` from the payload.
-
-### Run it
-
-```bash
-# against the captured session fixture
-./prototype/statusline-billing.sh < prototype/mock-session.json
-
-# force the displaced state
-ANTHROPIC_API_KEY=sk-ant-test0000000000000000000000004f2a \
-  ./prototype/statusline-billing.sh < prototype/mock-session.json
-```
-
-The capture's window has since reset, so a raw replay prints `finishes`;
-re-clock it for the projection above:
-
-```bash
-jq '.rate_limits.five_hour.resets_at = (now + 2100 | floor)' \
-  prototype/mock-session.json | ./prototype/statusline-billing.sh
-```
-
-As a status line command, the auth probe costs ~210 ms and is cached for 30 s,
-keyed on a fingerprint of the credential env vars; render is 68 ms.
+`caps in ~23min` is arithmetic on `rate_limits.five_hour` from the session payload.
 
 ## Mock
 

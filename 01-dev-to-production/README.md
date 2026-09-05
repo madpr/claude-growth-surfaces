@@ -5,7 +5,7 @@ inside a spend cap, a quality rubric, and a sandbox that never shows the agent i
 credentials. Nothing moves a project from one to the other; this proposal builds that
 path, with the limits set before the first unattended run.
 
-**Status:** Case written, prototype running, two drivable demos · **Cost:** 1 to 2 months ·
+**Status:** Case written, two drivable demos · **Cost:** 1 to 2 months ·
 **Theme:** expansion
 
 [Terminal demo](https://madpr.github.io/claude-growth-surfaces/promote-cli.html) ·
@@ -73,10 +73,5 @@ an unaffiliated plugin looked at on September 3, 2026, makes offloading token-he
 work from Claude Code to Gemini the default: the seat stays, the volume per session
 falls, and a retention dashboard calls that account healthy.
 
-Run from this directory; neither reads an account or calls an API. `size` in
-place of `map` prints the cost table.
-
-```
-./research/probe.sh
-./prototype/promote.py map prototype/fixtures/ledger-reconcile
-```
+`research/probe.sh` reproduces the surface-collision table from the two installed
+binaries. It reads no account and calls no API.

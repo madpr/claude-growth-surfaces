@@ -4,7 +4,7 @@ We propose a sixth rail row, labeled Developer platform, after Customize. It ope
 platform dashboard and shows only to subscribers whose profile says they do engineering
 work. The dashboard shows what the platform is; the keys page hands you a secret.
 
-**Status:** Designed, working prototype · **Cost:** 2 to 3 days · **Theme:** activation ·
+**Status:** Designed · **Cost:** 2 to 3 days · **Theme:** activation ·
 **Revenue path:** direct
 
 [Open the mock](https://madpr.github.io/claude-growth-surfaces/platform-entry.html)

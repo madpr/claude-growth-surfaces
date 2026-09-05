@@ -81,7 +81,7 @@ kbd{
 
 <div id="screen"><div id="out"></div><div class="line" id="prompt"><span class="ps">&gt;</span><span><span id="typed"></span><span id="ghost"></span><span class="cur" id="cur"></span></span></div><input id="kb" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" aria-label="terminal input"></div>
 <div class="hint"><div><kbd>&#8593;</kbd><kbd>&#8595;</kbd> history &nbsp; <kbd>Tab</kbd> complete &nbsp; <kbd>Enter</kbd> run</div>
-<p class="foot"><b>Proposal, not a shipped feature.</b> /migrate-from-openai is proposed; the scenario is seeded, no repository is read, and every figure is printed by <code>prototype/migration_lint.py scan</code>.</p></div>
+<p class="foot"><b>Proposal, not a shipped feature.</b> /migrate-from-openai is proposed; the scenario is seeded, no repository is read, and no API is called.</p></div>
 
 <script>
 var out=document.getElementById('out'), screenEl=document.getElementById('screen'),
@@ -90,8 +90,7 @@ var out=document.getElementById('out'), screenEl=document.getElementById('screen
 
 var buf='', hist=[], hp=-1, mode='shell', menu=null, onValue=null;
 
-/* The scenario. Every figure matches what prototype/migration_lint.py scan
-   prints: 11 files, 38 call sites, 33 rewritten without asking, 5 held behind
+/* The seeded scenario: 11 files, 38 call sites, 33 rewritten without asking, 5 held behind
    two decisions, 12 tests of which 10 pass on OpenAI today. */
 var REPO='acme/support-triage', FILES=11, SITES=38, REWRITTEN=33, HELD=5, PR=142;
 var TESTS={total:12, openai:10, claude:9, validated:12};

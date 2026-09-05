@@ -1,5 +1,0 @@
-{"cwd":"/home/user/projects/reports","session_id":"demo","model":{"id":"claude-opus-5","display_name":"Opus"},
-"workspace":{"current_dir":"/home/user/projects/reports"},"version":"2.1.252",
-"cost":{"total_cost_usd":2.1437,"total_duration_ms":2280000},
-"context_window":{"used_percentage":41,"total_input_tokens":15500,"total_output_tokens":1200,"context_window_size":200000},
-"rate_limits":{"five_hour":{"used_percentage":62.0,"resets_at":1788236660},"seven_day":{"used_percentage":31.0}}}
