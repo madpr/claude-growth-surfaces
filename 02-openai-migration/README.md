@@ -20,9 +20,8 @@ Nothing tells you what broke. The compatibility layer silently ignores most fiel
 doesn't support, including the structured-output format and strict tool schemas, so a
 team evaluating through it gets free-form text where it asked for JSON and no warning.
 
-Prompt caching isn't supported through the layer either, so a cost comparison run
-through it bills every request at uncached prices and overstates what the same
-workload costs on the native API.
+Prompt caching isn't supported through the layer either, so any cost figure you
+take from it is an uncached one.
 
 ## Proposed experience
 
