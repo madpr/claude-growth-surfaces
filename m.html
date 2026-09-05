@@ -64,9 +64,8 @@ translated on the server, tools included. The documentation describes it as a wa
 <p>Nothing tells you what broke. The compatibility layer silently ignores most fields it
 doesn't support, including the structured-output format and strict tool schemas, so a
 team evaluating through it gets free-form text where it asked for JSON and no warning.</p>
-<p>Prompt caching isn't supported through the layer either, so a cost comparison run
-through it bills every request at uncached prices and overstates what the same
-workload costs on the native API.</p>
+<p>Prompt caching isn't supported through the layer either, so any cost figure you
+take from it is an uncached one.</p>
 <h2>Proposed experience</h2>
 <p>Clean translations, prompts that look tuned for OpenAI, and fields whose behavior
 changes on Claude all arrive in the pull request as ordinary diffs the team can review.</p>
