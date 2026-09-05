@@ -16,8 +16,8 @@
    the rebill key. The Proposed precedence is the change argued in
    proposal-credential-precedence.md. Neither ships.
 
-   Every figure comes from prototype/mock-session.json through the arithmetic in
-   prototype/statusline-billing.sh. The key is synthetic.
+   Every figure comes from a captured session payload, re-clocked to replay time.
+   The key is synthetic.
 
    Single surface, deliberately: this is a terminal, and a terminal is dark on
    any desktop. Every color is painted explicitly so the page holds on either
@@ -167,7 +167,7 @@ var out=document.getElementById('out'), screenEl=document.getElementById('screen
 var buf='', hist=[], hp=-1, mode='shell', menu=null;
 
 /* ---- the fixture ------------------------------------------------------- */
-/* prototype/mock-session.json, field for field. `windowMins` is the 5-hour
+/* The captured session payload, field for field. `windowMins` is the 5-hour
    window re-clocked to replay time, the way the README runs it: the capture's
    own reset time has passed. */
 var FIX={model:'Opus', dir:'~/projects/reports', branch:'main*',
@@ -193,8 +193,7 @@ function chain(){
     : [{v:'ANTHROPIC_AUTH_TOKEN'},{v:'CLAUDE_CODE_API_KEY'},{sub:1},{v:'ANTHROPIC_API_KEY'}];
 }
 
-/* Who pays, and what the status line calls it. Mirrors the three states in
-   prototype/statusline-billing.sh: SUB, CONFLICT, API. */
+/* Who pays, and what the status line calls it. The three states: SUB, CONFLICT, API. */
 function resolve(){
   var c=chain(), payer=null;
   for(var i=0;i<c.length;i++){
@@ -597,7 +596,7 @@ function boot(quiet){
     w('');
     mn('The custom API key dialog, the auth status fields and the /cost layout are\n'
       +'replicated from Claude Code 2.1.260. Everything marked with this rule is\n'
-      +'added by the proposal and does not ship. Figures come from the prototype;\n'
+      +'added by the proposal and does not ship. Figures come from a captured session;\n'
       +'the key is synthetic.');
   }
   w('');

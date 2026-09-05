@@ -53,7 +53,7 @@ footer a{color:var(--ink-2)}
 <p>Point Claude Code at a repository that uses the OpenAI SDK. It rewrites every call
 site it can, stops to ask about the ones it can't, and then blocks the pull request
 until the repository's own tests pass against Claude.</p>
-<p><strong>Status:</strong> Designed, working prototype · <strong>Cost:</strong> About 2 weeks · <strong>Theme:</strong> acquisition</p>
+<p><strong>Status:</strong> Designed · <strong>Cost:</strong> About 2 weeks · <strong>Theme:</strong> acquisition</p>
 <p><a href="https://madpr.github.io/claude-growth-surfaces/migrate.html">Terminal demo</a></p>
 <h2>Problem</h2>
 <p>The OpenAI SDK compatibility layer is an endpoint on Anthropic's API. You point the
@@ -64,8 +64,9 @@ translated on the server, tools included. The documentation describes it as a wa
 <p>Nothing tells you what broke. The compatibility layer silently ignores most fields it
 doesn't support, including the structured-output format and strict tool schemas, so a
 team evaluating through it gets free-form text where it asked for JSON and no warning.</p>
-<p>Prompt caching isn't supported through the layer either, so the 46% saving the
-prototype prints on the seeded workload, most of it from caching, is invisible there.</p>
+<p>Prompt caching isn't supported through the layer either, so a cost comparison run
+through it bills every request at uncached prices and overstates what the same
+workload costs on the native API.</p>
 <h2>Proposed experience</h2>
 <p>Clean translations, prompts that look tuned for OpenAI, and fields whose behavior
 changes on Claude all arrive in the pull request as ordinary diffs the team can review.</p>
@@ -90,8 +91,13 @@ changes on Claude all arrive in the pull request as ordinary diffs the team can 
 </table></div>
 <p>Guardrail: production regressions after a passing gate. The target is zero.</p>
 <h2>Evidence</h2>
-<pre><code>cd prototype &amp;&amp; python3 migration_lint.py fixtures/support-triage.json &amp;&amp; python3 migration_lint.py scan &amp;&amp; python3 migration_lint.py cost &amp;&amp; python3 test_migration_lint.py
-</code></pre>
+<p>The compatibility layer's own documentation, read September 1, 2026
+(<a href="https://platform.claude.com/docs/en/cli-sdks-libraries/libraries/openai-sdk">OpenAI SDK compatibility</a>):
+it is "primarily intended to test and compare model capabilities, and is not considered
+a long-term or production-ready solution"; <code>strict</code> and <code>response_format</code> are ignored;
+prompt caching is not supported; and "most unsupported fields are silently ignored
+rather than producing errors."</p>
+<p>The terminal demo runs on a seeded repository. It reads no repository and calls no API.</p>
   </main>
 
   <footer>

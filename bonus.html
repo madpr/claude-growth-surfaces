@@ -168,10 +168,10 @@ displaces a subscription (plus a rebill key for interactive sessions), then
 switch the order. A machine with no subscription falls through to level 8
 unchanged; behavior changes only for people with both a subscription and an
 ambient <code>ANTHROPIC_API_KEY</code>, the people filing the issues.</p>
-<h2>Prototype</h2>
-<p><code>prototype/statusline-billing.sh</code> is the stage 2 warning. Since <code>authMethod</code>
-is the same in both states, it probes <code>claude auth status</code> twice, with and
-without the credential variables, and compares:</p>
+<h2>The stage 2 warning</h2>
+<p>Since <code>authMethod</code> is the same in both states, the warning probes
+<code>claude auth status</code> twice, with and without the credential variables, and
+compares:</p>
 <pre><code class="language-bash">resolved=$(claude auth status --json)
 latent=$(env -u ANTHROPIC_API_KEY -u ANTHROPIC_AUTH_TOKEN claude auth status --json)
 [ -z &quot;$resolved_sub&quot; ] &amp;&amp; [ -n &quot;$latent_sub&quot; ] &amp;&amp; state=CONFLICT
@@ -188,22 +188,7 @@ ANTHROPIC_API_KEY displaced your pro subscription
 ◇ API KEY ····test · Opus              correct, and silent
 ████░░░░░░ 41% · $2.14
 </code></pre>
-<p><code>caps in ~23min</code> is arithmetic on <code>rate_limits.five_hour</code> from the payload.</p>
-<h3>Run it</h3>
-<pre><code class="language-bash"># against the captured session fixture
-./prototype/statusline-billing.sh &lt; prototype/mock-session.json
-
-# force the displaced state
-ANTHROPIC_API_KEY=sk-ant-test0000000000000000000000004f2a \
-  ./prototype/statusline-billing.sh &lt; prototype/mock-session.json
-</code></pre>
-<p>The capture's window has since reset, so a raw replay prints <code>finishes</code>;
-re-clock it for the projection above:</p>
-<pre><code class="language-bash">jq '.rate_limits.five_hour.resets_at = (now + 2100 | floor)' \
-  prototype/mock-session.json | ./prototype/statusline-billing.sh
-</code></pre>
-<p>As a status line command, the auth probe costs ~210 ms and is cached for 30 s,
-keyed on a fingerprint of the credential env vars; render is 68 ms.</p>
+<p><code>caps in ~23min</code> is arithmetic on <code>rate_limits.five_hour</code> from the session payload.</p>
 <h2>Mock</h2>
 <p><code>page/who-is-paying.html</code>: drive the precedence order at
 <a href="https://madpr.github.io/claude-growth-surfaces/who-is-paying.html">https://madpr.github.io/claude-growth-surfaces/who-is-paying.html</a></p>
