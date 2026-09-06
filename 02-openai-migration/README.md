@@ -6,6 +6,9 @@ until the repository's own tests pass against Claude.
 
 **Status:** Designed · **Cost:** About 2 weeks · **Theme:** acquisition
 
+Outside the slate since September 6, 2026. The case and the demo stay in the
+repository.
+
 [Terminal demo](https://madpr.github.io/claude-growth-surfaces/migrate.html)
 
 ## Problem
