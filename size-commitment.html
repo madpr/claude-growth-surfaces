@@ -78,12 +78,17 @@ h1{margin:0;font-size:23px;font-weight:600;letter-spacing:-.02em}
 .card .s b{display:block;color:var(--ink-2);font-weight:500;font-size:13px}
 .card.tall .v{margin-top:4px}
 
-.chart{border:1px solid var(--rule);border-radius:9px;padding:14px 16px;background:var(--panel);margin-top:16px}
+.chart{position:relative;border:1px solid var(--rule);border-radius:9px;padding:14px 16px;background:var(--panel);margin-top:16px}
 .chart .ch b{font-size:13.5px;font-weight:600}
 .chart .ch span{display:block;font-size:12px;color:var(--ink-3);margin-top:2px}
 .chart svg{display:block;width:100%;height:auto;margin-top:10px}
 .chart .lg{display:flex;gap:16px;font-size:12px;color:var(--ink-2);margin-top:6px}
 .chart .lg i{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+.chart g.bar rect.hit{fill:transparent}
+.chart g.bar:hover rect.v{fill:#7FA8E8}
+.tip{position:absolute;pointer-events:none;background:#0B0A09;border:1px solid var(--rule);border-radius:6px;padding:6px 9px;font-size:11.5px;color:var(--ink-2);transform:translate(-50%,-100%);white-space:nowrap;box-shadow:var(--shadow);line-height:1.45}
+.tip b{display:block;color:var(--ink);font-weight:600;font-family:var(--mono);font-size:12.5px}
+.tip[hidden]{display:none}
 
 /* ---------------- the addition ---------------- */
 .commit{margin-top:18px;border:1px solid var(--accent);border-radius:9px;background:var(--panel);box-shadow:var(--shadow);overflow:hidden}
@@ -115,18 +120,27 @@ tr.pick td{background:var(--ok-dim)}
 tr.stretch td{background:var(--warn-dim)}
 tr.bad td{color:var(--ink-3)}
 td .pill{margin-left:8px;vertical-align:1px}
+tr[role=button]{cursor:pointer}
+tr[role=button]:hover td{background:var(--sunk)}
+tr.pick:hover td{background:var(--ok-dim)}
+tr.stretch:hover td{background:var(--warn-dim)}
+tr.sel td,tr.sel:hover td{background:var(--accent-dim)}
+tr.sel.pick td,tr.sel.pick:hover td{background:var(--ok-dim)}
+tr.sel.stretch td,tr.sel.stretch:hover td{background:var(--warn-dim)}
+tr.sel td:first-child{box-shadow:inset 3px 0 0 var(--accent)}
+tr[role=button]:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.tblhint{margin:8px 0 0;font-size:12px;color:var(--ink-3)}
 
 .offer{margin-top:16px;border:1px solid var(--rule);border-left:3px solid var(--ok);border-radius:8px;padding:14px 16px;background:var(--sunk)}
 .offer.none{border-left-color:var(--rule)}
 .offer.up{border-left-color:var(--warn)}
+.offer.loss{border-left-color:#C0665C}
 .offer h3{margin:0 0 6px;font-size:15px;font-weight:600;display:flex;align-items:center;gap:8px}
 .offer p{margin:0 0 6px;font-size:13.5px}
 .offer p.d{color:var(--ink-2);font-size:13px}
 .offer p.w{color:var(--warn);font-size:13px}
 .cta{margin-top:12px;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
 .cta .sent{font-size:12.5px;color:var(--ink-2)}
-.mech{margin:14px 0 0;font-size:12.5px;color:var(--ink-3);border-top:1px solid var(--rule-soft);padding-top:12px}
-.mech code{font-family:var(--mono);font-size:11.5px;color:var(--ink-2)}
 
 .foot{margin-top:24px;padding-top:14px;border-top:1px solid var(--rule);font-size:11.5px;color:var(--ink-3);line-height:1.6}
 .foot b{color:var(--ink-2)}
@@ -218,6 +232,7 @@ td .pill{margin-left:8px;vertical-align:1px}
     <div class="chart">
       <div class="ch"><b>Daily token cost</b><span>Includes token usage from both API and Console</span></div>
       <svg id="chart" viewBox="0 0 900 220" role="img" aria-label="Daily token cost, last 30 days"></svg>
+      <div class="tip" id="tip" hidden></div>
       <div class="lg">
         <span><i style="background:var(--bar)"></i><span id="lg-model"></span></span>
         <span><i style="background:var(--bar-list)"></i>List price (before discount)</span>
@@ -253,10 +268,9 @@ td .pill{margin-left:8px;vertical-align:1px}
             <tbody id="tiers"></tbody>
           </table>
         </div>
+        <p class="tblhint">Select a tier to see its terms.</p>
 
         <div class="offer" id="offer"></div>
-
-        <p class="mech" id="mech"></p>
       </div>
     </section>
 
@@ -277,10 +291,10 @@ td .pill{margin-left:8px;vertical-align:1px}
    most of the band. Session runtime is priced at the documented $0.08 per
    session-hour and split out because the real Cost page splits it out. */
 var TIERS=[
-  {name:'Starter',    commit:2500,   discount:0.05},
-  {name:'Growth',     commit:10000,  discount:0.09},
-  {name:'Scale',      commit:30000,  discount:0.13},
-  {name:'Enterprise', commit:100000, discount:0.18}
+  {name:'Starter',    commit:2500,   discount:0.15},
+  {name:'Growth',     commit:10000,  discount:0.25},
+  {name:'Scale',      commit:30000,  discount:0.30},
+  {name:'Enterprise', commit:100000, discount:0.35}
 ];
 var WS={
   'support-triage-pilot':{desc:'Support triage agent, just past pilot. Low volume, still ramping, volatile month to month.',
@@ -373,8 +387,13 @@ function recommend(scored){
 /* Thirty seeded days ending on the day the page was read, so the chart is the
    same on every load. The wobble scales with the workspace's volume volatility. */
 function paintChart(acc,monthMean){
-  var days=30, seed=acc.months*7+Math.round(acc.median*100), vals=[], i;
-  for(i=0;i<days;i++) vals.push((monthMean/days)*(1+1.6*acc.cv*Math.sin(seed+i*1.7)));
+  var days=30, seed=acc.months*7+Math.round(acc.median*100), vals=[], dates=[], i;
+  var MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'], end=new Date(2026,8,6);
+  for(i=0;i<days;i++){
+    vals.push((monthMean/days)*(1+1.6*acc.cv*Math.sin(seed+i*1.7)));
+    var d=new Date(end); d.setDate(end.getDate()-(days-1-i));
+    dates.push(MON[d.getMonth()]+' '+d.getDate());
+  }
   var top=Math.max.apply(null,vals)*1.18;
   var mag=Math.pow(10,Math.floor(Math.log(top)/Math.LN10)), nice=Math.ceil(top/mag*2)/2*mag;
   var L=58, R=10, T=10, B=26, W=900, H=220, plotW=W-L-R, plotH=H-T-B;
@@ -384,22 +403,38 @@ function paintChart(acc,monthMean){
     s+='<line x1="'+L+'" y1="'+y+'" x2="'+(W-R)+'" y2="'+y+'" stroke="#2C2A26" stroke-width="1"/>';
     s+='<text x="'+(L-8)+'" y="'+(y+4)+'" text-anchor="end" font-size="11" fill="#837E74">'+money(v)+'</text>';
   }
-  var slot=plotW/days, bw=slot*0.62, end=new Date(2026,8,6);
+  var slot=plotW/days, bw=slot*0.62;
   for(i=0;i<days;i++){
     var x=L+slot*i+(slot-bw)/2, h=plotH*vals[i]/nice;
-    s+='<rect x="'+x+'" y="'+(T+plotH-h)+'" width="'+bw+'" height="'+h+'" fill="#5B8DD6" rx="1"/>';
+    s+='<g class="bar" data-i="'+i+'">';
+    s+='<rect class="hit" x="'+(L+slot*i)+'" y="'+T+'" width="'+slot+'" height="'+plotH+'" fill="transparent"/>';
+    s+='<rect class="v" x="'+x+'" y="'+(T+plotH-h)+'" width="'+bw+'" height="'+h+'" fill="#5B8DD6" rx="1"/>';
     s+='<rect x="'+x+'" y="'+(T+plotH-h-3)+'" width="'+bw+'" height="3" fill="#4A4640"/>';
-    if(i%5===1){
-      var d=new Date(end); d.setDate(end.getDate()-(days-1-i));
-      var lbl=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][d.getMonth()]+' '+d.getDate();
-      s+='<text x="'+(x+bw/2)+'" y="'+(H-8)+'" text-anchor="middle" font-size="11" fill="#837E74">'+lbl+'</text>';
-    }
+    s+='</g>';
+    if(i%5===1) s+='<text x="'+(x+bw/2)+'" y="'+(H-8)+'" text-anchor="middle" font-size="11" fill="#837E74">'+dates[i]+'</text>';
   }
   document.getElementById('chart').innerHTML=s;
+  CHART={vals:vals, dates:dates, model:acc.model};
 }
 
+/* Hover a bar for its figures. One delegated listener; the bars are rebuilt on every render. */
+var CHART=null;
+(function(){
+  var svg=document.getElementById('chart'), tip=document.getElementById('tip');
+  svg.addEventListener('mousemove',function(e){
+    var g=e.target.closest?e.target.closest('g.bar'):null;
+    if(!g||!CHART){ tip.hidden=true; return; }
+    var i=+g.getAttribute('data-i'), r=g.querySelector('rect.v').getBoundingClientRect(), h=svg.parentNode.getBoundingClientRect();
+    tip.innerHTML='<b>'+usd(CHART.vals[i])+'</b>'+CHART.dates[i]+' \u00B7 '+CHART.model+'<br>List price '+usd(CHART.vals[i]);
+    tip.style.left=(r.left-h.left+r.width/2)+'px';
+    tip.style.top=(r.top-h.top-6)+'px';
+    tip.hidden=false;
+  });
+  svg.addEventListener('mouseleave',function(){ tip.hidden=true; });
+})();
+
 var wsSel=document.getElementById('ws'), runsEl=document.getElementById('runs'), volEl=document.getElementById('volume');
-var chosen='best', requested=false;
+var chosen=null, requested=false;
 
 function el(tag,cls,text){ var e=document.createElement(tag); if(cls) e.className=cls; if(text!==undefined) e.textContent=text; return e; }
 
@@ -430,66 +465,73 @@ function render(){
     var d=el('div','e'); d.appendChild(el('div','k',e[0])); d.appendChild(el('div','v',e[1])); d.appendChild(el('div','s',e[2])); est.appendChild(d);
   });
 
+  var sel=null;
+  if(chosen){ scored.forEach(function(s){ if(s.name===chosen) sel=s; }); }
+  if(!sel) sel=rec.best;
+
   var tb=document.getElementById('tiers'); tb.innerHTML='';
   scored.forEach(function(s){
     var tr=document.createElement('tr');
-    var isPick=rec.best&&s.name===rec.best.name, isStretch=rec.stretch&&s.name===rec.stretch.name;
-    if(isPick) tr.className='pick'; else if(isStretch) tr.className='stretch'; else if(s.annualSaving<0) tr.className='bad';
+    var isPick=rec.best&&s.name===rec.best.name, isStretch=rec.stretch&&s.name===rec.stretch.name, isSel=sel&&s.name===sel.name;
+    tr.className=(isPick?'pick':isStretch?'stretch':s.annualSaving<0?'bad':'')+(isSel?' sel':'');
+    tr.setAttribute('role','button'); tr.tabIndex=0;
+    tr.setAttribute('aria-pressed',isSel?'true':'false');
+    tr.setAttribute('aria-label','Show the terms of '+s.name);
     var first=el('td',null,s.name);
     if(isPick) first.appendChild(el('span','pill ok','recommended'));
     else if(isStretch) first.appendChild(el('span','pill warn',rec.best?'stretch':'closest'));
     tr.appendChild(first);
     [money(s.commit),pct(s.discount),money(s.credits),pct(s.breakeven),money(s.annualSaving),pct(s.risk)].forEach(function(v){ tr.appendChild(el('td','n',v)); });
+    function pickTier(){ if(!(sel&&sel.name===s.name)){ chosen=s.name; requested=false; render(); } }
+    tr.addEventListener('click',pickTier);
+    tr.addEventListener('keydown',function(e){ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); pickTier(); } });
     tb.appendChild(tr);
   });
 
   var offer=document.getElementById('offer'); offer.innerHTML='';
-  if(rec.best){
-    var t=(chosen==='stretch'&&rec.stretch)?rec.stretch:rec.best, up=t!==rec.best;
-    offer.className='offer'+(up?' up':'');
-    var h3=el('h3',null,t.name+' at '+pct(t.discount)+' off');
-    h3.appendChild(el('span','pill '+(up?'warn':'ok'),up?'stretch':'recommended'));
+  if(sel){
+    var isBest=rec.best&&sel.name===rec.best.name, selStretch=rec.stretch&&sel.name===rec.stretch.name, loss=sel.annualSaving<0;
+    var smaller=rec.best&&sel.commit<rec.best.commit;
+    offer.className='offer'+(isBest||smaller?'':loss?' loss':' up');
+    var h3=el('h3',null,sel.name+' at '+pct(sel.discount)+' off');
+    h3.appendChild(el('span','pill '+(isBest?'ok':'warn'),isBest?'recommended':smaller?'smaller than recommended':selStretch?(rec.best?'stretch':'closest'):'not recommended'));
     offer.appendChild(h3);
-    offer.appendChild(el('p',null,'Commit '+money(t.commit)+' a month for '+money(t.credits)+' of usage at list price. At '+num(volume)+' runs a month that saves '+money(t.annualSaving)+' a year.'));
-    if(up){
-      offer.appendChild(el('p','w',pct(t.risk)+' of months would fall below breakeven, which is '+pct(t.breakeven)+' utilization. Worth it if volume is growing; the safe tier is '+rec.best.name+'.'));
-    } else {
-      offer.appendChild(el('p','d','Consumed even in a p10 month. You stop saving below '+pct(t.breakeven)+' utilization.'+
+    offer.appendChild(el('p',null,'Commit '+money(sel.commit)+' a month for '+money(sel.credits)+' of usage at list price. At '+num(volume)+' runs a month that '+
+      (loss?'costs '+money(-sel.annualSaving)+' a year more than pay-as-you-go.':'saves '+money(sel.annualSaving)+' a year.')));
+    if(isBest){
+      offer.appendChild(el('p','d','Consumed even in a p10 month. You stop saving below '+pct(sel.breakeven)+' utilization.'+
         (rec.stretch?' '+rec.stretch.name+' would save '+money(rec.stretch.annualSaving)+' a year instead, with '+pct(rec.stretch.risk)+' of months below breakeven.':'')));
+    } else if(smaller){
+      offer.appendChild(el('p','d','Consumed even in a p10 month. You stop saving below '+pct(sel.breakeven)+' utilization. '+
+        rec.best.name+' would save '+money(rec.best.annualSaving)+' a year instead and is still consumed in a p10 month.'));
+    } else if(loss){
+      offer.appendChild(el('p','w','Not consumed at expected volume. '+pct(sel.risk)+' of months would fall below breakeven, which is '+pct(sel.breakeven)+
+        ' utilization, and unused credits expire.'+(rec.best?' The safe tier is '+rec.best.name+'.':'')));
+    } else {
+      offer.appendChild(el('p','w',pct(sel.risk)+' of months would fall below breakeven, which is '+pct(sel.breakeven)+' utilization.'+
+        (selStretch&&rec.best?' Worth it if volume is growing.':'')+(rec.best?' The safe tier is '+rec.best.name+'.':' Not recommended until volume settles.')));
     }
     var cta=el('div','cta');
     if(requested){
-      cta.appendChild(el('span','pill ok','✓ Requested'));
-      cta.appendChild(el('span','sent','Sent to Billing as '+t.name+'. The commitment starts on the first of next month; this page changes when it does.'));
+      cta.appendChild(el('span','pill ok','\u2713 Requested'));
+      cta.appendChild(el('span','sent','Sent to Billing as '+sel.name+'. The commitment starts on the first of next month; this page changes when it does.'));
     } else {
-      var go=el('button','btn btn-w','Accept '+t.name); go.type='button';
+      var go=el('button','btn btn-w','Accept '+sel.name); go.type='button';
       go.addEventListener('click',function(){ requested=true; render(); });
       cta.appendChild(go);
-      if(rec.stretch){
-        var sw=el('button','btn',up?'Back to '+rec.best.name:'Size up to '+rec.stretch.name); sw.type='button';
-        sw.addEventListener('click',function(){ chosen=up?'best':'stretch'; render(); });
-        cta.appendChild(sw);
-      }
     }
     offer.appendChild(cta);
   } else {
     offer.className='offer none';
     offer.appendChild(el('h3',null,'Stay on pay-as-you-go'));
     offer.appendChild(el('p',null,'No tier is consumed in a p10 month at this volume, so a commitment would cost more than it saves.'));
-    if(rec.stretch) offer.appendChild(el('p','d','Closest is '+rec.stretch.name+' at '+pct(rec.stretch.discount)+' off, with '+pct(rec.stretch.risk)+' of months below breakeven. Worth revisiting once volume settles.'));
-    var none=el('div','cta'); var nb=el('button','btn','No commitment recommended'); nb.disabled=true; none.appendChild(nb); offer.appendChild(none);
+    if(rec.stretch) offer.appendChild(el('p','d','Closest is '+rec.stretch.name+' at '+pct(rec.stretch.discount)+' off, with '+pct(rec.stretch.risk)+' of months below breakeven. Select a tier above to see its terms anyway.'));
   }
-
-  document.getElementById('mech').innerHTML=
-    'How this is computed: prepaying <code>C</code> buys credits worth <code>C / (1 − discount)</code> at list price. '+
-    'Unused credits expire; usage past them bills at list. So breakeven utilization is <code>1 − discount</code> whatever the tier, '+
-    'and the recommended tier is the largest one still consumed in a p'+Math.round(SIZING_P*100)+' month. '+
-    'Runs are modeled as lognormal from this workspace’s sessions; month-to-month volume sets most of the band.';
 }
 
-wsSel.addEventListener('change',function(){ volEl.value=WS[wsSel.value].runs; chosen='best'; requested=false; render(); });
+wsSel.addEventListener('change',function(){ volEl.value=WS[wsSel.value].runs; chosen=null; requested=false; render(); });
 runsEl.addEventListener('input',render);
-volEl.addEventListener('input',function(){ chosen='best'; requested=false; render(); });
+volEl.addEventListener('input',function(){ requested=false; render(); });
 volEl.value=WS[wsSel.value].runs;
 render();
 </script>
