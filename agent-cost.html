@@ -1,7 +1,7 @@
 <!doctype html>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Move OpenAI workloads to Claude</title>
+<title>Size a commitment from agent run cost</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap">
 <style>
 :root{
@@ -49,28 +49,24 @@ footer a{color:var(--ink-2)}
   </div>
 
   <main>
-<h1>Move OpenAI workloads to Claude</h1>
-<p>Point Claude Code at a repository that uses the OpenAI SDK. It rewrites every call
-site it can, stops to ask about the ones it can't, and then blocks the pull request
-until the repository's own tests pass against Claude.</p>
-<p><strong>Status:</strong> Designed · <strong>Cost:</strong> About 2 weeks · <strong>Theme:</strong> acquisition</p>
-<p>Outside the slate since September 6, 2026. The case and the demo stay in the
-repository.</p>
-<p><a href="https://madpr.github.io/claude-growth-surfaces/migrate.html">Terminal demo</a></p>
+<h1>Size a commitment from agent run cost</h1>
+<p>Committed-spend discounts turn metered revenue into contracted revenue. In self-serve,
+they stall on one question: how much to commit to. An agent workload takes the guess out
+and makes the yearly forecast clear.</p>
+<p><strong>Status:</strong> Designed · <strong>Cost:</strong> About 2 weeks · <strong>Theme:</strong> monetization ·
+<strong>Revenue path:</strong> direct</p>
+<p><a href="https://madpr.github.io/claude-growth-surfaces/size-commitment.html">Open the mock</a></p>
 <h2>Problem</h2>
-<p>The OpenAI SDK compatibility layer is an endpoint on Anthropic's API. You point the
-OpenAI SDK at it with a Claude key and a Claude model name, and requests are
-translated on the server, tools included. The documentation describes it as a way
-"to test and compare model capabilities" and says it is
-"not considered a long-term or production-ready solution".</p>
-<p>Nothing tells you what broke. The compatibility layer silently ignores most fields it
-doesn't support, including the structured-output format and strict tool schemas, so a
-team evaluating through it gets free-form text where it asked for JSON and no warning.</p>
-<p>Prompt caching isn't supported through the layer either, so any cost figure you
-take from it is an uncached one.</p>
+<p>Discounts are negotiated and have a human in the loop today. The pricing documentation
+says volume discounts "are negotiated on a case-by-case basis", tells high-volume agent
+applications to "contact the enterprise sales team for custom pricing arrangements", and
+bills everyone else on "actual monthly usage".</p>
+<p>The Cost page already holds every input. Those inputs can price a credit purchase at a
+discounted rate that commits the account to future spend.</p>
 <h2>Proposed experience</h2>
-<p>Clean translations, prompts that look tuned for OpenAI, and fields whose behavior
-changes on Claude all arrive in the pull request as ordinary diffs the team can review.</p>
+<p>A Commitment panel sits on the Cost page, under the daily chart, sized for the selected
+workspace. It recommends the largest tier still consumed in a p10 month and states the
+breakeven utilization next to it; the mock shows the arithmetic behind every number.</p>
 <h2>Success metrics</h2>
 <div class="tbl"><table>
 <thead>
@@ -81,27 +77,29 @@ changes on Claude all arrive in the pull request as ordinary diffs the team can 
 </thead>
 <tbody>
 <tr>
-<td>Merged migrations per quarter</td>
-<td>Whether workloads actually move</td>
+<td>Commitments accepted from the panel, and contracted share of API revenue</td>
+<td>Primary. Whether a sized offer converts where a blank forecast does not</td>
 </tr>
 <tr>
-<td>Metered spend 90 days after merge, against the account's pre-migration baseline</td>
-<td>The revenue claim</td>
+<td>Utilization at term end, and renewal</td>
+<td>Whether the p10 rule sizes honestly. Commitments finishing below breakeven mean the sizing is too aggressive, a term before the renewal number says so</td>
 </tr>
 </tbody>
 </table></div>
-<p>Guardrail: production regressions after a passing gate. The target is zero.</p>
+<p>Guardrail: revenue per contracted account against matched uncontracted accounts. A
+discount on spend that was coming anyway is margin given away.</p>
 <h2>Evidence</h2>
-<p>The compatibility layer's own documentation, read September 1, 2026
-(<a href="https://platform.claude.com/docs/en/cli-sdks-libraries/libraries/openai-sdk">OpenAI SDK compatibility</a>):
-it is "primarily intended to test and compare model capabilities, and is not considered
-a long-term or production-ready solution"; <code>strict</code> and <code>response_format</code> are ignored;
-prompt caching is not supported; and "most unsupported fields are silently ignored
-rather than producing errors."</p>
-<p>The terminal demo runs on a seeded repository. It reads no repository and calls no API.</p>
+<p>The pricing documentation, read September 6, 2026
+(<a href="https://platform.claude.com/docs/en/about-claude/pricing">Pricing</a>): "Volume discounts
+may be available for high-volume users. These are negotiated on a case-by-case basis";
+"For high-volume agent applications, contact the enterprise sales team for custom pricing
+arrangements"; "Billing is based on actual monthly usage". Managed Agents sessions bill
+tokens at model rates plus $0.08 per session-hour, so a run has a price.</p>
+<p>The mock runs on three seeded workspaces and an illustrative tier ladder. It reads no
+account and calls no API.</p>
   </main>
 
   <footer>
-    Rendered from <a href="https://github.com/madpr/claude-growth-surfaces/blob/master/02-openai-migration/README.md">02-openai-migration/README.md</a> in the repository.
+    Rendered from <a href="https://github.com/madpr/claude-growth-surfaces/blob/master/04-commitment-sizing/README.md">04-commitment-sizing/README.md</a> in the repository.
   </footer>
 </div>
