@@ -263,7 +263,7 @@ tr[role=button]:focus-visible{outline:2px solid var(--accent);outline-offset:-2p
             <thead><tr>
               <th>Tier</th><th>Commit per month</th><th>Discount</th>
               <th>Credits at list</th><th>Breakeven use</th>
-              <th>Saving per year</th><th>Months below breakeven</th>
+              <th>Saving per year, fully used</th><th>At your volume</th><th>Months below breakeven</th>
             </tr></thead>
             <tbody id="tiers"></tbody>
           </table>
@@ -368,6 +368,8 @@ function scoreTiers(spend){
     var risk=spend.sd>0?cdf((t.commit-spend.mean)/spend.sd):(spend.mean>=t.commit?0:1);
     return {name:t.name, commit:t.commit, discount:t.discount, credits:credits,
             breakeven:1-t.discount, monthlySaving:atMean.saving, annualSaving:atMean.saving*12,
+            maxAnnual:t.commit*t.discount/(1-t.discount)*12,
+            utilization:Math.min(1,spend.mean/credits),
             risk:risk, affordable:t.commit<=spend.p10};
   });
 }
@@ -481,7 +483,7 @@ function render(){
     if(isPick) first.appendChild(el('span','pill ok','recommended'));
     else if(isStretch) first.appendChild(el('span','pill warn',rec.best?'stretch':'closest'));
     tr.appendChild(first);
-    [money(s.commit),pct(s.discount),money(s.credits),pct(s.breakeven),money(s.annualSaving),pct(s.risk)].forEach(function(v){ tr.appendChild(el('td','n',v)); });
+    [money(s.commit),pct(s.discount),money(s.credits),pct(s.breakeven),money(s.maxAnnual),money(s.annualSaving),pct(s.risk)].forEach(function(v){ tr.appendChild(el('td','n',v)); });
     function pickTier(){ if(!(sel&&sel.name===s.name)){ chosen=s.name; requested=false; render(); } }
     tr.addEventListener('click',pickTier);
     tr.addEventListener('keydown',function(e){ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); pickTier(); } });
@@ -496,19 +498,20 @@ function render(){
     var h3=el('h3',null,sel.name+' at '+pct(sel.discount)+' off');
     h3.appendChild(el('span','pill '+(isBest?'ok':'warn'),isBest?'recommended':smaller?'smaller than recommended':selStretch?(rec.best?'stretch':'closest'):'not recommended'));
     offer.appendChild(h3);
-    offer.appendChild(el('p',null,'Commit '+money(sel.commit)+' a month for '+money(sel.credits)+' of usage at list price. At '+num(volume)+' runs a month that '+
-      (loss?'costs '+money(-sel.annualSaving)+' a year more than pay-as-you-go.':'saves '+money(sel.annualSaving)+' a year.')));
+    offer.appendChild(el('p',null,'Commit '+money(sel.commit)+' a month for '+money(sel.credits)+' of usage at list price. Fully used, that saves '+money(sel.maxAnnual)+' a year.'));
+    var used=sel.utilization>=0.995?'all of the credits':pct(sel.utilization)+' of the credits';
+    var at='At '+num(volume)+' runs a month you ';
     if(isBest){
-      offer.appendChild(el('p','d','Consumed even in a p10 month. You stop saving below '+pct(sel.breakeven)+' utilization.'+
+      offer.appendChild(el('p','d',at+'use '+used+' and save '+money(sel.annualSaving)+' a year, consumed even in a p10 month. You stop saving below '+pct(sel.breakeven)+' utilization.'+
         (rec.stretch?' '+rec.stretch.name+' would save '+money(rec.stretch.annualSaving)+' a year instead, with '+pct(rec.stretch.risk)+' of months below breakeven.':'')));
     } else if(smaller){
-      offer.appendChild(el('p','d','Consumed even in a p10 month. You stop saving below '+pct(sel.breakeven)+' utilization. '+
+      offer.appendChild(el('p','d',at+'use '+used+' and save '+money(sel.annualSaving)+' a year. '+
         rec.best.name+' would save '+money(rec.best.annualSaving)+' a year instead and is still consumed in a p10 month.'));
     } else if(loss){
-      offer.appendChild(el('p','w','Not consumed at expected volume. '+pct(sel.risk)+' of months would fall below breakeven, which is '+pct(sel.breakeven)+
-        ' utilization, and unused credits expire.'+(rec.best?' The safe tier is '+rec.best.name+'.':'')));
+      offer.appendChild(el('p','w',at+'would use '+used+' and pay '+money(-sel.annualSaving)+' a year more than pay-as-you-go. '+
+        pct(sel.risk)+' of months would fall below breakeven, which is '+pct(sel.breakeven)+' utilization, and unused credits expire.'+(rec.best?' The safe tier is '+rec.best.name+'.':'')));
     } else {
-      offer.appendChild(el('p','w',pct(sel.risk)+' of months would fall below breakeven, which is '+pct(sel.breakeven)+' utilization.'+
+      offer.appendChild(el('p','w',at+'use '+used+' and save '+money(sel.annualSaving)+' a year, but '+pct(sel.risk)+' of months would fall below breakeven, which is '+pct(sel.breakeven)+' utilization.'+
         (selStretch&&rec.best?' Worth it if volume is growing.':'')+(rec.best?' The safe tier is '+rec.best.name+'.':' Not recommended until volume settles.')));
     }
     var cta=el('div','cta');
