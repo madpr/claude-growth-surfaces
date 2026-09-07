@@ -55,8 +55,7 @@ started billing my Console account instead of the subscription I pay for, and
 the diagnostic said nothing had changed. There are 26 public issues describing
 the same misattribution, and the four that put a dollar figure on it add up to
 $1,799.83.</p>
-<p><strong>Status:</strong> Defect reproduced, proposal written, drivable mock ·
-<strong>Cost:</strong> three releases (announce, warn, switch) · <strong>Theme:</strong> retention</p>
+<p><strong>Cost:</strong> three releases (announce, warn, switch) · <strong>Theme:</strong> retention</p>
 <h2>Why this is outside the slate</h2>
 <p>Under the decision rule the top README states (work stays on the subscription
 while it is one person's, and moves to the platform when it bills an
@@ -64,8 +63,7 @@ organization rather than a person), this item is the guarantee that one
 person's interactive session is never billed to an organization without saying
 so.</p>
 <h2>Findings</h2>
-<p>I first saw this on Claude Code v2.1.252 on 31 August 2026 and reproduced it
-on v2.1.260 on 3 September 2026.</p>
+<p>I first saw this on Claude Code v2.1.252 and reproduced it on v2.1.260.</p>
 <pre><code>$ claude auth status --json | jq -c '{authMethod,apiProvider,subscriptionType}'
 {&quot;authMethod&quot;:&quot;claude.ai&quot;,&quot;apiProvider&quot;:&quot;firstParty&quot;,&quot;subscriptionType&quot;:&quot;pro&quot;}
 

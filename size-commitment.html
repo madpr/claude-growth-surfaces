@@ -5,7 +5,7 @@
 
 <style>
 /* The Console's Cost page with one addition. Navigation, filters, cards and the
-   daily chart replicate platform.claude.com/cost, read 6 September 2026. Coral
+   daily chart replicate platform.claude.com/cost. Coral
    marks the addition: the commitment panel under the chart. */
 :root{
   color-scheme:dark;
@@ -32,6 +32,7 @@ a{color:var(--link);text-decoration:none}
 .brand{font-size:15px;font-weight:600;letter-spacing:-.01em;padding:2px 8px 12px}
 .ws{display:flex;align-items:center;gap:8px;border:1px solid var(--rule);border-radius:7px;padding:6px 9px;font-size:12.5px;margin-bottom:9px;color:var(--ink-2)}
 .ws .caret{margin-left:auto;color:var(--ink-3);font-size:10px}
+button.ws{width:100%;background:none;text-align:left;cursor:pointer;color:var(--ink)}
 .omni{display:flex;align-items:center;gap:8px;border:1px solid var(--rule);border-radius:7px;padding:6px 9px;font-size:12.5px;color:var(--ink-3);margin-bottom:12px}
 .omni kbd{margin-left:auto;font-family:var(--mono);font-size:10px}
 .nav{display:flex;flex-direction:column;gap:1px;overflow-y:auto;flex:1}
@@ -65,10 +66,18 @@ h1{margin:0;font-size:23px;font-weight:600;letter-spacing:-.02em}
 .f{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--rule);border-radius:7px;padding:5px 9px;color:var(--ink-2);background:var(--panel)}
 .f b{color:var(--ink);font-weight:500}
 .f .c{color:var(--ink-3);font-size:10px}
-.f select{background:none;border:none;padding:0;color:var(--ink);font-weight:500;font-size:12.5px}
 .f.live{border-color:var(--accent)}
 .filters .sep{width:1px;height:18px;background:var(--rule);margin:0 2px}
 .filters .dl{margin-left:auto;color:var(--ink-3);font-size:14px}
+.dd{position:relative;display:inline-block}
+.dd.rail{display:block;margin-bottom:9px}
+.dd.rail .ws{margin-bottom:0}
+.menu{position:absolute;top:calc(100% + 4px);left:0;min-width:200px;margin:0;padding:4px;list-style:none;background:var(--panel);border:1px solid var(--rule);border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.45);z-index:20}
+.dd.rail .menu{min-width:0;width:100%}
+.menu li{padding:6px 9px;border-radius:5px;font-size:12.5px;color:var(--ink-2);cursor:pointer;display:flex;align-items:center}
+.menu li:hover,.menu li:focus-visible{background:var(--sunk);color:var(--ink);outline:none}
+.menu li[aria-selected=true]{color:var(--ink);font-weight:550}
+.menu li[aria-selected=true]::after{content:"\2713";margin-left:auto;color:var(--accent-ink);font-size:11px}
 
 .cards{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;margin-top:16px}
 .card{border:1px solid var(--rule);border-radius:9px;padding:13px 15px;background:var(--panel);min-height:112px}
@@ -97,6 +106,7 @@ h1{margin:0;font-size:23px;font-weight:600;letter-spacing:-.02em}
 .pill{font-size:11px;font-weight:550;border-radius:5px;padding:1px 7px;background:var(--accent-dim);color:var(--accent-ink);border:1px solid var(--accent)}
 .pill.ok{background:var(--ok-dim);color:var(--ok);border-color:transparent}
 .pill.warn{background:var(--warn-dim);color:var(--warn);border-color:transparent}
+.pill.window{background:var(--sunk);color:var(--ink-2);border-color:var(--rule);font-family:var(--mono);font-weight:500}
 .commit header p{margin:3px 0 0;font-size:12.5px;color:var(--ink-2)}
 .inner{padding:16px}
 .controls{display:flex;flex-wrap:wrap;gap:12px 22px;padding-bottom:14px;border-bottom:1px solid var(--rule-soft);margin-bottom:14px}
@@ -152,7 +162,10 @@ tr[role=button]:focus-visible{outline:2px solid var(--accent);outline-offset:-2p
 <div class="app">
   <aside class="side">
     <div class="brand">Claude Console</div>
-    <div class="ws"><span>All workspaces</span><span class="caret">&#9662;</span></div>
+    <div class="dd rail">
+      <button type="button" class="ws" id="side-btn" aria-haspopup="listbox" aria-expanded="false"><span id="side-val">support-triage</span><span class="caret">&#9662;</span></button>
+      <ul class="menu" id="side-menu" role="listbox" aria-label="Workspace" hidden></ul>
+    </div>
     <div class="omni"><span>Search Console&hellip;</span><kbd>&#8984;K</kbd></div>
     <nav class="nav">
       <button class="ni">Dashboard</button>
@@ -205,13 +218,10 @@ tr[role=button]:focus-visible{outline:2px solid var(--accent);outline-offset:-2p
     </div>
 
     <div class="filters">
-      <label class="f live">Workspace
-        <select id="ws" aria-label="Workspace">
-          <option value="support-triage-pilot">support-triage-pilot</option>
-          <option value="support-triage" selected>support-triage</option>
-          <option value="repo-migration">repo-migration</option>
-        </select>
-      </label>
+      <span class="dd">
+        <button type="button" class="f live" id="ws-btn" aria-haspopup="listbox" aria-expanded="false">Workspace <b id="ws-val">support-triage</b> <span class="c">&#9662;</span></button>
+        <ul class="menu" id="ws-menu" role="listbox" aria-label="Workspace" hidden></ul>
+      </span>
       <span class="f">API key <b>All</b> <span class="c">&#9662;</span></span>
       <span class="f">Model <b>All</b> <span class="c">&#9662;</span></span>
       <span class="f">Range <b>Last 30 days</b> <span class="c">&#9662;</span></span>
@@ -243,7 +253,7 @@ tr[role=button]:focus-visible{outline:2px solid var(--accent);outline-offset:-2p
     <section class="commit" aria-labelledby="commit-h">
       <header>
         <div>
-          <h2 id="commit-h">Commitment <span class="pill">Proposal</span></h2>
+          <h2 id="commit-h">Commitment <span class="pill">Proposal</span> <span class="pill window" id="window"></span></h2>
           <p id="p-sub"></p>
         </div>
       </header>
@@ -258,7 +268,7 @@ tr[role=button]:focus-visible{outline:2px solid var(--accent);outline-offset:-2p
 
         <div class="est" id="est"></div>
 
-        <div class="tbl">
+        <div class="tbl" id="tblwrap">
           <table>
             <thead><tr>
               <th>Tier</th><th>Commit per month</th><th>Discount</th>
@@ -268,7 +278,7 @@ tr[role=button]:focus-visible{outline:2px solid var(--accent);outline-offset:-2p
             <tbody id="tiers"></tbody>
           </table>
         </div>
-        <p class="tblhint">Select a tier to see its terms.</p>
+        <p class="tblhint" id="tblhint">Select a tier to see its terms.</p>
 
         <div class="offer" id="offer"></div>
       </div>
@@ -276,7 +286,7 @@ tr[role=button]:focus-visible{outline:2px solid var(--accent);outline-offset:-2p
 
     <p class="foot">
       <b>Proposal, not a shipped feature.</b> Navigation, filters, cards and the daily
-      chart replicate the live Console's Cost page, read 6&nbsp;September&nbsp;2026; the
+      chart replicate the live Console's Cost page; the
       addition is the commitment panel. The three workspaces are seeded and the tier
       ladder is illustrative, so its discounts and thresholds are placeholders. Nothing
       here reads an account or calls an API.
@@ -297,14 +307,26 @@ var TIERS=[
   {name:'Enterprise', commit:100000, discount:0.35}
 ];
 var WS={
-  'support-triage-pilot':{desc:'Support triage agent, just past pilot. Low volume, still ramping, volatile month to month.',
-    runs:9000, months:3, median:0.34, sigma:0.7, cv:0.35, model:'Claude Sonnet 5', hours:0.05},
-  'support-triage':{desc:'The same agent in production across three teams. Steady volume, well-characterized cost.',
-    runs:62000, months:11, median:0.41, sigma:0.8, cv:0.12, model:'Claude Sonnet 5', hours:0.05},
-  'repo-migration':{desc:'Repository migration agent. Fewer runs, much larger and more variable per run.',
-    runs:5200, months:7, median:2.6, sigma:1.2, cv:0.22, model:'Claude Opus 5', hours:0.4}
+  'support-triage':{desc:'The same agent in production across three teams since week one. Steady volume, well-characterized cost.',
+    runs:62000, weeks:10, median:0.41, sigma:0.8, cv:0.12, model:'Claude Sonnet 5', hours:0.05, rate:0},
+  'repo-migration':{desc:'Repository migration agent, seven weeks in. Fewer runs, much larger and more variable per run.',
+    runs:5200, weeks:7, median:2.6, sigma:1.2, cv:0.22, model:'Claude Opus 5', hours:0.4, rate:0},
+  'invoice-extraction':{desc:'Invoice extraction agent, forty weeks in. Steady, high volume, already on a negotiated rate.',
+    runs:80000, weeks:40, median:0.22, sigma:0.6, cv:0.08, model:'Claude Haiku 4.5', hours:0.02, rate:0.12}
 };
 var SIZING_P=0.10, STRETCH_CEIL=0.25, RUNTIME_PER_HOUR=0.08;
+/* The offer is made in a workload's first 90 days. A year at list price is spend
+   that was coming anyway; a discount then is margin given away. */
+var OFFER_WINDOW_DAYS=90, MIN_RUNS=1000;
+
+/* Not every workspace gets an offer. The panel appears inside a workload's
+   first 90 days, once it has run enough times to price a run and a p10 month
+   clears the smallest tier, and never for a workspace already on a negotiated
+   rate. Otherwise the Cost page is just the Cost page. */
+function eligible(acc,spend){
+  var day=acc.weeks*7, sofar=Math.round(acc.runs*acc.weeks/4.33);
+  return day<=OFFER_WINDOW_DAYS && !acc.rate && sofar>=MIN_RUNS && spend.p10>=TIERS[0].commit;
+}
 
 function erf(x){
   var s=x<0?-1:1; x=Math.abs(x);
@@ -389,14 +411,15 @@ function recommend(scored){
 /* Thirty seeded days ending on the day the page was read, so the chart is the
    same on every load. The wobble scales with the workspace's volume volatility. */
 function paintChart(acc,monthMean){
-  var days=30, seed=acc.months*7+Math.round(acc.median*100), vals=[], dates=[], i;
-  var MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'], end=new Date(2026,8,6);
+  var days=30, seed=acc.weeks*7+Math.round(acc.median*100), vals=[], dates=[], i;
+  var active=Math.min(days,acc.weeks*7);
+  var MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'], end=new Date();
   for(i=0;i<days;i++){
-    vals.push((monthMean/days)*(1+1.6*acc.cv*Math.sin(seed+i*1.7)));
+    vals.push(i<days-active?0:(monthMean/days)*(1+1.6*acc.cv*Math.sin(seed+i*1.7)));
     var d=new Date(end); d.setDate(end.getDate()-(days-1-i));
     dates.push(MON[d.getMonth()]+' '+d.getDate());
   }
-  var top=Math.max.apply(null,vals)*1.18;
+  var top=Math.max.apply(null,vals)/(1-acc.rate)*1.18;
   var mag=Math.pow(10,Math.floor(Math.log(top)/Math.LN10)), nice=Math.ceil(top/mag*2)/2*mag;
   var L=58, R=10, T=10, B=26, W=900, H=220, plotW=W-L-R, plotH=H-T-B;
   var s='';
@@ -408,15 +431,17 @@ function paintChart(acc,monthMean){
   var slot=plotW/days, bw=slot*0.62;
   for(i=0;i<days;i++){
     var x=L+slot*i+(slot-bw)/2, h=plotH*vals[i]/nice;
+    if(i%5===1) s+='<text x="'+(x+bw/2)+'" y="'+(H-8)+'" text-anchor="middle" font-size="11" fill="#837E74">'+dates[i]+'</text>';
+    if(!vals[i]) continue;
     s+='<g class="bar" data-i="'+i+'">';
     s+='<rect class="hit" x="'+(L+slot*i)+'" y="'+T+'" width="'+slot+'" height="'+plotH+'" fill="transparent"/>';
+    var listH=h/(1-acc.rate), capH=Math.max(3,listH-h);
     s+='<rect class="v" x="'+x+'" y="'+(T+plotH-h)+'" width="'+bw+'" height="'+h+'" fill="#5B8DD6" rx="1"/>';
-    s+='<rect x="'+x+'" y="'+(T+plotH-h-3)+'" width="'+bw+'" height="3" fill="#4A4640"/>';
+    s+='<rect x="'+x+'" y="'+(T+plotH-h-capH)+'" width="'+bw+'" height="'+capH+'" fill="#4A4640"/>';
     s+='</g>';
-    if(i%5===1) s+='<text x="'+(x+bw/2)+'" y="'+(H-8)+'" text-anchor="middle" font-size="11" fill="#837E74">'+dates[i]+'</text>';
   }
   document.getElementById('chart').innerHTML=s;
-  CHART={vals:vals, dates:dates, model:acc.model};
+  CHART={vals:vals, dates:dates, model:acc.model, rate:acc.rate};
 }
 
 /* Hover a bar for its figures. One delegated listener; the bars are rebuilt on every render. */
@@ -427,7 +452,7 @@ var CHART=null;
     var g=e.target.closest?e.target.closest('g.bar'):null;
     if(!g||!CHART){ tip.hidden=true; return; }
     var i=+g.getAttribute('data-i'), r=g.querySelector('rect.v').getBoundingClientRect(), h=svg.parentNode.getBoundingClientRect();
-    tip.innerHTML='<b>'+usd(CHART.vals[i])+'</b>'+CHART.dates[i]+' \u00B7 '+CHART.model+'<br>List price '+usd(CHART.vals[i]);
+    tip.innerHTML='<b>'+usd(CHART.vals[i])+'</b>'+CHART.dates[i]+' \u00B7 '+CHART.model+'<br>List price '+usd(CHART.vals[i]/(1-CHART.rate));
     tip.style.left=(r.left-h.left+r.width/2)+'px';
     tip.style.top=(r.top-h.top-6)+'px';
     tip.hidden=false;
@@ -435,28 +460,34 @@ var CHART=null;
   svg.addEventListener('mouseleave',function(){ tip.hidden=true; });
 })();
 
-var wsSel=document.getElementById('ws'), runsEl=document.getElementById('runs'), volEl=document.getElementById('volume');
+var wsCur='support-triage', runsEl=document.getElementById('runs'), volEl=document.getElementById('volume');
 var chosen=null, requested=false;
 
 function el(tag,cls,text){ var e=document.createElement(tag); if(cls) e.className=cls; if(text!==undefined) e.textContent=text; return e; }
 
 function render(){
-  var acc=WS[wsSel.value];
+  var acc=WS[wsCur];
   var runs=Math.max(1,+runsEl.value||1);
   var volume=Math.max(100,+volEl.value||acc.runs);
 
   /* The cards are the observed month. The panel below projects from the volume you type. */
-  var observed=monthly(acc,acc.runs), runtime=acc.runs*acc.hours*RUNTIME_PER_HOUR;
-  document.getElementById('c-total').textContent=usd(observed.mean);
-  document.getElementById('c-token').textContent=usd(observed.mean-runtime);
-  document.getElementById('c-list').textContent=usd(observed.mean-runtime);
+  var observed=monthly(acc,acc.runs), share=Math.min(1,acc.weeks*7/30);
+  var spent=observed.mean*share, runtime=acc.runs*acc.hours*RUNTIME_PER_HOUR*share;
+  var tokensList=spent-runtime, tokensPaid=tokensList*(1-acc.rate);
+  document.getElementById('c-total').textContent=usd(tokensPaid+runtime);
+  document.getElementById('c-token').textContent=usd(tokensPaid);
+  document.getElementById('c-list').textContent=usd(tokensList);
   document.getElementById('c-runtime').textContent=usd(runtime);
   document.getElementById('lg-model').textContent=acc.model;
-  paintChart(acc,observed.mean-runtime);
+  paintChart(acc,(observed.mean-runtime)*(1-acc.rate));
 
-  document.getElementById('p-sub').textContent='Sized from '+acc.months+' months of runs in this workspace. '+acc.desc;
+  document.getElementById('p-sub').textContent='Sized from '+acc.weeks+' weeks of runs in this workspace. '+acc.desc;
+  var win=document.getElementById('window');
+  win.textContent='Day '+(acc.weeks*7)+' of '+OFFER_WINDOW_DAYS;
+  win.title='Offered in a workload\u2019s first '+OFFER_WINDOW_DAYS+' days';
 
   var b=batch(acc,runs), spend=monthly(acc,volume), scored=scoreTiers(spend), rec=recommend(scored);
+  document.querySelector('.commit').hidden=!eligible(acc,spend);
 
   var est=document.getElementById('est'); est.innerHTML='';
   [['Cost of '+num(runs)+' runs', money(b.total), money(b.p10)+' to '+money(b.p90)+', 80% of the time'],
@@ -499,21 +530,6 @@ function render(){
     h3.appendChild(el('span','pill '+(isBest?'ok':'warn'),isBest?'recommended':smaller?'smaller than recommended':selStretch?(rec.best?'stretch':'closest'):'not recommended'));
     offer.appendChild(h3);
     offer.appendChild(el('p',null,'Commit '+money(sel.commit)+' a month for '+money(sel.credits)+' of usage at list price. Fully used, that saves '+money(sel.maxAnnual)+' a year.'));
-    var used=sel.utilization>=0.995?'all of the credits':pct(sel.utilization)+' of the credits';
-    var at='At '+num(volume)+' runs a month you ';
-    if(isBest){
-      offer.appendChild(el('p','d',at+'use '+used+' and save '+money(sel.annualSaving)+' a year, consumed even in a p10 month. You stop saving below '+pct(sel.breakeven)+' utilization.'+
-        (rec.stretch?' '+rec.stretch.name+' would save '+money(rec.stretch.annualSaving)+' a year instead, with '+pct(rec.stretch.risk)+' of months below breakeven.':'')));
-    } else if(smaller){
-      offer.appendChild(el('p','d',at+'use '+used+' and save '+money(sel.annualSaving)+' a year. '+
-        rec.best.name+' would save '+money(rec.best.annualSaving)+' a year instead and is still consumed in a p10 month.'));
-    } else if(loss){
-      offer.appendChild(el('p','w',at+'would use '+used+' and pay '+money(-sel.annualSaving)+' a year more than pay-as-you-go. '+
-        pct(sel.risk)+' of months would fall below breakeven, which is '+pct(sel.breakeven)+' utilization, and unused credits expire.'+(rec.best?' The safe tier is '+rec.best.name+'.':'')));
-    } else {
-      offer.appendChild(el('p','w',at+'use '+used+' and save '+money(sel.annualSaving)+' a year, but '+pct(sel.risk)+' of months would fall below breakeven, which is '+pct(sel.breakeven)+' utilization.'+
-        (selStretch&&rec.best?' Worth it if volume is growing.':'')+(rec.best?' The safe tier is '+rec.best.name+'.':' Not recommended until volume settles.')));
-    }
     var cta=el('div','cta');
     if(requested){
       cta.appendChild(el('span','pill ok','\u2713 Requested'));
@@ -532,9 +548,47 @@ function render(){
   }
 }
 
-wsSel.addEventListener('change',function(){ volEl.value=WS[wsSel.value].runs; chosen=null; requested=false; render(); });
+/* One workspace picker, opened from two places the way the live Console has
+   both: the sidebar switcher and the Cost page filter. Same list, same state. */
+function setWorkspace(name){
+  wsCur=name;
+  document.getElementById('ws-val').textContent=name;
+  document.getElementById('side-val').textContent=name;
+  volEl.value=WS[name].runs; chosen=null; requested=false; render();
+  closeMenus();
+}
+var PICKERS=[['ws-btn','ws-menu'],['side-btn','side-menu']];
+function closeMenus(){
+  PICKERS.forEach(function(p){ document.getElementById(p[1]).hidden=true; document.getElementById(p[0]).setAttribute('aria-expanded','false'); });
+}
+PICKERS.forEach(function(p){
+  var btn=document.getElementById(p[0]), menu=document.getElementById(p[1]);
+  Object.keys(WS).forEach(function(name){
+    var li=el('li',null,name); li.setAttribute('role','option'); li.tabIndex=-1; li.setAttribute('data-name',name);
+    li.addEventListener('click',function(e){ e.stopPropagation(); setWorkspace(name); });
+    li.addEventListener('keydown',function(e){ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); setWorkspace(name); } });
+    menu.appendChild(li);
+  });
+  btn.addEventListener('click',function(e){
+    e.stopPropagation();
+    var wasClosed=menu.hidden; closeMenus();
+    if(wasClosed){
+      menu.hidden=false; btn.setAttribute('aria-expanded','true');
+      Array.prototype.forEach.call(menu.children,function(li){ li.setAttribute('aria-selected',li.getAttribute('data-name')===wsCur?'true':'false'); });
+      var cur=menu.querySelector('[aria-selected="true"]'); if(cur) cur.focus();
+    }
+  });
+  menu.addEventListener('keydown',function(e){
+    var items=Array.prototype.slice.call(menu.children), i=items.indexOf(document.activeElement);
+    if(e.key==='Escape'){ closeMenus(); btn.focus(); }
+    else if(e.key==='ArrowDown'){ e.preventDefault(); items[Math.min(items.length-1,i+1)].focus(); }
+    else if(e.key==='ArrowUp'){ e.preventDefault(); items[Math.max(0,i-1)].focus(); }
+  });
+});
+document.addEventListener('click',closeMenus);
+document.addEventListener('keydown',function(e){ if(e.key==='Escape') closeMenus(); });
 runsEl.addEventListener('input',render);
 volEl.addEventListener('input',function(){ requested=false; render(); });
-volEl.value=WS[wsSel.value].runs;
+volEl.value=WS[wsCur].runs;
 render();
 </script>

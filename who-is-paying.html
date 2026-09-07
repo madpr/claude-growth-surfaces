@@ -7,7 +7,7 @@
 <style>
 /* A drivable mock of credential precedence in Claude Code.
 
-   Replicated from the shipped CLI, v2.1.260, 3 September 2026: the custom API
+   Replicated from the shipped CLI, v2.1.260: the custom API
    key dialog and its default focus on "No (recommended)", the fields
    `claude auth status --json` reports in both states, and the layout of /cost.
    Anything this mock adds is marked in the transcript with a faint rule.
@@ -313,7 +313,7 @@ function cmdEnv(){
   w('');
 }
 
-/* Reproduced on v2.1.260, 3 September 2026, and on v2.1.252 before it: setting
+/* Reproduced on v2.1.260, and on v2.1.252 before it: setting
    ANTHROPIC_API_KEY displaces the subscription while authMethod and apiProvider
    keep reporting the same values. Only subscriptionType moves. */
 function cmdAuth(){

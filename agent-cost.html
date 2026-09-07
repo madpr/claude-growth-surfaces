@@ -53,7 +53,7 @@ footer a{color:var(--ink-2)}
 <p>Committed-spend discounts turn metered revenue into contracted revenue. In self-serve,
 they stall on one question: how much to commit to. An agent workload takes the guess out
 and makes the yearly forecast clear.</p>
-<p><strong>Status:</strong> Designed · <strong>Cost:</strong> About 2 weeks · <strong>Theme:</strong> monetization ·
+<p><strong>Cost:</strong> About 2 weeks · <strong>Theme:</strong> monetization ·
 <strong>Revenue path:</strong> direct</p>
 <p><a href="https://madpr.github.io/claude-growth-surfaces/size-commitment.html">Open the mock</a></p>
 <h2>Problem</h2>
@@ -67,6 +67,14 @@ discounted rate that commits the account to future spend.</p>
 <p>A Commitment panel sits on the Cost page, under the daily chart, sized for the selected
 workspace. It recommends the largest tier still consumed in a p10 month and states the
 breakeven utilization next to it; the mock shows the arithmetic behind every number.</p>
+<p>The offer comes in a workload's first 90 days, as soon as there are enough runs to price
+one. Sizing needs runs, not months: a thousand runs settle the cost per run whether they
+took three weeks or a year. A workload that has already run a year at list price is
+spending anyway, and a discount then is margin given away. Early, the offer decides how
+the spend gets bought.</p>
+<p>Not every workspace gets an offer. The panel appears inside a workload's first 90 days,
+once it has run a thousand times and a p10 month clears the smallest tier, and never for
+a workspace already on a negotiated rate. Until then the Cost page is just the Cost page.</p>
 <h2>Success metrics</h2>
 <div class="tbl"><table>
 <thead>
@@ -77,8 +85,8 @@ breakeven utilization next to it; the mock shows the arithmetic behind every num
 </thead>
 <tbody>
 <tr>
-<td>Commitments accepted from the panel, and contracted share of API revenue</td>
-<td>Primary. Whether a sized offer converts where a blank forecast does not</td>
+<td>Commitments accepted inside a workload's first 90 days, and contracted share of API revenue</td>
+<td>Primary. Whether a sized offer converts where a blank forecast does not, and whether it converts early</td>
 </tr>
 <tr>
 <td>Utilization at term end, and renewal</td>
@@ -89,7 +97,7 @@ breakeven utilization next to it; the mock shows the arithmetic behind every num
 <p>Guardrail: revenue per contracted account against matched uncontracted accounts. A
 discount on spend that was coming anyway is margin given away.</p>
 <h2>Evidence</h2>
-<p>The pricing documentation, read September 6, 2026
+<p>The pricing documentation
 (<a href="https://platform.claude.com/docs/en/about-claude/pricing">Pricing</a>): "Volume discounts
 may be available for high-volume users. These are negotiated on a case-by-case basis";
 "For high-volume agent applications, contact the enterprise sales team for custom pricing
