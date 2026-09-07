@@ -28,13 +28,15 @@ drive discovery and, in the longer run, API revenue.
 - The **New** pill the product already uses, expiring after the first click or after
   14 days, whichever comes first.
 - Opens a new tab, like both existing links.
-- Shown only to subscribers whose profile says Engineering.
+- Shown only to subscribers whose profile says Engineering and who have no platform
+  organization yet.
 
 ## Success metrics
 
 | Metric | What it tests |
 | --- | --- |
-| Click-through on the rail row, against the instrumented account-menu and settings links | Primary. Whether placement is what gates activation |
-| Organizations created, first successful API call within 7 days, still calling at day 30 | Secondary. Whether a click becomes a platform customer |
+| First successful API call within 7 days, against a control group that does not see the row | Primary. Whether the row creates platform customers |
+| Organizations created, and accounts still calling at day 30 | Secondary. Whether the first call becomes repeat use |
+| Click-through on the rail row, against the instrumented account-menu and settings links | Diagnostic. Whether placement is what gates the first call |
 
 Guardrail: no fall in subscription retention, and no fall in claude.ai session volume.

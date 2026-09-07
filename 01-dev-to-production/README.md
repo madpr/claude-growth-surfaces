@@ -38,8 +38,9 @@ The two tools never mention each other and collide on every searchable word.
 ## Proposed experience
 
 One command turns a working project into a hosted agent, the sandbox it runs in, and the
-schedule it runs on. The command makes the developer create the sandbox, set its limits,
-and fill in the gaps, with nothing defaulted.
+schedule it runs on. The first version promotes one scheduled task. The developer creates
+the sandbox, sets its limits, and fills in the gaps, with the spend cap required, the
+rules that carry over listed beside the ones that do not, and nothing defaulted.
 
 ## Success metrics
 

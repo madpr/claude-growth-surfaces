@@ -22,28 +22,35 @@ discounted rate that commits the account to future spend.
 ## Proposed experience
 
 A Commitment panel sits on the Cost page, under the daily chart, sized for the selected
-workspace. It recommends the largest tier still consumed in a p10 month and states the
-breakeven utilization next to it; the mock shows the arithmetic behind every number.
+workspace. It recommends the largest tier still consumed in a slow month, one that nine
+months in ten beat, and states the breakeven utilization next to it; the mock shows the
+arithmetic behind every number.
+
+Two weeks is the engineering estimate to build the product. Its definition, the tiers,
+the terms, and how the revenue is recognized, is a cross-functional decision with
+finance, sales, and legal.
 
 The offer comes in a workload's first 90 days, as soon as there are enough runs to price
 one. Sizing needs runs, not months: a thousand runs settle the cost per run whether they
-took three weeks or a year. A workload that has already run a year at list price is
-spending anyway, and a discount then is margin given away. Early, the offer decides how
-the spend gets bought.
+took three weeks or a year. Volume is what stays uncertain, which is why the recommended
+tier is the one still consumed in a slow month. A workload that has already run a year
+at list price is spending anyway, and a discount then is margin given away. Early, the
+offer decides how the spend gets bought.
 
 Not every workspace gets an offer. The panel appears inside a workload's first 90 days,
-once it has run a thousand times and a p10 month clears the smallest tier, and never for
+once it has run a thousand times and a slow month clears the smallest tier, and never for
 a workspace already on a negotiated rate. Until then the Cost page is just the Cost page.
 
 ## Success metrics
 
 | Metric | What it tests |
 | --- | --- |
-| Commitments accepted inside a workload's first 90 days, and contracted share of API revenue | Primary. Whether a sized offer converts where a blank forecast does not, and whether it converts early |
-| Utilization at term end, and renewal | Whether the p10 rule sizes honestly. Commitments finishing below breakeven mean the sizing is too aggressive, a term before the renewal number says so |
+| Revenue per contracted account at 90 days, against matched uncontracted accounts | Primary. Whether the commitment grows spend or discounts spend that was coming anyway |
+| Commitments accepted inside a workload's first 90 days, and contracted share of API revenue | Leading. Whether a sized offer converts, and converts early |
+| Utilization at term end, and renewal | Whether sizing to a slow month is honest. Commitments finishing below breakeven mean the sizing is too aggressive, a term before the renewal number says so |
 
-Guardrail: revenue per contracted account against matched uncontracted accounts. A
-discount on spend that was coming anyway is margin given away.
+Guardrail: spend from accounts that saw the panel and declined, against matched accounts
+that never saw it.
 
 ## Evidence
 
