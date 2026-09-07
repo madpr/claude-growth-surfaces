@@ -320,7 +320,7 @@ var SIZING_P=0.10, STRETCH_CEIL=0.25, RUNTIME_PER_HOUR=0.08;
 var OFFER_WINDOW_DAYS=90, MIN_RUNS=1000;
 
 /* Not every workspace gets an offer. The panel appears inside a workload's
-   first 90 days, once it has run enough times to price a run and a p10 month
+   first 90 days, once it has run enough times to price a run and a slow month
    clears the smallest tier, and never for a workspace already on a negotiated
    rate. Otherwise the Cost page is just the Cost page. */
 function eligible(acc,spend){
@@ -493,9 +493,11 @@ function render(){
   [['Cost of '+num(runs)+' runs', money(b.total), money(b.p10)+' to '+money(b.p90)+', 80% of the time'],
    ['Band width', (b.band*100).toFixed(1)+'%', 'narrows as the batch grows'],
    ['Mean per run', money(b.meanRun), 'p95 run '+money(b.p95Run)],
-   ['Projected monthly', money(spend.mean), 'p10 month '+money(spend.p10)]
+   ['Projected monthly', money(spend.mean), 'slow month '+money(spend.p10)]
   ].forEach(function(e){
-    var d=el('div','e'); d.appendChild(el('div','k',e[0])); d.appendChild(el('div','v',e[1])); d.appendChild(el('div','s',e[2])); est.appendChild(d);
+    var d=el('div','e'); d.appendChild(el('div','k',e[0])); d.appendChild(el('div','v',e[1])); d.appendChild(el('div','s',e[2]));
+    if(e[0]==='Projected monthly') d.title='A slow month is one that nine months in ten beat.';
+    est.appendChild(d);
   });
 
   var sel=null;
@@ -543,7 +545,7 @@ function render(){
   } else {
     offer.className='offer none';
     offer.appendChild(el('h3',null,'Stay on pay-as-you-go'));
-    offer.appendChild(el('p',null,'No tier is consumed in a p10 month at this volume, so a commitment would cost more than it saves.'));
+    offer.appendChild(el('p',null,'No tier is consumed in a slow month at this volume, so a commitment would cost more than it saves.'));
     if(rec.stretch) offer.appendChild(el('p','d','Closest is '+rec.stretch.name+' at '+pct(rec.stretch.discount)+' off, with '+pct(rec.stretch.risk)+' of months below breakeven. Select a tier above to see its terms anyway.'));
   }
 }
