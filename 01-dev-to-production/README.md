@@ -5,8 +5,7 @@ inside a spend cap, a quality rubric, and a sandbox that never shows the agent i
 credentials. Nothing moves a project from one to the other; this proposal builds that
 path, with the limits set before the first unattended run.
 
-**Status:** Case written, two drivable demos · **Cost:** 1 to 2 months ·
-**Theme:** expansion
+**Cost:** 1 to 2 months · **Theme:** expansion
 
 [Terminal demo](https://madpr.github.io/claude-growth-surfaces/promote-cli.html) ·
 [Browser demo](https://madpr.github.io/claude-growth-surfaces/promote-to-agent.html)
@@ -69,7 +68,7 @@ Issue #82063 in the user's own words: "no harm done, but it makes me very
 worried."
 
 [`antigravity-for-claude-code`](https://github.com/yuting0624/antigravity-for-claude-code),
-an unaffiliated plugin looked at on September 3, 2026, makes offloading token-heavy
+an unaffiliated plugin, makes offloading token-heavy
 work from Claude Code to Gemini the default: the seat stays, the volume per session
 falls, and a retention dashboard calls that account healthy.
 

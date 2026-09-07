@@ -6,8 +6,9 @@ medium, one big. Each one takes a step a customer does by hand today and removes
 The small one puts the developer platform in claude.ai's left rail, where a subscriber
 who wants to build will actually see it. The medium one sizes a committed-spend tier
 from what an account's agent runs already cost, on the Console's Cost page, and offers
-it there. The big one takes a Claude Code project that ought to be running unattended
-and promotes it to a hosted agent, with the limits set before the first run.
+it there in the workload's first 90 days. The big one takes a Claude Code project that
+ought to be running unattended and promotes it to a hosted agent, with the limits set
+before the first run.
 
 **North star:** increase Claude API revenue · **Sizing:** one tactical, one medium, one
 big bet · **Evidence:** primary sources; every demo runs on a seeded scenario and reads no account
@@ -24,11 +25,11 @@ big bet · **Evidence:** primary sources; every demo runs on a seeded scenario a
 
 ## The slate
 
-| | Idea | Demo | Theme | Engineering cost | Status |
-|---|---|---|---|---|---|
-| **S** | [Developer platform entry point](03-platform-entry/) | [Open the mock](https://madpr.github.io/claude-growth-surfaces/platform-entry.html) | Activation | 2 to 3 days | Designed |
-| **M** | [Agent cost → commitment](04-commitment-sizing/) | [Open the mock](https://madpr.github.io/claude-growth-surfaces/size-commitment.html) | Monetization | About 2 weeks | Designed |
-| **L** | [Dev → production](01-dev-to-production/) | [Terminal demo](https://madpr.github.io/claude-growth-surfaces/promote-cli.html) · [Browser demo](https://madpr.github.io/claude-growth-surfaces/promote-to-agent.html) | Expansion | 1 to 2 months | Case written, two drivable demos |
+| | Idea | Demo | Theme | Engineering cost |
+|---|---|---|---|---|
+| **S** | [Developer platform entry point](03-platform-entry/) | [Open the mock](https://madpr.github.io/claude-growth-surfaces/platform-entry.html) | Activation | 2 to 3 days |
+| **M** | [Agent cost → commitment](04-commitment-sizing/) | [Open the mock](https://madpr.github.io/claude-growth-surfaces/size-commitment.html) | Monetization | About 2 weeks |
+| **L** | [Dev → production](01-dev-to-production/) | [Terminal demo](https://madpr.github.io/claude-growth-surfaces/promote-cli.html) · [Browser demo](https://madpr.github.io/claude-growth-surfaces/promote-to-agent.html) | Expansion | 1 to 2 months |
 
 ### Bonus
 

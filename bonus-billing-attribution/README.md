@@ -6,7 +6,6 @@ the diagnostic said nothing had changed. There are 26 public issues describing
 the same misattribution, and the four that put a dollar figure on it add up to
 $1,799.83.
 
-**Status:** Defect reproduced, proposal written, drivable mock ·
 **Cost:** three releases (announce, warn, switch) · **Theme:** retention
 
 ## Why this is outside the slate
@@ -19,8 +18,7 @@ so.
 
 ## Findings
 
-I first saw this on Claude Code v2.1.252 on 31 August 2026 and reproduced it
-on v2.1.260 on 3 September 2026.
+I first saw this on Claude Code v2.1.252 and reproduced it on v2.1.260.
 
 ```
 $ claude auth status --json | jq -c '{authMethod,apiProvider,subscriptionType}'

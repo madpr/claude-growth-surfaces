@@ -1,6 +1,6 @@
 # Two surfaces, one vocabulary
 
-Probed 2 September 2026 against both binaries on macOS: Claude Code `2.1.259` and
+Probed against both binaries on macOS: Claude Code `2.1.259` and
 `ant` `1.29.0`. Reproduce with [`probe.sh`](probe.sh) — it reads no account, makes no
 API calls, and requires no login.
 
@@ -55,7 +55,7 @@ The documentation warns:
 > `ant auth login`, Claude Code may warn about an auth conflict between the profile
 > and its own `/login` credential — keep one.
 
-`ant auth login` was run on 3 September 2026 on a machine already logged into Claude
+`ant auth login` was run on a machine already logged into Claude
 Code. **No conflict warning appeared**, from either binary. The login completed
 cleanly and Claude Code continued working. Recorded as a failed prediction, not a
 finding.
@@ -202,6 +202,6 @@ is the reason the environment is underivable rather than merely unset.
 
 - Claude Code `2.1.259` — `claude --help`, `claude agents --help`, `claude auth --help`.
 - `ant` `1.29.0` — `ant --help`, `ant auth status`, `ant beta:{agents,environments,deployments} --help`.
-- Both captured by `probe.sh` on 2 September 2026.
+- Both captured by `probe.sh`.
 - Bundled `claude-api` skill, `shared/anthropic-cli.md` — the control-plane/data-plane
   split and the auth trap (the only claims here not taken from a binary).

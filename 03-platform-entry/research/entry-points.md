@@ -1,6 +1,6 @@
 # What claude.ai already links to on the platform
 
-Observed on the live product, 3 September 2026, signed in on a consumer Max plan.
+Observed on the live product, signed in on a consumer Max plan.
 Reproduce with `entry-point-audit.js`, which prints the same table and no identifiers.
 
 ## Two entry points exist. Both are already instrumented
@@ -57,7 +57,7 @@ subscription. Two surfaces now show the same pattern.
 
 ## The dashboard cannot be embedded in claude.ai
 
-Tested 3 September 2026, because an embedded panel would be a better experience than
+Tested because an embedded panel would be a better experience than
 either a new tab or a full navigation. It is not available. Two independent blocks:
 
 | Block | Evidence |

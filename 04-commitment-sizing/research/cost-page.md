@@ -1,6 +1,6 @@
 # The Console's Cost page, as observed
 
-Observed on the live product, September 6, 2026, signed in as an organization admin.
+Observed on the live product, signed in as an organization admin.
 Values are left out on purpose; the layout is the finding.
 
 ## Where it sits
@@ -48,7 +48,7 @@ dollars. That is why the panel goes on Cost.
 
 ## What the documentation says about discounts
 
-[Pricing](https://platform.claude.com/docs/en/about-claude/pricing), read the same day:
+[Pricing](https://platform.claude.com/docs/en/about-claude/pricing):
 
 - "Volume discounts may be available for high-volume users. These are negotiated on a
   case-by-case basis."
@@ -58,8 +58,7 @@ dollars. That is why the panel goes on Cost.
 - Managed Agents: "Session runtime · $0.08 per session-hour", accruing only while the
   session's status is `running`. Tokens bill at model rates.
 
-[Usage and Cost API](https://platform.claude.com/docs/en/manage-claude/usage-cost-api),
-read the same day:
+[Usage and Cost API](https://platform.claude.com/docs/en/manage-claude/usage-cost-api):
 
 - "This data is similar to the information available in the Usage and Cost pages of the
   Claude Console."

@@ -4,10 +4,9 @@ Point Claude Code at a repository that uses the OpenAI SDK. It rewrites every ca
 site it can, stops to ask about the ones it can't, and then blocks the pull request
 until the repository's own tests pass against Claude.
 
-**Status:** Designed · **Cost:** About 2 weeks · **Theme:** acquisition
+**Cost:** About 2 weeks · **Theme:** acquisition
 
-Outside the slate since September 6, 2026. The case and the demo stay in the
-repository.
+Outside the slate. The case and the demo stay in the repository.
 
 [Terminal demo](https://madpr.github.io/claude-growth-surfaces/migrate.html)
 
@@ -42,7 +41,7 @@ Guardrail: production regressions after a passing gate. The target is zero.
 
 ## Evidence
 
-The compatibility layer's own documentation, read September 1, 2026
+The compatibility layer's own documentation
 ([OpenAI SDK compatibility](https://platform.claude.com/docs/en/cli-sdks-libraries/libraries/openai-sdk)):
 it is "primarily intended to test and compare model capabilities, and is not considered
 a long-term or production-ready solution"; `strict` and `response_format` are ignored;

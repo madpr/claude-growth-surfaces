@@ -4,7 +4,7 @@ Committed-spend discounts turn metered revenue into contracted revenue. In self-
 they stall on one question: how much to commit to. An agent workload takes the guess out
 and makes the yearly forecast clear.
 
-**Status:** Designed · **Cost:** About 2 weeks · **Theme:** monetization ·
+**Cost:** About 2 weeks · **Theme:** monetization ·
 **Revenue path:** direct
 
 [Open the mock](https://madpr.github.io/claude-growth-surfaces/size-commitment.html)
@@ -25,11 +25,21 @@ A Commitment panel sits on the Cost page, under the daily chart, sized for the s
 workspace. It recommends the largest tier still consumed in a p10 month and states the
 breakeven utilization next to it; the mock shows the arithmetic behind every number.
 
+The offer comes in a workload's first 90 days, as soon as there are enough runs to price
+one. Sizing needs runs, not months: a thousand runs settle the cost per run whether they
+took three weeks or a year. A workload that has already run a year at list price is
+spending anyway, and a discount then is margin given away. Early, the offer decides how
+the spend gets bought.
+
+Not every workspace gets an offer. The panel appears inside a workload's first 90 days,
+once it has run a thousand times and a p10 month clears the smallest tier, and never for
+a workspace already on a negotiated rate. Until then the Cost page is just the Cost page.
+
 ## Success metrics
 
 | Metric | What it tests |
 | --- | --- |
-| Commitments accepted from the panel, and contracted share of API revenue | Primary. Whether a sized offer converts where a blank forecast does not |
+| Commitments accepted inside a workload's first 90 days, and contracted share of API revenue | Primary. Whether a sized offer converts where a blank forecast does not, and whether it converts early |
 | Utilization at term end, and renewal | Whether the p10 rule sizes honestly. Commitments finishing below breakeven mean the sizing is too aggressive, a term before the renewal number says so |
 
 Guardrail: revenue per contracted account against matched uncontracted accounts. A
@@ -37,7 +47,7 @@ discount on spend that was coming anyway is margin given away.
 
 ## Evidence
 
-The pricing documentation, read September 6, 2026
+The pricing documentation
 ([Pricing](https://platform.claude.com/docs/en/about-claude/pricing)): "Volume discounts
 may be available for high-volume users. These are negotiated on a case-by-case basis";
 "For high-volume agent applications, contact the enterprise sales team for custom pricing
