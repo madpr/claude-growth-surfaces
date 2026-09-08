@@ -63,18 +63,11 @@ organization rather than a person), this item is the guarantee that one
 person's interactive session is never billed to an organization without saying
 so.</p>
 <h2>Findings</h2>
-<p>I first saw this on Claude Code v2.1.252 and reproduced it on v2.1.260.</p>
-<pre><code>$ claude auth status --json | jq -c '{authMethod,apiProvider,subscriptionType}'
-{&quot;authMethod&quot;:&quot;claude.ai&quot;,&quot;apiProvider&quot;:&quot;firstParty&quot;,&quot;subscriptionType&quot;:&quot;pro&quot;}
-
-$ ANTHROPIC_API_KEY=sk-ant-… claude auth status --json | jq -c '…'
-{&quot;authMethod&quot;:&quot;claude.ai&quot;,&quot;apiProvider&quot;:&quot;firstParty&quot;,&quot;subscriptionType&quot;:null}
-</code></pre>
-<p>Reproduced 3/3. Only <code>subscriptionType</code> moves, from <code>"pro"</code> to null.
-<code>ANTHROPIC_AUTH_TOKEN</code> at least relabels itself to <code>oauth_token</code>, and an
-empty-string key is ignored; <code>ANTHROPIC_API_KEY</code> alone displaces the
-subscription and says nothing. This is documented behavior. The default is
-wrong.</p>
+<p>I first saw this on Claude Code v2.1.252 and reproduced it on v2.1.260, three
+times out of three. With the key set, the status command reports the same auth
+method and provider as before; only the subscription field goes blank.
+<code>ANTHROPIC_API_KEY</code> alone displaces the subscription and says nothing. This is
+documented behavior. The default is wrong.</p>
 <h2>Evidence</h2>
 <p>There are 26 public issues on silent billing misattribution, September 2025
 to August 2026, 20 still open, and the filing rate was one or two a month
@@ -166,30 +159,8 @@ displaces a subscription (plus a rebill key for interactive sessions), then
 switch the order. A machine with no subscription falls through to level 8
 unchanged; behavior changes only for people with both a subscription and an
 ambient <code>ANTHROPIC_API_KEY</code>, the people filing the issues.</p>
-<h2>The stage 2 warning</h2>
-<p>Since <code>authMethod</code> is the same in both states, the warning probes
-<code>claude auth status</code> twice, with and without the credential variables, and
-compares:</p>
-<pre><code class="language-bash">resolved=$(claude auth status --json)
-latent=$(env -u ANTHROPIC_API_KEY -u ANTHROPIC_AUTH_TOKEN claude auth status --json)
-[ -z &quot;$resolved_sub&quot; ] &amp;&amp; [ -n &quot;$latent_sub&quot; ] &amp;&amp; state=CONFLICT
-</code></pre>
-<p>Three states; a key with no subscription behind it is correct billing and gets
-no warning:</p>
-<pre><code>◆ PRO SUB · Opus                       subscription pays
-████░░░░░░ 41% · 5h 62% · caps in ~23min
-
-▲ API KEY ····4f2a · Opus              displaced an entitlement
-ANTHROPIC_API_KEY displaced your pro subscription
-  ↳ press ⌥B to bill the subscription instead
-
-◇ API KEY ····test · Opus              correct, and silent
-████░░░░░░ 41% · $2.14
-</code></pre>
-<p><code>caps in ~23min</code> is arithmetic on <code>rate_limits.five_hour</code> from the session payload.</p>
 <h2>Mock</h2>
-<p><code>page/who-is-paying.html</code>: drive the precedence order at
-<a href="https://madpr.github.io/claude-growth-surfaces/who-is-paying.html">https://madpr.github.io/claude-growth-surfaces/who-is-paying.html</a></p>
+<p><a href="https://madpr.github.io/claude-growth-surfaces/who-is-paying.html">Drive the mock</a></p>
 <p>A terminal you type into: export the key, start a session, and watch which
 credential pays, on a laptop with a subscription or a build box without one,
 under either precedence order. The dialog, auth status fields, and <code>/cost</code>

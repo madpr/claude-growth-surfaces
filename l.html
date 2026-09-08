@@ -58,12 +58,11 @@ path, with the limits set before the first unattended run.</p>
 <p><a href="https://madpr.github.io/claude-growth-surfaces/promote-cli.html">Terminal demo</a> ·
 <a href="https://madpr.github.io/claude-growth-surfaces/promote-to-agent.html">Browser demo</a></p>
 <h2>Problem</h2>
-<p>The obvious words typed into Claude Code (<code>claude agents</code>, <code>environment</code>, <code>session</code>,
-<code>budget</code>) all return local answers, so the search ends there. The platform CLI reported
-a different organization ID than Claude Code for the same email; that organization
-already held a workspace named, exactly, "Claude Code", and my hosted agent list was
-empty. That boundary is the revenue event, a flat subscription fee becoming metered
-usage plus runtime.</p>
+<p>Every obvious word typed into Claude Code returns a local answer, so the search ends
+there. The platform CLI reported a different organization ID than Claude Code for the
+same email; that organization already held a workspace named, exactly, "Claude Code".
+That boundary is the revenue event, a flat subscription fee becoming metered usage plus
+runtime.</p>
 <p>The two tools never mention each other and collide on every searchable word.</p>
 <div class="tbl"><table>
 <thead>
@@ -133,9 +132,8 @@ rules that carry over listed beside the ones that do not, and nothing defaulted.
 </table></div>
 <p>Guardrail: incidents on unattended runs, against the supervised baseline.</p>
 <h2>Evidence</h2>
-<p>Fourteen issues in the Claude Code issue tracker
-(<a href="https://github.com/madpr/claude-growth-surfaces/blob/master/01-dev-to-production/research/issues.tsv"><code>research/issues.tsv</code></a>), all read. Eleven show the agent acting
-outside its mandate.</p>
+<p>Fourteen issues in the Claude Code issue tracker, all read and listed in the research
+folder. Eleven show the agent acting outside its mandate.</p>
 <div class="tbl"><table>
 <thead>
 <tr>
@@ -172,7 +170,7 @@ worried."</p>
 an unaffiliated plugin, makes offloading token-heavy
 work from Claude Code to Gemini the default: the seat stays, the volume per session
 falls, and a retention dashboard calls that account healthy.</p>
-<p><code>research/probe.sh</code> reproduces the surface-collision table from the two installed
+<p>A script in the research folder reproduces the collision table from the two installed
 binaries. It reads no account and calls no API.</p>
   </main>
 
