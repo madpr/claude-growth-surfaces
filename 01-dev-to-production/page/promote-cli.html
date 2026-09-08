@@ -108,8 +108,8 @@ function normalizeTime(v){
   return (h<10?'0':'')+h+':'+(mm<10?'0':'')+mm;
 }
 /* The two organizations. Names and sign-in methods are synthetic. */
-var HERE ={org:"example's Organization",   via:'claude.ai'};
-var THERE={org:"example's Individual Org", via:'platform oauth'};
+var HERE ={org:"Alex's Organization",   via:'claude.ai'};
+var THERE={org:"Alex's Individual Org", via:'platform oauth'};
 /* Keys typed while a step animation runs. Replayed when it ends. */
 var pending=[];
 /* Agents created in this session. `claude agents` reads this, so the command
