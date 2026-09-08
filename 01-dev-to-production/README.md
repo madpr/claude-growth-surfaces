@@ -12,12 +12,11 @@ path, with the limits set before the first unattended run.
 
 ## Problem
 
-The obvious words typed into Claude Code (`claude agents`, `environment`, `session`,
-`budget`) all return local answers, so the search ends there. The platform CLI reported
-a different organization ID than Claude Code for the same email; that organization
-already held a workspace named, exactly, "Claude Code", and my hosted agent list was
-empty. That boundary is the revenue event, a flat subscription fee becoming metered
-usage plus runtime.
+Every obvious word typed into Claude Code returns a local answer, so the search ends
+there. The platform CLI reported a different organization ID than Claude Code for the
+same email; that organization already held a workspace named, exactly, "Claude Code".
+That boundary is the revenue event, a flat subscription fee becoming metered usage plus
+runtime.
 
 The two tools never mention each other and collide on every searchable word.
 
@@ -53,9 +52,8 @@ Guardrail: incidents on unattended runs, against the supervised baseline.
 
 ## Evidence
 
-Fourteen issues in the Claude Code issue tracker
-([`research/issues.tsv`](research/issues.tsv)), all read. Eleven show the agent acting
-outside its mandate.
+Fourteen issues in the Claude Code issue tracker, all read and listed in the research
+folder. Eleven show the agent acting outside its mandate.
 
 | Issue | What the agent did |
 | --- | --- |
@@ -73,5 +71,5 @@ an unaffiliated plugin, makes offloading token-heavy
 work from Claude Code to Gemini the default: the seat stays, the volume per session
 falls, and a retention dashboard calls that account healthy.
 
-`research/probe.sh` reproduces the surface-collision table from the two installed
+A script in the research folder reproduces the collision table from the two installed
 binaries. It reads no account and calls no API.

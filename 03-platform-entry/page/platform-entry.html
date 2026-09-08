@@ -7,7 +7,7 @@
    for new navigation, and the landing panel it opens, which replicates the platform
    dashboard's card names with values left blank. The live row opens a new tab, as
    the two existing entry points do; the mock intercepts the click so the landing
-   stays in view, and keeps the tagged target on the "Open the live dashboard" link.
+   stays in view, and keeps the dashboard target on the "Open the live dashboard" link.
    Embedding the dashboard was tested and the platform refuses it: frame-ancestors
    'self'. See research/entry-points.md.
    Account name, chats and projects are synthetic. */
@@ -170,7 +170,7 @@ svg{display:block;flex:none}
 
       <!-- addition 1: the row -->
       <a class="ni" id="platformRow"
-         href="https://platform.claude.com/dashboard?utm_source=claude_ai&amp;utm_medium=rail&amp;utm_campaign=platform_entry&amp;utm_content=rail_row"
+         href="https://platform.claude.com/dashboard"
          target="_blank" rel="noopener">
         <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"><path d="M8.7 1.9 3.4 9.1h3.5l-.6 5 5.3-7.2H8.1z"/></svg>
         <span class="lbl">Developer platform</span>
@@ -252,7 +252,7 @@ svg{display:block;flex:none}
     </a>
     <span class="origin">platform.claude.com, opened in a new tab</span>
     <a class="live"
-       href="https://platform.claude.com/dashboard?utm_source=claude_ai&amp;utm_medium=rail&amp;utm_campaign=platform_entry&amp;utm_content=rail_row"
+       href="https://platform.claude.com/dashboard"
        target="_blank" rel="noopener">
       Open the live dashboard
       <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h7v7M13 3 4 12"/></svg>
@@ -298,7 +298,7 @@ svg{display:block;flex:none}
   });
 
   // On the live product the row opens the dashboard in a new tab. The mock intercepts
-  // the click and shows the landing in place, so the flow stays drivable. The tagged
+  // the click and shows the landing in place, so the flow stays drivable. The dashboard
   // target stays on the row's href and on the "Open the live dashboard" link.
   var app = document.getElementById('app');
   var landing = document.getElementById('landing');

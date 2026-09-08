@@ -104,12 +104,10 @@ h1{margin:0;font-size:23px;font-weight:600;letter-spacing:-.02em}
 .pill.ok{background:var(--ok-dim);color:var(--ok);border-color:transparent}
 .pill.warn{background:var(--warn-dim);color:var(--warn);border-color:transparent}
 .pill.window{background:var(--sunk);color:var(--ink-2);border-color:var(--rule);font-family:var(--mono);font-weight:500}
-.commit header p{margin:3px 0 0;font-size:12.5px;color:var(--ink-2)}
 .inner{padding:16px}
 .controls{display:flex;flex-wrap:wrap;gap:12px 22px;padding-bottom:14px;border-bottom:1px solid var(--rule-soft);margin-bottom:14px}
 .controls label{display:flex;flex-direction:column;gap:5px;font-size:12.5px;color:var(--ink-2)}
 .controls input{width:190px;background:var(--field);border:1px solid var(--rule);border-radius:7px;padding:7px 10px;font-size:13px;font-family:var(--mono)}
-.controls .hint{align-self:flex-end;font-size:12px;color:var(--ink-3);max-width:44ch}
 
 .est{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:16px}
 .e{border:1px solid var(--rule);border-radius:8px;padding:10px 12px;background:var(--sunk)}
@@ -136,7 +134,6 @@ tr.sel.pick td,tr.sel.pick:hover td{background:var(--ok-dim)}
 tr.sel.stretch td,tr.sel.stretch:hover td{background:var(--warn-dim)}
 tr.sel td:first-child{box-shadow:inset 3px 0 0 var(--accent)}
 tr[role=button]:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
-.tblhint{margin:8px 0 0;font-size:12px;color:var(--ink-3)}
 
 .offer{margin-top:16px;border:1px solid var(--rule);border-left:3px solid var(--ok);border-radius:8px;padding:14px 16px;background:var(--sunk)}
 .offer.none{border-left-color:var(--rule)}
@@ -146,6 +143,8 @@ tr[role=button]:focus-visible{outline:2px solid var(--accent);outline-offset:-2p
 .offer p{margin:0 0 6px;font-size:13.5px}
 .offer p.d{color:var(--ink-2);font-size:13px}
 .offer p.w{color:var(--warn);font-size:13px}
+.terms{display:flex;flex-wrap:wrap;gap:6px 20px;font-size:13px;color:var(--ink-2);margin:2px 0 4px}
+.terms b{color:var(--ink);font-family:var(--mono);font-weight:600}
 .cta{margin-top:12px;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
 .cta .sent{font-size:12.5px;color:var(--ink-2)}
 
@@ -251,7 +250,6 @@ tr[role=button]:focus-visible{outline:2px solid var(--accent);outline-offset:-2p
       <header>
         <div>
           <h2 id="commit-h">Commitment <span class="pill">Proposal</span> <span class="pill window" id="window"></span></h2>
-          <p id="p-sub"></p>
         </div>
       </header>
       <div class="inner">
@@ -260,7 +258,6 @@ tr[role=button]:focus-visible{outline:2px solid var(--accent);outline-offset:-2p
             <input type="number" id="runs" value="1000" min="1" max="1000000" step="100"></label>
           <label>Expected runs per month
             <input type="number" id="volume" min="100" max="5000000" step="500"></label>
-          <span class="hint">Volume starts at this workspace's observed average. Change it to see what a busier or quieter year does to the offer.</span>
         </div>
 
         <div class="est" id="est"></div>
@@ -275,7 +272,6 @@ tr[role=button]:focus-visible{outline:2px solid var(--accent);outline-offset:-2p
             <tbody id="tiers"></tbody>
           </table>
         </div>
-        <p class="tblhint" id="tblhint">Select a tier to see its terms.</p>
 
         <div class="offer" id="offer"></div>
       </div>
@@ -304,12 +300,9 @@ var TIERS=[
   {name:'Enterprise', commit:100000, discount:0.35}
 ];
 var WS={
-  'support-triage':{desc:'The same agent in production across three teams since week one. Steady volume, well-characterized cost.',
-    runs:62000, weeks:10, median:0.41, sigma:0.8, cv:0.12, model:'Claude Sonnet 5', hours:0.05, rate:0},
-  'repo-migration':{desc:'Repository migration agent, seven weeks in. Fewer runs, much larger and more variable per run.',
-    runs:5200, weeks:7, median:2.6, sigma:1.2, cv:0.22, model:'Claude Opus 5', hours:0.4, rate:0},
-  'invoice-extraction':{desc:'Invoice extraction agent, forty weeks in. Steady, high volume, already on a negotiated rate.',
-    runs:80000, weeks:40, median:0.22, sigma:0.6, cv:0.08, model:'Claude Haiku 4.5', hours:0.02, rate:0.12}
+  'support-triage':{runs:62000, weeks:10, median:0.41, sigma:0.8, cv:0.12, model:'Claude Sonnet 5', hours:0.05, rate:0},
+  'repo-migration':{runs:5200, weeks:7, median:2.6, sigma:1.2, cv:0.22, model:'Claude Opus 5', hours:0.4, rate:0},
+  'invoice-extraction':{runs:80000, weeks:40, median:0.22, sigma:0.6, cv:0.08, model:'Claude Haiku 4.5', hours:0.02, rate:0.12}
 };
 var SIZING_P=0.10, STRETCH_CEIL=0.25, RUNTIME_PER_HOUR=0.08;
 /* The offer is made in a workload's first 90 days. A year at list price is spend
@@ -478,7 +471,6 @@ function render(){
   document.getElementById('lg-model').textContent=acc.model;
   paintChart(acc,(observed.mean-runtime)*(1-acc.rate));
 
-  document.getElementById('p-sub').textContent='Sized from '+acc.weeks+' weeks of runs in this workspace. '+acc.desc;
   var win=document.getElementById('window');
   win.textContent='Day '+(acc.weeks*7)+' of '+OFFER_WINDOW_DAYS;
   win.title='Offered in a workload\u2019s first '+OFFER_WINDOW_DAYS+' days';
@@ -487,12 +479,12 @@ function render(){
   document.querySelector('.commit').hidden=!eligible(acc,spend);
 
   var est=document.getElementById('est'); est.innerHTML='';
-  [['Cost of '+num(runs)+' runs', money(b.total), money(b.p10)+' to '+money(b.p90)+', 80% of the time'],
-   ['Band width', (b.band*100).toFixed(1)+'%', 'narrows as the batch grows'],
-   ['Mean per run', money(b.meanRun), 'p95 run '+money(b.p95Run)],
+  [['Cost of '+num(runs)+' runs', money(b.total), money(b.p10)+' to '+money(b.p90)+', 80% band'],
+   ['Band width', (b.band*100).toFixed(1)+'%', ''],
+   ['Mean per run', money(b.meanRun), 'p95 '+money(b.p95Run)],
    ['Projected monthly', money(spend.mean), 'slow month '+money(spend.p10)]
   ].forEach(function(e){
-    var d=el('div','e'); d.appendChild(el('div','k',e[0])); d.appendChild(el('div','v',e[1])); d.appendChild(el('div','s',e[2]));
+    var d=el('div','e'); d.appendChild(el('div','k',e[0])); d.appendChild(el('div','v',e[1])); if(e[2]) d.appendChild(el('div','s',e[2]));
     if(e[0]==='Projected monthly') d.title='A slow month is one that nine months in ten beat.';
     est.appendChild(d);
   });
@@ -528,22 +520,20 @@ function render(){
     var h3=el('h3',null,sel.name+' at '+pct(sel.discount)+' off');
     h3.appendChild(el('span','pill '+(isBest?'ok':'warn'),isBest?'recommended':smaller?'smaller than recommended':selStretch?(rec.best?'stretch':'closest'):'not recommended'));
     offer.appendChild(h3);
-    offer.appendChild(el('p',null,'Commit '+money(sel.commit)+' a month for '+money(sel.credits)+' of usage at list price. Fully used, that saves '+money(sel.maxAnnual)+' a year.'));
+    var terms=el('div','terms');
+    [['Commit',money(sel.commit)+' / month'],['Credits at list',money(sel.credits)],['Saves up to',money(sel.maxAnnual)+' / year']].forEach(function(t){
+      var kv=el('span','kv',t[0]+' '); kv.appendChild(el('b',null,t[1])); terms.appendChild(kv);
+    });
+    offer.appendChild(terms);
     var cta=el('div','cta');
     if(requested){
-      cta.appendChild(el('span','pill ok','\u2713 Requested'));
-      cta.appendChild(el('span','sent','Sent to Billing as '+sel.name+'. The commitment starts on the first of next month; this page changes when it does.'));
+      cta.appendChild(el('span','pill ok','\u2713 Requested \u00B7 '+sel.name));
     } else {
       var go=el('button','btn btn-w','Accept '+sel.name); go.type='button';
       go.addEventListener('click',function(){ requested=true; render(); });
       cta.appendChild(go);
     }
     offer.appendChild(cta);
-  } else {
-    offer.className='offer none';
-    offer.appendChild(el('h3',null,'Stay on pay-as-you-go'));
-    offer.appendChild(el('p',null,'No tier is consumed in a slow month at this volume, so a commitment would cost more than it saves.'));
-    if(rec.stretch) offer.appendChild(el('p','d','Closest is '+rec.stretch.name+' at '+pct(rec.stretch.discount)+' off, with '+pct(rec.stretch.risk)+' of months below breakeven. Select a tier above to see its terms anyway.'));
   }
 }
 

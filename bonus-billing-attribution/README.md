@@ -18,21 +18,11 @@ so.
 
 ## Findings
 
-I first saw this on Claude Code v2.1.252 and reproduced it on v2.1.260.
-
-```
-$ claude auth status --json | jq -c '{authMethod,apiProvider,subscriptionType}'
-{"authMethod":"claude.ai","apiProvider":"firstParty","subscriptionType":"pro"}
-
-$ ANTHROPIC_API_KEY=sk-ant-… claude auth status --json | jq -c '…'
-{"authMethod":"claude.ai","apiProvider":"firstParty","subscriptionType":null}
-```
-
-Reproduced 3/3. Only `subscriptionType` moves, from `"pro"` to null.
-`ANTHROPIC_AUTH_TOKEN` at least relabels itself to `oauth_token`, and an
-empty-string key is ignored; `ANTHROPIC_API_KEY` alone displaces the
-subscription and says nothing. This is documented behavior. The default is
-wrong.
+I first saw this on Claude Code v2.1.252 and reproduced it on v2.1.260, three
+times out of three. With the key set, the status command reports the same auth
+method and provider as before; only the subscription field goes blank.
+`ANTHROPIC_API_KEY` alone displaces the subscription and says nothing. This is
+documented behavior. The default is wrong.
 
 ## Evidence
 
@@ -79,39 +69,9 @@ switch the order. A machine with no subscription falls through to level 8
 unchanged; behavior changes only for people with both a subscription and an
 ambient `ANTHROPIC_API_KEY`, the people filing the issues.
 
-## The stage 2 warning
-
-Since `authMethod` is the same in both states, the warning probes
-`claude auth status` twice, with and without the credential variables, and
-compares:
-
-```bash
-resolved=$(claude auth status --json)
-latent=$(env -u ANTHROPIC_API_KEY -u ANTHROPIC_AUTH_TOKEN claude auth status --json)
-[ -z "$resolved_sub" ] && [ -n "$latent_sub" ] && state=CONFLICT
-```
-
-Three states; a key with no subscription behind it is correct billing and gets
-no warning:
-
-```
-◆ PRO SUB · Opus                       subscription pays
-████░░░░░░ 41% · 5h 62% · caps in ~23min
-
-▲ API KEY ····4f2a · Opus              displaced an entitlement
-ANTHROPIC_API_KEY displaced your pro subscription
-  ↳ press ⌥B to bill the subscription instead
-
-◇ API KEY ····test · Opus              correct, and silent
-████░░░░░░ 41% · $2.14
-```
-
-`caps in ~23min` is arithmetic on `rate_limits.five_hour` from the session payload.
-
 ## Mock
 
-`page/who-is-paying.html`: drive the precedence order at
-<https://madpr.github.io/claude-growth-surfaces/who-is-paying.html>
+[Drive the mock](https://madpr.github.io/claude-growth-surfaces/who-is-paying.html)
 
 A terminal you type into: export the key, start a session, and watch which
 credential pays, on a laptop with a subscription or a build box without one,

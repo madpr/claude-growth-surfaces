@@ -43,12 +43,5 @@ big bet · **Evidence:** primary sources; every demo runs on a seeded scenario a
 
 ## Repo layout
 
-```
-<nn>-<slug>/       the ideas: L is 01, S is 03, M is 04; 02 is cut from the slate
-bonus-<slug>/      supporting work, outside the slate
-  README.md        the written case
-  page/            source for the published page
-  research/        collected evidence, raw
-```
-
-The published site is <https://madpr.github.io/claude-growth-surfaces/>.
+Each idea's folder holds the written case, the source for its page, and the raw
+research. The published site is <https://madpr.github.io/claude-growth-surfaces/>.
