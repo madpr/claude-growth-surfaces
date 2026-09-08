@@ -53,11 +53,13 @@ a{color:var(--link);text-decoration:none}
 
 .arrive{
   margin-top:14px;border:1px solid var(--accent);background:var(--accent-dim);
-  border-radius:9px;padding:12px 15px;max-width:1120px;
-  display:flex;gap:12px;align-items:flex-start;
+  border-radius:9px;padding:10px 15px;max-width:1120px;
+  display:flex;flex-direction:column;gap:4px;
 }
-.arrive .t{font-size:13px;color:var(--ink-2);line-height:1.55}
-.arrive b{color:var(--accent-ink)}
+.arrive .kv{display:flex;gap:12px;font-size:13px;line-height:1.55}
+.arrive .kv span{color:var(--ink-2);width:90px;flex:none}
+.arrive .kv b{color:var(--accent-ink);font-weight:500}
+.arrive .kv a{color:var(--link)}
 
 .h{display:flex;align-items:center;gap:10px;margin-top:18px;flex-wrap:wrap;max-width:1120px}
 .h h1{margin:0;font-size:23px;font-weight:600;letter-spacing:-.02em}
@@ -156,12 +158,8 @@ a{color:var(--link);text-decoration:none}
     <div class="crumb"><b>Agents</b><span>/</span><span>Confirm</span></div>
 
     <div class="arrive">
-      <div class="t">
-        Continuing from <a href="promote-cli.html">Claude Code</a> on
-        <b>~/ledger-reconcile</b>, which is signed in to <b>example's Organization</b>.
-        You signed in to <b>example's Individual Org</b> to get here, and that is where
-        these resources are created. Nothing is created until you confirm.
-      </div>
+      <div class="kv"><span>From</span><b><a href="promote-cli.html">Claude Code</a> &middot; ~/ledger-reconcile &middot; example's Organization</b></div>
+      <div class="kv"><span>Creating in</span><b>example's Individual Org</b></div>
     </div>
 
     <div class="h">
@@ -175,7 +173,7 @@ a{color:var(--link);text-decoration:none}
     <div class="why" id="why">Add a one-line description to create</div>
 
     <section class="sec">
-      <div class="sl"><h2>Agent</h2><p>Read from the project. Nothing to re-enter.</p></div>
+      <div class="sl"><h2>Agent</h2></div>
       <div class="fl">
         <div><label>Model</label>
           <div class="i mono">claude-sonnet-5</div>
@@ -190,7 +188,7 @@ a{color:var(--link);text-decoration:none}
     </section>
 
     <section class="sec">
-      <div class="sl"><h2>Sandbox</h2><p>Where the rules you lost get set again.</p></div>
+      <div class="sl"><h2>Sandbox</h2></div>
       <div class="fl">
         <div><label>Environment</label>
           <select class="i" id="env">
@@ -208,7 +206,7 @@ a{color:var(--link);text-decoration:none}
     </section>
 
     <section class="sec">
-      <div class="sl"><h2>Schedule</h2><p>And the ceiling every run inherits.</p></div>
+      <div class="sl"><h2>Schedule</h2></div>
       <div class="fl">
         <div><label>Runs</label>
           <div class="i mono" id="f-sched"></div>
@@ -239,11 +237,10 @@ var RULES=[
   {id:'write-ledger', kind:'deny', r:'Write(ledger/**)', as:'ledger/ mounted read-only', on:true, dead:false},
   {id:'rm',           kind:'deny', r:'Bash(rm *)', as:'sandbox discarded after every run', on:true, dead:false},
   {kind:'allow',   r:'Bash(python3 reconcile.py *)', on:false, dead:true,
-   as:'this was the only pre-approved command. Everything else stopped for you. '+
-      'Nothing stops for you at 02:00, and the sandbox runs any command.',
+   as:'approval gate, not enforced in the sandbox',
    lost:'the approval gate'},
   {kind:'service', r:'local-fs-index', on:false, dead:true,
-   as:'a server your machine starts. A hosted agent cannot reach it.',
+   as:'local server, unreachable from the sandbox',
    lost:'republish it as an endpoint'}
 ];
 var REACH={
@@ -262,6 +259,7 @@ var Q=new URLSearchParams(location.search);
 var S={
   cap:(function(){ var n=parseFloat(Q.get('cap')); return n>0?n:null; })(),
   sched:(Q.get('sched')||'').trim()||null,
+  tz:(Q.get('tz')||'').trim()||Intl.DateTimeFormat().resolvedOptions().timeZone,
   created:false
 };
 if(Q.has('rules')){
@@ -274,13 +272,24 @@ function capValue(){
   var n=parseFloat(document.getElementById('cap').value.replace(/^\$/,''));
   return n>0?n:null;
 }
-/* A bare HH:MM becomes a daily cron line. Anything else is shown as typed. */
+/* "7pm", "8 pm", "8:30pm", "20:00", or "8" all become HH:MM. Anything else is
+   shown as typed. A time of day is meaningless without a zone, so the zone is
+   always shown next to it. */
+function normalizeTime(v){
+  var m=/^\s*(\d{1,2})(?:[:.](\d{2}))?\s*(?:([ap])\.?\s*m\.?)?\s*$/i.exec(v||'');
+  if(!m) return null;
+  var h=+m[1], mm=m[2]?+m[2]:0, ap=m[3]?m[3].toLowerCase():null;
+  if(mm>59) return null;
+  if(ap){ if(h<1||h>12) return null; if(ap==='p'&&h<12) h+=12; if(ap==='a'&&h===12) h=0; }
+  else if(h>23) return null;
+  return (h<10?'0':'')+h+':'+(mm<10?'0':'')+mm;
+}
 function schedInfo(){
   if(!S.sched) return null;
-  var m=/^(\d{1,2}):(\d{2})$/.exec(S.sched);
-  if(!m||+m[1]>23||+m[2]>59) return {cron:null, human:S.sched, h:null, m:null, t:null};
-  var h=+m[1], mm=+m[2], t=(h<10?'0':'')+h+':'+(mm<10?'0':'')+mm;
-  return {cron:mm+' '+h+' * * *', human:'daily '+t, h:h, m:mm, t:t};
+  var t=normalizeTime(S.sched);
+  if(!t) return {cron:null, human:S.sched, h:null, m:null, t:null};
+  var h=+t.slice(0,2), mm=+t.slice(3);
+  return {cron:mm+' '+h+' * * *', human:'daily '+t+' '+S.tz, h:h, m:mm, t:t};
 }
 function firstRun(){
   var s=schedInfo();
@@ -288,7 +297,7 @@ function firstRun(){
   if(s.h===null) return 'per the schedule: '+s.human;
   var now=new Date(),
       later=s.h>now.getHours()||(s.h===now.getHours()&&s.m>now.getMinutes());
-  return (later?'today':(s.h<6?'tonight':'tomorrow'))+' at '+s.t;
+  return (later?'today':(s.h<6?'tonight':'tomorrow'))+' at '+s.t+' '+S.tz;
 }
 
 function paintRules(){
